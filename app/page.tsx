@@ -1,3 +1,5 @@
+import Link from "next/link";
+
 export default function Home() {
   return (
     <main className="min-h-screen bg-paper p-8 font-sans text-void">
@@ -14,6 +16,16 @@ export default function Home() {
       <div className="mt-6 max-w-sm rounded-lg border border-subtle p-4">
         Card with subtle border.
       </div>
+        <div className="flex flex-wrap gap-8 text-sm text-gray-600">
+            <Link href="/" className="hover:text-gray-900">Home</Link>
+            <Link href="/product" className="hover:text-gray-900">Product</Link>
+            <Link href="/demo" className="hover:text-gray-900">Demo</Link>
+            <Link href="/about" className="hover:text-gray-900">About</Link>
+            <Link href="/blog" className="hover:text-gray-900">Blog</Link>
+            <Link href="/waitlistsignup" className="hover:text-gray-900">Waitlist</Link>
+            <a href="#" className="hover:text-gray-900">Privacy</a>
+            <a href="#" className="hover:text-gray-900">Terms</a>
+        </div>
     </main>
   );
 }
