@@ -20,6 +20,5 @@ export default function Home() {
 
 // TODO: index.html is migrated with app/page.tsx. need to remove index and migrate information over UI
 // TODO: migrate rest of the pages to app/about, app/xxx
-// TODO: move assets to public folder
 // TODO: MAYBE add some UI frameworks: kokonut UI, shadcn UI are my go to.
 // TODO: demo.html is the hardest to migrate. spend some time reading over the code to see what to replace/shorten/add, etc.
