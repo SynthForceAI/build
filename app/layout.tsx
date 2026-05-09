@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Script from "next/script";
 import { inter } from "@/lib/fonts";
 import "./globals.css";
 import React from "react";
@@ -23,9 +24,9 @@ export default function RootLayout({
       <body>
         {children}
         <Footer />
+        <Script src="https://tally.so/widgets/embed.js" strategy="afterInteractive" />
       </body>
     </html>
   );
 }
 
-// TODO: Finish and add a universal navbar component to go here. I made original navbar component from legacy html. would just be better code structure

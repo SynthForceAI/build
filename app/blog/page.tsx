@@ -3,6 +3,7 @@
 import Link from 'next/link';
 import { useState } from 'react';
 import { OriginalNavbar } from "@/components/ui/navbars";
+import { WaitlistTrigger } from "@/components/ui/waitlist-trigger";
 
 const articleStyles = `
   .article-content h2 { font-size: 1.75rem; font-weight: 700; margin-top: 2.5rem; margin-bottom: 1rem; color: #111827; }
@@ -55,7 +56,7 @@ export default function BlogPage() {
             <Link href="/demo" onClick={closeMobile} className="block py-2 text-gray-900 font-medium">Demo</Link>
             <Link href="/blog" onClick={closeMobile} className="block py-2 text-gray-900 font-medium">Blog</Link>
             <Link href="/about" onClick={closeMobile} className="block py-2 text-gray-900 font-medium">About</Link>
-            <Link href="/waitlistsignup" onClick={closeMobile} className="block py-2 text-gray-900 font-medium">Waitlist</Link>
+            <WaitlistTrigger onClick={closeMobile} className="block py-2 text-gray-900 font-medium cursor-pointer">Waitlist</WaitlistTrigger>
           </div>
         </div>
       </nav>
@@ -421,12 +422,9 @@ export default function BlogPage() {
               <p className="text-gray-600 mb-6">
                 Onboard, measure, and govern your synthetic workforce. Join the waitlist for early access.
               </p>
-              <Link
-                href="/waitlistsignup"
-                className="btn-primary px-8 py-4 font-sans font-semibold text-sm uppercase rounded-lg inline-block"
-              >
+              <WaitlistTrigger className="btn-primary px-8 py-4 font-sans font-semibold text-sm uppercase rounded-lg inline-block cursor-pointer">
                 Join Waitlist
-              </Link>
+              </WaitlistTrigger>
               <p className="mt-4 text-sm text-gray-500">
                 Or <Link href="/demo" className="text-accent hover:underline">see the demo</Link>.
               </p>

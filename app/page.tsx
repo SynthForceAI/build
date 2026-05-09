@@ -3,6 +3,7 @@
 import Link from 'next/link';
 import { useState, type CSSProperties } from 'react';
 import { OriginalNavbar } from "@/components/ui/navbars";
+import { WaitlistTrigger } from "@/components/ui/waitlist-trigger";
 
 const pageStyles = `
   .hero-title { letter-spacing: -0.02em; line-height: 1.1; }
@@ -83,9 +84,9 @@ export default function Home() {
             <Link href="/demo" onClick={closeMobile} className="py-2 hover:text-gray-900">Demo</Link>
             <Link href="/blog" onClick={closeMobile} className="py-2 hover:text-gray-900">Blog</Link>
             <Link href="/about" onClick={closeMobile} className="py-2 hover:text-gray-900">About</Link>
-            <Link href="/waitlistsignup" onClick={closeMobile} className="py-2 text-gray-900 font-medium">
+            <WaitlistTrigger onClick={closeMobile} className="py-2 text-gray-900 font-medium cursor-pointer">
               Waitlist →
-            </Link>
+            </WaitlistTrigger>
           </div>
         </div>
       </nav>
@@ -525,12 +526,9 @@ export default function Home() {
                   </ul>
                 </div>
                 <div className="pt-6 border-t border-subtle">
-                  <Link
-                    href="/waitlistsignup"
-                    className="btn-primary px-12 py-5 text-lg font-sans font-semibold uppercase rounded-lg inline-block"
-                  >
+                  <WaitlistTrigger className="btn-primary px-12 py-5 text-lg font-sans font-semibold uppercase rounded-lg inline-block cursor-pointer">
                     Join the Waitlist
-                  </Link>
+                  </WaitlistTrigger>
                   <p className="mt-4 text-sm text-gray-500">No spam. Unsubscribe anytime.</p>
                 </div>
               </div>
@@ -544,4 +542,3 @@ export default function Home() {
 }
 
 // TODO: Make navbar text be bolded on current page. Legacy html has 'blog' bolded when visiting, but none of the others.
-// TODO: add original navbar component to all page.tsx

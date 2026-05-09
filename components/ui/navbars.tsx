@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { WaitlistTrigger } from "@/components/ui/waitlist-trigger";
 
 export function OriginalNavbar() {
     return (
@@ -8,12 +9,9 @@ export function OriginalNavbar() {
             <Link href="/demo" className="hover:text-gray-900">Demo</Link>
             <Link href="/blog" className="hover:text-gray-900">Blog</Link>
             <Link href="/about" className="hover:text-gray-900">About</Link>
-            <Link
-                href="/waitlistsignup"
-                className="text-gray-900 hover:underline decoration-1 underline-offset-4"
-            >
+            <WaitlistTrigger className="text-gray-900 hover:underline decoration-1 underline-offset-4 cursor-pointer">
                 Waitlist →
-            </Link>
+            </WaitlistTrigger>
         </div>
     )
 }
@@ -37,8 +35,8 @@ export function DemoPageNavbar() {
                     <a href="/demo" className="hover:text-gray-900">Demo</a>
                     <a href="/blog" className="hover:text-gray-900">Blog</a>
                     <a href="/about" className="hover:text-gray-900">About</a>
-                    <a href="/waitlistsignup" className="text-gray-900 hover:underline decoration-1 underline-offset-4">Waitlist
-                        →</a>
+                    <WaitlistTrigger className="text-gray-900 hover:underline decoration-1 underline-offset-4 cursor-pointer">Waitlist
+                        →</WaitlistTrigger>
                 </div>
                 <button id="mobile-menu-toggle" className="md:hidden text-gray-700">
                     <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"
@@ -55,7 +53,7 @@ export function DemoPageNavbar() {
                     <a href="/demo" className="py-2 hover:text-gray-900">Demo</a>
                     <a href="/blog" className="py-2 hover:text-gray-900">Blog</a>
                     <a href="/about" className="py-2 hover:text-gray-900">About</a>
-                    <a href="/waitlistsignup" className="py-2 text-gray-900 font-medium">Waitlist →</a>
+                    <WaitlistTrigger className="py-2 text-gray-900 font-medium cursor-pointer">Waitlist →</WaitlistTrigger>
                 </div>
             </div>
         </nav>

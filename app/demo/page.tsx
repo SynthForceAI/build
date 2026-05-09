@@ -938,23 +938,7 @@ export default function DemoPage() {
           )}
         </div>
       </div>
-
-      {/* Footer */}
-      <footer className="mt-20 py-8 border-t border-gray-200 bg-gray-50">
-        <div className="container mx-auto px-6 text-center text-gray-600 text-sm">
-          <p>
-            2026 SynthForce AI. All rights reserved. |{" "}
-            <a href="/" className="text-blue-600 hover:underline">Home</a> |{" "}
-            <a href="/product" className="text-blue-600 hover:underline">Product</a> |{" "}
-            <a href="/demo" className="text-blue-600 hover:underline">Demo</a> |{" "}
-            <a href="/blog" className="text-blue-600 hover:underline">Blog</a> |{" "}
-            <a href="/about" className="text-blue-600 hover:underline">About</a> |{" "}
-            <a href="/waitlistsignup" className="text-blue-600 hover:underline">Waitlist</a>
-          </p>
-          <p className="mt-2 text-xs text-gray-500">This is a simulated demo. Data is not real.</p>
-        </div>
-      </footer>
-
+      
       {/* Agent details modal */}
       {agentModal && (
         <div className="fixed inset-0 z-50 overflow-y-auto">

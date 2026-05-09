@@ -3,6 +3,7 @@
 import { useState } from "react";
 import Link from "next/link";
 import { OriginalNavbar } from "@/components/ui/navbars";
+import { WaitlistTrigger } from "@/components/ui/waitlist-trigger";
 
 export default function AboutPage() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -50,13 +51,12 @@ export default function AboutPage() {
               <Link href="/demo" className="py-2 hover:text-gray-900" onClick={() => setMobileMenuOpen(false)}>Demo</Link>
               <Link href="/blog" className="py-2 hover:text-gray-900" onClick={() => setMobileMenuOpen(false)}>Blog</Link>
               <Link href="/about" className="py-2 hover:text-gray-900" onClick={() => setMobileMenuOpen(false)}>About</Link>
-              <Link
-                href="/waitlistsignup"
-                className="py-2 text-gray-900 font-medium"
+              <WaitlistTrigger
+                className="py-2 text-gray-900 font-medium cursor-pointer"
                 onClick={() => setMobileMenuOpen(false)}
               >
                 Waitlist →
-              </Link>
+              </WaitlistTrigger>
             </div>
           </div>
         )}

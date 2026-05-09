@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { Year }from "@/lib/utils"
+import { WaitlistTrigger } from "@/components/ui/waitlist-trigger";
 
 export function Footer() {
   return (
@@ -24,7 +25,7 @@ export function Footer() {
             <Link href="/demo" className="hover:text-gray-900">Demo</Link>
             <Link href="/about" className="hover:text-gray-900">About</Link>
             <Link href="/blog" className="hover:text-gray-900">Blog</Link>
-            <Link href="/waitlistsignup" className="hover:text-gray-900">Waitlist</Link>
+            <WaitlistTrigger className="hover:text-gray-900 cursor-pointer">Waitlist</WaitlistTrigger>
             <a href="mailto:info@synthforceai.com" className="hover:text-gray-900">Contact</a>
             <a href="#" className="hover:text-gray-900">Privacy</a>
             <a href="#" className="hover:text-gray-900">Terms</a>
