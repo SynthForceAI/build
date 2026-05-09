@@ -30,3 +30,6 @@ export default function RootLayout({
   );
 }
 
+// TODO: Each page could export its own metadata. Work on that for better SEO in the future.
+// TODO: Init migration is complete. 1:1 of legacy site is done. Now we can focus on refining the repo, clear any redundancies, mistakes, etc.
+// TODO: Start working on backend and schema. May have a meeting about this.

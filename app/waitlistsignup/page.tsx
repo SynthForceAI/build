@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { OriginalNavbar } from "@/components/ui/navbars";
+import { SiteNav } from "@/components/ui/site-nav";
 
 export const metadata: Metadata = {
   title: "SynthForce | Join the Waitlist",
@@ -11,18 +11,7 @@ export const metadata: Metadata = {
 export default function WaitlistSignupPage() {
   return (
     <>
-      <nav className="sticky top-0 w-full z-50 border-b border-subtle bg-white/80 backdrop-blur-md">
-        <div className="container mx-auto px-6 h-16 flex items-center justify-between">
-          <Link href="/" className="flex items-center gap-3">
-            <img
-              src="/assets/logo_top_corner.png"
-              className="h-8 max-h-8 w-auto object-contain"
-              alt="SynthForce Logo"
-            />
-          </Link>
-          <OriginalNavbar />
-        </div>
-      </nav>
+      <SiteNav />
 
       <main className="pt-12 pb-20 container mx-auto px-6">
         <div className="max-w-4xl mx-auto text-center mb-12">

@@ -1,66 +1,9 @@
-"use client";
-
-import { useState } from "react";
-import Link from "next/link";
-import { OriginalNavbar } from "@/components/ui/navbars";
-import { WaitlistTrigger } from "@/components/ui/waitlist-trigger";
+import { SiteNav } from "@/components/ui/site-nav";
 
 export default function AboutPage() {
-  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-
   return (
     <>
-      <nav className="sticky top-0 w-full z-50 border-b border-subtle bg-white/80 backdrop-blur-md">
-        <div className="container mx-auto px-6 h-16 flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <Link href="/">
-              <img
-                src="/assets/logo_top_corner.png"
-                className="h-8 max-h-8 w-auto object-contain"
-                alt="SynthForce Logo"
-              />
-            </Link>
-          </div>
-          <OriginalNavbar />
-          <button
-            onClick={() => setMobileMenuOpen((open) => !open)}
-            className="md:hidden text-gray-700"
-            aria-label="Toggle menu"
-          >
-            <svg
-              className="w-6 h-6"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-              xmlns="http://www.w3.org/2000/svg"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M4 6h16M4 12h16M4 18h16"
-              />
-            </svg>
-          </button>
-        </div>
-        {mobileMenuOpen && (
-          <div className="md:hidden bg-white border-t border-subtle px-6 py-4">
-            <div className="flex flex-col gap-4 text-sm font-sans text-gray-600">
-              <Link href="/" className="py-2 hover:text-gray-900" onClick={() => setMobileMenuOpen(false)}>Home</Link>
-              <Link href="/product" className="py-2 hover:text-gray-900" onClick={() => setMobileMenuOpen(false)}>Product</Link>
-              <Link href="/demo" className="py-2 hover:text-gray-900" onClick={() => setMobileMenuOpen(false)}>Demo</Link>
-              <Link href="/blog" className="py-2 hover:text-gray-900" onClick={() => setMobileMenuOpen(false)}>Blog</Link>
-              <Link href="/about" className="py-2 hover:text-gray-900" onClick={() => setMobileMenuOpen(false)}>About</Link>
-              <WaitlistTrigger
-                className="py-2 text-gray-900 font-medium cursor-pointer"
-                onClick={() => setMobileMenuOpen(false)}
-              >
-                Waitlist →
-              </WaitlistTrigger>
-            </div>
-          </div>
-        )}
-      </nav>
+      <SiteNav />
 
       <main className="pt-16 pb-20 container mx-auto px-6">
         <div className="max-w-5xl mx-auto">
@@ -119,7 +62,6 @@ export default function AboutPage() {
           </div>
         </div>
       </main>
-
     </>
   );
 }

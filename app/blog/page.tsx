@@ -1,8 +1,5 @@
-'use client';
-
 import Link from 'next/link';
-import { useState } from 'react';
-import { OriginalNavbar } from "@/components/ui/navbars";
+import { SiteNav } from "@/components/ui/site-nav";
 import { WaitlistTrigger } from "@/components/ui/waitlist-trigger";
 
 const articleStyles = `
@@ -21,45 +18,11 @@ const articleStyles = `
 `;
 
 export default function BlogPage() {
-  const [mobileOpen, setMobileOpen] = useState(false);
-  const closeMobile = () => setMobileOpen(false);
-
   return (
     <div className="bg-paper text-void font-sans">
       <style dangerouslySetInnerHTML={{ __html: articleStyles }} />
 
-      <nav className="sticky top-0 z-50 bg-white/80 backdrop-blur-md border-b border-subtle">
-        <div className="max-w-6xl mx-auto px-6 h-16 flex items-center justify-between">
-          <Link href="/" className="flex items-center gap-3">
-            <img
-              src="/assets/logo_top_corner.png"
-              className="h-7 max-h-7 w-auto object-contain"
-              alt="SynthForce"
-            />
-          </Link>
-          <OriginalNavbar/>
-          <button
-            type="button"
-            onClick={() => setMobileOpen((v) => !v)}
-            aria-expanded={mobileOpen}
-            aria-controls="mobile-menu"
-            className="md:hidden p-2 text-gray-900"
-          >
-            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
-            </svg>
-          </button>
-        </div>
-        <div id="mobile-menu" className={`${mobileOpen ? '' : 'hidden'} md:hidden border-t border-subtle bg-white`}>
-          <div className="px-6 py-4 space-y-3">
-            <Link href="/product" onClick={closeMobile} className="block py-2 text-gray-900 font-medium">Product</Link>
-            <Link href="/demo" onClick={closeMobile} className="block py-2 text-gray-900 font-medium">Demo</Link>
-            <Link href="/blog" onClick={closeMobile} className="block py-2 text-gray-900 font-medium">Blog</Link>
-            <Link href="/about" onClick={closeMobile} className="block py-2 text-gray-900 font-medium">About</Link>
-            <WaitlistTrigger onClick={closeMobile} className="block py-2 text-gray-900 font-medium cursor-pointer">Waitlist</WaitlistTrigger>
-          </div>
-        </div>
-      </nav>
+      <SiteNav />
 
       <main className="pb-20">
         <div className="bg-gray-50 border-b border-subtle py-20">
