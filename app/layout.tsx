@@ -5,7 +5,7 @@ import "./globals.css";
 import React from "react";
 import { cn } from "@/lib/utils";
 import { Footer } from "@/components/ui/footer";
-
+import { Analytics } from "@vercel/analytics/react";
 
 export const metadata: Metadata = {
   title: "SynthForce | HR for AI Agents - Manage Your Synthetic Workforce",
@@ -23,6 +23,7 @@ export default function RootLayout({
     <html lang="en" className={cn(inter.variable, inter.className)}>
       <body>
         {children}
+        <Analytics />
         <Footer />
         <Script src="https://tally.so/widgets/embed.js" strategy="afterInteractive" />
       </body>
