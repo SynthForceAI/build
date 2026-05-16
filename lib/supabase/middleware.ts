@@ -1,6 +1,6 @@
 /**
  * Refreshes the Supabase auth session on every request that passes through
- * Next.js middleware. Without this, cookies expire and protected routes
+ * Next.js proxy. Without this, cookies expire and protected routes
  * start 401-ing intermittently.
  */
 import { createServerClient } from "@supabase/ssr";
