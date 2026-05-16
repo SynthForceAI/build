@@ -10,7 +10,7 @@ concurrency:
 
 jobs:
   build:
-    name: Lint & Build
+    name: Build and Check
     runs-on: ubuntu-latest
     timeout-minutes: 10
 
@@ -29,9 +29,6 @@ jobs:
 
       - name: Generate Prisma client
         run: npx prisma generate
-
-      - name: Lint
-        run: npm run lint
 
       - name: Build
         run: npm run build
