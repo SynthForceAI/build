@@ -30,7 +30,12 @@ export async function PATCH(request: Request) {
     const data = CompanyUpdateSchema.parse(await request.json());
     const company = await prisma.company.update({
       where: { id: user.companyId },
-      data,
+      data: {
+        name:             data.name,
+        slug:             data.slug,
+        subscriptionTier: data.subscriptionTier,
+        settings:         data.settings as object | undefined,
+      },
     });
     return NextResponse.json({ company });
   } catch (err) {
