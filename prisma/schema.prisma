@@ -1,0 +1,509 @@
+// SynthForce — Prisma schema
+// Implements the data model described in docs/architecture.md (full platform)
+// and docs/BACKEND.md (this session — audit + platform integration).
+// PostgreSQL on Supabase.
+
+generator client {
+  provider      = "prisma-client-js"
+  binaryTargets = ["native", "rhel-openssl-3.0.x"]
+}
+
+datasource db {
+  provider  = "postgresql"
+  // Pooled connection used by the application (PgBouncer / Supabase pooler).
+  url       = env("DATABASE_URL")
+  // Direct connection used only by `prisma migrate` (no pooling, IPv4).
+  directUrl = env("DIRECT_URL")
+}
+
+// ---------------------------------------------------------------------------
+// Tenancy + identity
+// ---------------------------------------------------------------------------
+
+model Company {
+  id               String           @id @default(uuid()) @db.Uuid
+  name             String           @db.VarChar(255)
+  slug             String           @unique @db.VarChar(100)
+  subscriptionTier SubscriptionTier @default(free) @map("subscription_tier")
+  settings         Json             @default("{}")
+  isActive         Boolean          @default(true) @map("is_active")
+  createdAt        DateTime         @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt        DateTime         @updatedAt @map("updated_at") @db.Timestamptz(6)
+
+  users        User[]
+  departments  Department[]
+  agents       Agent[]
+  policies     Policy[]
+  budgetAlerts BudgetAlert[]
+  apiKeys      ApiKey[]
+  usageLogs    UsageLog[]
+  audits       Audit[]
+
+  @@map("companies")
+}
+
+enum SubscriptionTier {
+  free
+  starter
+  team
+  enterprise
+
+  @@map("subscription_tier")
+}
+
+// `id` matches Supabase `auth.users.id` exactly. We mirror the auth row here
+// so we can attach company_id, role, and other domain data without joining
+// across schemas on every request.
+model User {
+  id          String    @id @db.Uuid
+  companyId   String    @map("company_id") @db.Uuid
+  email       String    @db.VarChar(255)
+  name        String    @db.VarChar(255)
+  role        UserRole  @default(member)
+  avatarUrl   String?   @map("avatar_url") @db.VarChar(500)
+  lastLoginAt DateTime? @map("last_login_at") @db.Timestamptz(6)
+  createdAt   DateTime  @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt   DateTime  @updatedAt @map("updated_at") @db.Timestamptz(6)
+
+  company            Company       @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  managedAgents      Agent[]       @relation("AgentManager")
+  createdPolicies    Policy[]      @relation("PolicyCreator")
+  acknowledgedAlerts BudgetAlert[] @relation("AlertAcknowledger")
+  initiatedAudits    Audit[]       @relation("AuditInitiator")
+
+  @@unique([companyId, email])
+  @@index([companyId])
+  @@map("users")
+}
+
+enum UserRole {
+  owner
+  admin
+  member
+  viewer
+
+  @@map("user_role")
+}
+
+// ---------------------------------------------------------------------------
+// Org structure
+// ---------------------------------------------------------------------------
+
+model Department {
+  id                 String   @id @default(uuid()) @db.Uuid
+  companyId          String   @map("company_id") @db.Uuid
+  name               String   @db.VarChar(255)
+  description        String?
+  monthlyBudgetCents BigInt   @default(0) @map("monthly_budget_cents")
+  createdAt          DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt          DateTime @updatedAt @map("updated_at") @db.Timestamptz(6)
+
+  company      Company       @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  agents       Agent[]
+  policies     Policy[]      @relation("PolicyScope")
+  budgetAlerts BudgetAlert[]
+
+  @@unique([companyId, name])
+  @@index([companyId])
+  @@map("departments")
+}
+
+// ---------------------------------------------------------------------------
+// Providers + models (seeded; not customer-editable)
+// ---------------------------------------------------------------------------
+
+model Provider {
+  id          String   @id @default(uuid()) @db.Uuid
+  name        String   @unique @db.VarChar(100)
+  displayName String   @map("display_name") @db.VarChar(255)
+  apiBaseUrl  String?  @map("api_base_url") @db.VarChar(500)
+  isActive    Boolean  @default(true) @map("is_active")
+  createdAt   DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+
+  models    ProviderModel[]
+  agents    Agent[]
+  usageLogs UsageLog[]
+  apiKeys   ApiKey[]
+
+  @@map("providers")
+}
+
+model ProviderModel {
+  id                  String   @id @default(uuid()) @db.Uuid
+  providerId          String   @map("provider_id") @db.Uuid
+  modelId             String   @map("model_id") @db.VarChar(255)
+  displayName         String   @map("display_name") @db.VarChar(255)
+  // Per-token pricing. NUMERIC(20,10) gives us 10 fractional digits of cents,
+  // enough for any current provider's pricing granularity.
+  inputPricePerToken  Decimal  @default(0) @map("input_price_per_token") @db.Decimal(20, 10)
+  outputPricePerToken Decimal  @default(0) @map("output_price_per_token") @db.Decimal(20, 10)
+  contextWindow       Int      @default(128000) @map("context_window")
+  isActive            Boolean  @default(true) @map("is_active")
+  createdAt           DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+
+  provider  Provider   @relation(fields: [providerId], references: [id], onDelete: Cascade)
+  agents    Agent[]
+  usageLogs UsageLog[]
+
+  @@unique([providerId, modelId])
+  @@map("provider_models")
+}
+
+// ---------------------------------------------------------------------------
+// Agents — core domain entity of the FULL PLATFORM (paid product).
+// Not the same as DiscoveredAgent (which is an inferred bucket from
+// aggregate billing data during a free audit). See docs/BACKEND.md.
+// ---------------------------------------------------------------------------
+
+model Agent {
+  id                      String      @id @default(uuid()) @db.Uuid
+  companyId               String      @map("company_id") @db.Uuid
+  departmentId            String?     @map("department_id") @db.Uuid
+  name                    String      @db.VarChar(255)
+  description             String?
+  status                  AgentStatus @default(active)
+  providerId              String?     @map("provider_id") @db.Uuid
+  modelId                 String?     @map("model_id") @db.Uuid
+  apiKeyId                String?     @map("api_key_id") @db.Uuid
+  monthlyBudgetCents      BigInt      @default(50000) @map("monthly_budget_cents") // $500
+  currentMonthSpendCents  BigInt      @default(0) @map("current_month_spend_cents")
+  totalLifetimeSpendCents BigInt      @default(0) @map("total_lifetime_spend_cents")
+  totalTokensIn           BigInt      @default(0) @map("total_tokens_in")
+  totalTokensOut          BigInt      @default(0) @map("total_tokens_out")
+  // PII toggle. Default false = log only metadata (tokens/cost/status/model).
+  // Customer can opt in per-agent to capture prompt + response for debugging.
+  logFullContent          Boolean     @default(false) @map("log_full_content")
+  managedBy               String?     @map("managed_by") @db.Uuid
+  metadata                Json        @default("{}")
+  lastActiveAt            DateTime?   @map("last_active_at") @db.Timestamptz(6)
+  createdAt               DateTime    @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt               DateTime    @updatedAt @map("updated_at") @db.Timestamptz(6)
+
+  company           Company            @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  department        Department?        @relation(fields: [departmentId], references: [id], onDelete: SetNull)
+  provider          Provider?          @relation(fields: [providerId], references: [id])
+  model             ProviderModel?     @relation(fields: [modelId], references: [id])
+  apiKey            ApiKey?            @relation(fields: [apiKeyId], references: [id])
+  manager           User?              @relation("AgentManager", fields: [managedBy], references: [id], onDelete: SetNull)
+  usageLogs         UsageLog[]
+  policyAssignments PolicyAssignment[]
+  budgetAlerts      BudgetAlert[]
+
+  @@index([companyId])
+  @@index([departmentId])
+  @@index([status])
+  @@index([providerId])
+  @@map("agents")
+}
+
+enum AgentStatus {
+  active
+  paused
+  deactivated
+  flagged
+
+  @@map("agent_status")
+}
+
+// ---------------------------------------------------------------------------
+// Usage logs — high write volume. Consider partitioning by month at scale.
+// Populated by the proxy (Phase 2 of full platform).
+// ---------------------------------------------------------------------------
+
+model UsageLog {
+  id           String   @id @default(uuid()) @db.Uuid
+  companyId    String   @map("company_id") @db.Uuid
+  agentId      String   @map("agent_id") @db.Uuid
+  providerId   String   @map("provider_id") @db.Uuid
+  modelId      String?  @map("model_id") @db.Uuid
+  // Only populated when the parent Agent has log_full_content = true.
+  promptText   String?  @map("prompt_text")
+  responseText String?  @map("response_text")
+  tokensIn     Int      @default(0) @map("tokens_in")
+  tokensOut    Int      @default(0) @map("tokens_out")
+  costCents    Decimal  @default(0) @map("cost_cents") @db.Decimal(20, 6)
+  durationMs   Int?     @map("duration_ms")
+  endpoint     String?  @db.VarChar(255)
+  statusCode   Int?     @map("status_code")
+  wasBlocked   Boolean  @default(false) @map("was_blocked")
+  policyId     String?  @map("policy_id") @db.Uuid
+  metadata     Json     @default("{}")
+  createdAt    DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+
+  company         Company        @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  agent           Agent          @relation(fields: [agentId], references: [id], onDelete: Cascade)
+  provider        Provider       @relation(fields: [providerId], references: [id])
+  model           ProviderModel? @relation(fields: [modelId], references: [id])
+  blockedByPolicy Policy?        @relation(fields: [policyId], references: [id])
+
+  @@index([companyId])
+  @@index([agentId])
+  @@index([createdAt(sort: Desc)])
+  @@index([companyId, createdAt(sort: Desc)])
+  @@map("usage_logs")
+}
+
+// ---------------------------------------------------------------------------
+// Policies — guardrails enforced by the proxy (full platform)
+// ---------------------------------------------------------------------------
+
+model Policy {
+  id                String         @id @default(uuid()) @db.Uuid
+  companyId         String         @map("company_id") @db.Uuid
+  name              String         @db.VarChar(255)
+  description       String?
+  ruleDefinition    Json           @map("rule_definition")
+  severity          PolicySeverity @default(warning)
+  scope             PolicyScope    @default(global)
+  scopeDepartmentId String?        @map("scope_department_id") @db.Uuid
+  isActive          Boolean        @default(true) @map("is_active")
+  createdBy         String?        @map("created_by") @db.Uuid
+  createdAt         DateTime       @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt         DateTime       @updatedAt @map("updated_at") @db.Timestamptz(6)
+
+  company          Company            @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  scopeDepartment  Department?        @relation("PolicyScope", fields: [scopeDepartmentId], references: [id], onDelete: Cascade)
+  creator          User?              @relation("PolicyCreator", fields: [createdBy], references: [id], onDelete: SetNull)
+  assignments      PolicyAssignment[]
+  blockedUsageLogs UsageLog[]
+
+  @@unique([companyId, name])
+  @@index([companyId])
+  @@map("policies")
+}
+
+enum PolicySeverity {
+  warning
+  block
+  flag
+  log
+
+  @@map("policy_severity")
+}
+
+enum PolicyScope {
+  global
+  department
+  agent
+
+  @@map("policy_scope")
+}
+
+model PolicyAssignment {
+  id         String   @id @default(uuid()) @db.Uuid
+  policyId   String   @map("policy_id") @db.Uuid
+  agentId    String   @map("agent_id") @db.Uuid
+  assignedAt DateTime @default(now()) @map("assigned_at") @db.Timestamptz(6)
+
+  policy Policy @relation(fields: [policyId], references: [id], onDelete: Cascade)
+  agent  Agent  @relation(fields: [agentId], references: [id], onDelete: Cascade)
+
+  @@unique([policyId, agentId])
+  @@map("policy_assignments")
+}
+
+// ---------------------------------------------------------------------------
+// Budget alerts
+// ---------------------------------------------------------------------------
+
+model BudgetAlert {
+  id                String          @id @default(uuid()) @db.Uuid
+  companyId         String          @map("company_id") @db.Uuid
+  agentId           String?         @map("agent_id") @db.Uuid
+  departmentId      String?         @map("department_id") @db.Uuid
+  alertType         BudgetAlertType @map("alert_type")
+  thresholdCents    BigInt          @map("threshold_cents")
+  currentSpendCents BigInt          @map("current_spend_cents")
+  message           String?
+  acknowledged      Boolean         @default(false)
+  acknowledgedBy    String?         @map("acknowledged_by") @db.Uuid
+  createdAt         DateTime        @default(now()) @map("created_at") @db.Timestamptz(6)
+
+  company            Company     @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  agent              Agent?      @relation(fields: [agentId], references: [id], onDelete: Cascade)
+  department         Department? @relation(fields: [departmentId], references: [id], onDelete: Cascade)
+  acknowledgedByUser User?       @relation("AlertAcknowledger", fields: [acknowledgedBy], references: [id])
+
+  @@index([companyId, createdAt(sort: Desc)])
+  @@map("budget_alerts")
+}
+
+enum BudgetAlertType {
+  budget_80pct
+  budget_100pct
+  budget_exceeded
+  anomaly
+
+  @@map("budget_alert_type")
+}
+
+// ---------------------------------------------------------------------------
+// Provider API keys — stored encrypted (AES-256-GCM), never returned raw.
+// `deletedAt` supports the audit's "soft-delete key after audit completes"
+// privacy guarantee (see docs/BACKEND.md "API key lifecycle").
+// ---------------------------------------------------------------------------
+
+model ApiKey {
+  id            String    @id @default(uuid()) @db.Uuid
+  companyId     String    @map("company_id") @db.Uuid
+  providerId    String    @map("provider_id") @db.Uuid
+  label         String?   @db.VarChar(255)
+  encryptedKey  String    @map("encrypted_key")
+  keyIdentifier String?   @map("key_identifier") @db.VarChar(100)
+  isActive      Boolean   @default(true) @map("is_active")
+  // When set, the key has been soft-deleted by the audit privacy flow.
+  // The row is retained for FK integrity with audits.api_key_id; the
+  // encrypted_key column should be zeroed via the soft-delete path.
+  deletedAt     DateTime? @map("deleted_at") @db.Timestamptz(6)
+  createdAt     DateTime  @default(now()) @map("created_at") @db.Timestamptz(6)
+
+  company  Company  @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  provider Provider @relation(fields: [providerId], references: [id])
+  agents   Agent[]
+  audits   Audit[]
+
+  @@unique([companyId, providerId, label])
+  @@index([companyId])
+  @@map("api_keys")
+}
+
+// ---------------------------------------------------------------------------
+// Free Agent Audit (wedge / lead-gen product)
+// ---------------------------------------------------------------------------
+//
+// Lifecycle:
+//   1. User connects an OpenAI key   → ApiKey row created (encrypted).
+//   2. User clicks "Run audit"       → Audit row created, status='pending'.
+//   3. Worker picks up pending audit → status='processing', begins puller.
+//   4. Puller fetches OpenAI billing → raw JSON saved to AuditRawLog.
+//   5. Engine computes metrics       → AuditFinding + DiscoveredAgent rows.
+//   6. LLM writes the report         → report_summary + status='completed'.
+//   7. If user opted in              → soft-delete the ApiKey row.
+//
+// "DiscoveredAgent" is intentionally NOT the same entity as the managed
+// `Agent` (full platform). OpenAI's billing API only gives aggregates by
+// model — we can never resolve to a true per-agent breakdown from billing
+// data alone (Charlie's observation, see business/mvp_brainstorming_agenda.md).
+// DiscoveredAgent buckets calls by model (and optionally by request-metadata
+// hints) for display only.
+// ---------------------------------------------------------------------------
+
+model Audit {
+  id                     String      @id @default(uuid()) @db.Uuid
+  companyId              String      @map("company_id") @db.Uuid
+  initiatedBy            String      @map("initiated_by") @db.Uuid
+  apiKeyId               String?     @map("api_key_id") @db.Uuid
+  status                 AuditStatus @default(pending)
+  // Window of usage data analyzed (typically 30 days back from creation).
+  dataPeriodStart        DateTime?   @map("data_period_start") @db.Timestamptz(6)
+  dataPeriodEnd          DateTime?   @map("data_period_end") @db.Timestamptz(6)
+  // Summary metrics surfaced on the dashboard card.
+  totalMonthlySpendCents BigInt?     @map("total_monthly_spend_cents")
+  estimatedWasteCents    BigInt?     @map("estimated_waste_cents")
+  efficiencyScore        Decimal?    @map("efficiency_score") @db.Decimal(5, 2)
+  totalApiCalls          Int?        @map("total_api_calls")
+  totalTokensIn          BigInt?     @map("total_tokens_in")
+  totalTokensOut         BigInt?     @map("total_tokens_out")
+  // Full structured report (model breakdown, findings JSON, spend-by-day).
+  reportData             Json?       @map("report_data")
+  // LLM-generated business-English report. Markdown-ish plain text.
+  reportSummary          String?     @map("report_summary")
+  errorMessage           String?     @map("error_message")
+  createdAt              DateTime    @default(now()) @map("created_at") @db.Timestamptz(6)
+  startedAt              DateTime?   @map("started_at") @db.Timestamptz(6)
+  completedAt            DateTime?   @map("completed_at") @db.Timestamptz(6)
+
+  company          Company           @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  initiator        User              @relation("AuditInitiator", fields: [initiatedBy], references: [id], onDelete: Cascade)
+  apiKey           ApiKey?           @relation(fields: [apiKeyId], references: [id], onDelete: SetNull)
+  findings         AuditFinding[]
+  discoveredAgents DiscoveredAgent[]
+  rawLogs          AuditRawLog[]
+
+  @@index([companyId, createdAt(sort: Desc)])
+  @@index([status, createdAt])
+  @@map("audits")
+}
+
+enum AuditStatus {
+  pending
+  processing
+  completed
+  failed
+  cancelled
+
+  @@map("audit_status")
+}
+
+model AuditFinding {
+  id                    String          @id @default(uuid()) @db.Uuid
+  auditId               String          @map("audit_id") @db.Uuid
+  type                  FindingType
+  severity              FindingSeverity @default(info)
+  title                 String          @db.VarChar(255)
+  description           String
+  potentialSavingsCents BigInt?         @map("potential_savings_cents")
+  metadata              Json            @default("{}")
+  orderHint             Int             @default(0) @map("order_hint")
+
+  audit Audit @relation(fields: [auditId], references: [id], onDelete: Cascade)
+
+  @@index([auditId])
+  @@map("audit_findings")
+}
+
+enum FindingType {
+  model_optimization
+  idle_cost
+  cost_spike
+  provider_comparison
+  benchmark
+  spend_trend
+  underuse
+
+  @@map("finding_type")
+}
+
+enum FindingSeverity {
+  info
+  low
+  medium
+  high
+  critical
+
+  @@map("finding_severity")
+}
+
+model DiscoveredAgent {
+  id               String   @id @default(uuid()) @db.Uuid
+  auditId          String   @map("audit_id") @db.Uuid
+  // "Agent name" here is a best-effort label — the model id by default,
+  // or a hint pulled from request metadata if the customer tagged their calls.
+  name             String   @db.VarChar(255)
+  model            String   @db.VarChar(255)
+  providerName     String   @map("provider_name") @db.VarChar(100)
+  tasksCompleted   Int      @default(0) @map("tasks_completed")
+  totalCostCents   BigInt   @default(0) @map("total_cost_cents")
+  totalTokensIn    BigInt   @default(0) @map("total_tokens_in")
+  totalTokensOut   BigInt   @default(0) @map("total_tokens_out")
+  efficiencyRating String   @default("unknown") @map("efficiency_rating") @db.VarChar(20) // 'good' | 'fair' | 'poor' | 'unknown'
+  details          Json     @default("{}")
+
+  audit Audit @relation(fields: [auditId], references: [id], onDelete: Cascade)
+
+  @@index([auditId])
+  @@map("discovered_agents")
+}
+
+model AuditRawLog {
+  id          String   @id @default(uuid()) @db.Uuid
+  auditId     String   @map("audit_id") @db.Uuid
+  source      String   @db.VarChar(100) // 'openai_billing_usage' | 'openai_models' | etc.
+  rawResponse Json     @map("raw_response")
+  createdAt   DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+
+  audit Audit @relation(fields: [auditId], references: [id], onDelete: Cascade)
+
+  @@index([auditId])
+  @@map("audit_raw_logs")
+}
