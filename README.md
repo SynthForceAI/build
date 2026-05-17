@@ -39,6 +39,11 @@ PRs run lint + build via GitHub Actions (`.github/workflows/ci.yml`) before they
 
 Internal repo — open a PR against the branch you forked from (typically `nextjs-migration`), wait for CI green, then merge. See [CLAUDE.md](./CLAUDE.md) for conventions, branching model, and deeper context.
 
+## Notes when Developing
+Please run local builds first before pushing. Easier to debug and pass CI checks this way.
+- `npm run build`
+- `npm run dev`
+
 ## Ownership
 
 Proprietary. © SynthForce AI Inc. See `COPYRIGHT`.
