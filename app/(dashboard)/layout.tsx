@@ -41,17 +41,28 @@ export default async function DashboardLayout({
   //   - Session exists but no `users` row in the DB (onboarding incomplete)
   // Both cases should redirect to login. Any other error is unexpected and
   // gets re-thrown so Next.js can show an error boundary.
-  let authCtx;
-  try {
-    authCtx = await requireUser();
-  } catch (err) {
-    if (err instanceof ApiError && err.status === 401) {
-      redirect("/"); // TODO: change to "/login" once that page is built
-    }
-    throw err;
-  }
 
-  const { user } = authCtx;
+  // ── TEMP: hardcoded user — restore real auth before merging to nextjs-migration ──
+  // To restore: delete the `const user = {...}` block below and uncomment
+  // the try/catch block. Also un-comment the imports at the top of the file
+  // (redirect, requireUser, ApiError).
+  //
+  // try {
+  //   const { user: _user } = await requireUser();
+  //   user = _user;
+  // } catch (err) {
+  //   if (err instanceof ApiError && err.status === 401) {
+  //     redirect("/"); // change to "/login" once that page exists
+  //   }
+  //   throw err;
+  // }
+  const user = {
+    name: "Dev User",
+    email: "dev@test.com",
+    role: "owner" as const,
+    companyId: "test-company-id",
+  };
+  // ── END TEMP ──────────────────────────────────────────────────────────
 
   // ── Shell layout ───────────────────────────────────────────────────────
   return (
