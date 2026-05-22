@@ -6,8 +6,8 @@ export default function LoginPage() {
       {/* Left side — branding + value props */}
       <div className="hidden lg:flex lg:w-1/2 flex-col justify-between p-16 bg-[#0D0D0D] border-r border-[#1a1a1a]">
         <div>
-          <div className="flex items-center gap-3 mb-16">
-            <img src="/assets/logo-white.png" className="h-36 w-auto object-contain" alt="SynthForce" />
+          <div className="mb-16">
+            <img src="/assets/logo-white.png" className="w-full max-w-md object-contain" alt="SynthForce" />
           </div>
           <h2 className="text-3xl font-bold text-[#EDEDED] leading-tight mb-4">
             Welcome back to the
@@ -17,15 +17,19 @@ export default function LoginPage() {
           <ul className="space-y-4 mt-10">
             <li className="flex items-start gap-3 text-[#A1A1AA]">
               <span className="text-[#00B2FF] mt-1">▸</span>
-              <span>Monitor agent spend and activity at a glance</span>
+              <span>Track every AI agent's performance and cost in real time</span>
             </li>
             <li className="flex items-start gap-3 text-[#A1A1AA]">
               <span className="text-[#00B2FF] mt-1">▸</span>
-              <span>Review past audits and track improvements over time</span>
+              <span>Set budgets and policies that agents follow automatically</span>
             </li>
             <li className="flex items-start gap-3 text-[#A1A1AA]">
               <span className="text-[#00B2FF] mt-1">▸</span>
-              <span>Manage policies, budgets, and team access in one place</span>
+              <span>Get plain-English reports on exactly where your spend is going</span>
+            </li>
+            <li className="flex items-start gap-3 text-[#A1A1AA]">
+              <span className="text-[#00B2FF] mt-1">▸</span>
+              <span>Free audit shows you how much you're wasting — before you commit</span>
             </li>
           </ul>
         </div>
