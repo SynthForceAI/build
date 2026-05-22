@@ -1,0 +1,595 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="SynthForce is the HR platform for AI agents. Onboard, measure, and govern your synthetic workforce - without code or jargon. Built for business leaders, not engineers.">
+    <title>SynthForce | HR for AI Agents - Manage Your Synthetic Workforce</title>
+    <link rel="icon" type="image/x-icon" href="../assets/favicon.ico">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        void: '#000000',
+                        paper: '#FFFFFF',
+                        subtle: '#e5e5e5',
+                        accent: '#00B2FF' 
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                        mono: ['ui-monospace', 'SFMono-Regular', 'Menlo', 'Monaco', 'Consolas', 'monospace']
+                    },
+                    backgroundImage: {
+                        'grid': "url(\"data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32' width='32' height='32' fill='none' stroke='%23e5e5e5' stroke-opacity='0.1'%3e%3cpath d='M0 .5H31.5V32'/%3e%3c/svg%3e\")",
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body { background-color: #ffffff; color: #1a1a1a; font-family: 'Inter', sans-serif; overflow-x: hidden; scroll-behavior: smooth; }
+        .hero-title { letter-spacing: -0.02em; line-height: 1.1; }
+        .btn-primary {
+            background: #00B2FF; color: #fff; border: 1px solid #00B2FF;
+            transition: all 0.2s ease;
+            border-radius: 8px;
+        }
+        .btn-primary:hover {
+            background: transparent; color: #00B2FF;
+        }
+        .logo-hero {
+            max-height: 80vh;
+        }
+        @media (max-width: 768px) {
+            .logo-hero {
+                max-height: 50vh;
+            }
+        }
+        .integration-card {
+            background: white;
+            border: 1px solid #e5e5e5;
+            border-radius: 1rem;
+            padding: 1.5rem;
+            text-align: center;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+        }
+        .integration-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 12px 20px -4px rgba(0, 0, 0, 0.1);
+            border-color: transparent;
+        }
+
+            .scene {
+            transition: transform 0.5s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.4s ease;
+        }
+</style>
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "Organization",
+      "name": "SynthForce",
+      "url": "https://www.synthforceai.com",
+      "logo": "../assets/logo_homepage_rectangle.png",
+      "description": "HR platform for AI agents. Onboard, measure, and govern your synthetic workforce.",
+      "sameAs": [
+        "https://github.com/samarthkamblisk-glitch/project-synth"
+      ]
+    }
+    </script>
+<script defer src="https://cdn.vercel-insights.com/v1/script.js"></script></head>
+<body class="min-h-screen flex flex-col relative bg-white">
+
+
+
+    <!-- Nav -->
+    <nav class="fixed top-0 w-full z-50 border-b border-subtle bg-white/80 backdrop-blur-md">
+        <div class="container mx-auto px-6 h-16 flex items-center justify-between">
+            <div class="flex items-center gap-3">
+                <a href="/">
+                    <img src="../assets/logo_top_corner.png" class="h-8 max-h-8 w-auto object-contain" alt="SynthForce Logo">
+                </a>
+            </div>
+            <!-- Desktop Navigation -->
+            <div class="hidden md:flex gap-8 text-sm font-sans text-gray-600">
+                <a href="/" class="hover:text-gray-900">Home</a>
+                <a href="/product" class="hover:text-gray-900">Product</a>
+                <a href="/demo" class="hover:text-gray-900">Demo</a>
+                <a href="/blog" class="hover:text-gray-900">Blog</a>
+                <a href="/about" class="hover:text-gray-900">About</a>
+                <a href="/waitlistsignup" class="text-gray-900 hover:underline decoration-1 underline-offset-4">Waitlist →</a>
+            </div>
+            <!-- Mobile Hamburger -->
+            <button id="mobile-menu-toggle" class="md:hidden text-gray-700">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
+                </svg>
+            </button>
+        </div>
+        <!-- Mobile Menu (hidden by default) -->
+        <div id="mobile-menu" class="md:hidden hidden bg-white border-t border-subtle px-6 py-4">
+            <div class="flex flex-col gap-4 text-sm font-sans text-gray-600">
+                <a href="/" class="py-2 hover:text-gray-900">Home</a>
+                <a href="/product" class="py-2 hover:text-gray-900">Product</a>
+                <a href="/demo" class="py-2 hover:text-gray-900">Demo</a>
+                <a href="/blog" class="py-2 hover:text-gray-900">Blog</a>
+                <a href="/about" class="py-2 hover:text-gray-900">About</a>
+                <a href="/waitlistsignup" class="py-2 text-gray-900 font-medium">Waitlist →</a>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Hero -->    <main class="flex-grow pt-24 pb-20 container mx-auto px-6">
+        <div class="max-w-6xl mx-auto">
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 md:gap-16 items-center">
+                <!-- Left Column: Text -->
+                <div class="text-left flex flex-col justify-center relative z-10">
+
+                    <h1 class="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-bold mb-6 text-gray-900 leading-tight">
+                        Manage your AI agents like employees.
+                    </h1>
+                    <p class="text-lg sm:text-xl text-gray-600 mb-10 max-w-xl font-semibold">
+                        This isn't AI for HR. This is HR for AI.
+                    </p>
+                </div>
+
+                <!-- Right Column: Large Logo -->
+                <div class="flex flex-col items-center justify-center space-y-8">
+                    <img src="/assets/logo_homepage.png" class="h-48 md:h-64 w-auto object-contain max-w-full" alt="SynthForce">
+                    <div class="flex flex-col sm:flex-row gap-4">
+                        <a href="#waitlist" class="btn-primary px-8 py-4 font-sans font-semibold text-sm uppercase rounded-lg">
+                            Join Waitlist
+                        </a>
+                        <a href="/product" class="px-8 py-4 font-sans font-semibold text-sm uppercase border border-subtle rounded-lg hover:border-gray-900 transition text-center">
+                            Product
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Demo + Interactive Story -->
+    <section class="pt-16 pb-2 md:pt-20 pb-4 bg-gray-50">
+        <div class="container mx-auto px-6">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-10 md:gap-16 items-center">
+
+                <!-- Left: Text and CTA -->
+                <div class="text-center">
+                    <h2 class="text-3xl md:text-4xl font-bold text-gray-900 mb-4">Managing your workforce shouldn't need tech knowledge</h2>
+                    <p class="text-xl text-gray-600 mb-8">
+                        Explore our demo to see how you can onboard, measure, and govern your AI workforce - no code required.
+                    </p>
+                    <a href="/demo" class="inline-block bg-accent hover:bg-blue-700 text-white font-semibold px-8 py-4 rounded-xl shadow-sm transition">
+                        Launch Demo
+                    </a>
+                    <p class="mt-4 text-sm text-gray-500">
+                        Takes less than 2 minutes. No sign-up needed.
+                    </p>
+                </div>
+
+                <!-- Right: Collapsed slides -->
+                <div class="bg-white border border-gray-200 rounded-3xl shadow-lg relative overflow-hidden" style="min-height: 480px;">
+
+                    <!-- Scene 1: Agent failing -->
+                    <div class="scene" style="position: absolute; top: 0; right: 0; bottom: 0; left: 0; display: flex; flex-direction: column; justify-content: center; align-items: center; padding: 1.5rem; opacity: 1; z-index: 10;">
+                        <div class="w-full max-w-md text-center">
+                            <div class="inline-flex items-center gap-1.5 bg-red-50 border border-red-200 rounded-full px-3.5 py-1.5 text-xs text-red-600 font-medium mb-3">
+                                <span class="w-1.5 h-1.5 bg-red-500 rounded-full animate-pulse"></span>
+                                Agent trouble detected
+                            </div>
+                            <h3 class="text-lg md:text-xl font-bold text-gray-900 mb-2">Your support agent is struggling</h3>
+                            <p class="text-sm md:text-base text-gray-600 mb-4 max-w-sm mx-auto">
+                                Customer satisfaction dropped 40% in one day. The agent is deflecting.
+                            </p>
+                            <div class="bg-gray-50 border border-gray-200 rounded-xl p-3.5 text-left max-w-sm mx-auto mb-4">
+                                <div class="font-mono text-xs text-gray-500 mb-1.5 uppercase tracking-wider">support_bot_v3 &middot; Active</div>
+                                <div class="space-y-1.5">
+                                    <div class="flex justify-between text-xs">
+                                        <span class="text-gray-600">Customer sat.</span>
+                                        <span class="text-red-500 font-semibold">58% <span class="text-xs text-red-400">(down 40%)</span></span>
+                                    </div>
+                                    <div class="flex justify-between text-xs">
+                                        <span class="text-gray-600">Avg. resolution time</span>
+                                        <span class="text-red-500 font-semibold">12.4 min <span class="text-xs text-red-400">(up 280%)</span></span>
+                                    </div>
+                                    <div class="flex justify-between text-xs">
+                                        <span class="text-gray-600">Escalation rate</span>
+                                        <span class="text-red-500 font-semibold">67% <span class="text-xs text-red-400">(up 45%)</span></span>
+                                    </div>
+                                </div>
+                            </div>
+                            <button onclick="showScene(1)" class="inline-flex items-center gap-1.5 bg-accent hover:bg-blue-700 text-white font-semibold text-sm px-5 py-2.5 rounded-lg shadow-sm transition">
+                                View performance report
+                                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Scene 2: HR record -->
+                    <div class="scene" style="position: absolute; top: 0; right: 0; bottom: 0; left: 0; display: flex; flex-direction: column; justify-content: center; align-items: center; padding: 1.5rem; opacity: 0; z-index: 1;">
+                        <div class="w-full max-w-md text-center">
+                            <div class="inline-flex items-center gap-1.5 bg-blue-50 border border-blue-200 rounded-full px-3.5 py-1.5 text-xs text-blue-600 font-medium mb-3">
+                                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg>
+                                SynthForce insight
+                            </div>
+                            <h3 class="text-lg md:text-xl font-bold text-gray-900 mb-2">Open its HR record</h3>
+                            <p class="text-sm md:text-base text-gray-600 mb-4 max-w-sm mx-auto">
+                                One click. The business manager opens the agent performance review like any employee record.
+                            </p>
+                            <div class="bg-gray-50 border border-gray-200 rounded-xl p-3.5 text-left max-w-sm mx-auto mb-4">
+                                <div class="font-mono text-xs text-gray-500 mb-1.5 uppercase tracking-wider">Agent: support_bot_v3</div>
+                                <div class="w-full bg-gray-200 rounded-full h-2 mb-1.5">
+                                    <div class="bg-yellow-400 h-2 rounded-full" style="width: 42%"></div>
+                                </div>
+                                <div class="text-xs text-gray-700 font-medium">Performance score: 42 / 100</div>
+                                <div class="text-xs text-gray-500 mt-1">Last 7 days: declining</div>
+                            </div>
+                            <button onclick="showScene(2)" class="inline-flex items-center gap-1.5 bg-accent hover:bg-blue-700 text-white font-semibold text-sm px-5 py-2.5 rounded-lg shadow-sm transition">
+                                Run auto-diagnosis
+                                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Scene 3: Optimization -->
+                    <div class="scene" style="position: absolute; top: 0; right: 0; bottom: 0; left: 0; display: flex; flex-direction: column; justify-content: center; align-items: center; padding: 1.5rem; opacity: 0; z-index: 1;">
+                        <div class="w-full max-w-md text-center">
+                            <div class="inline-flex items-center gap-1.5 bg-green-50 border border-green-200 rounded-full px-3.5 py-1.5 text-xs text-green-600 font-medium mb-3">
+                                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                                Optimized automatically
+                            </div>
+                            <h3 class="text-lg md:text-xl font-bold text-gray-900 mb-2">SynthForce suggests a fix</h3>
+                            <p class="text-sm md:text-base text-gray-600 mb-4 max-w-sm mx-auto">
+                                The system proposes a configuration update based on the diagnosis.
+                            </p>
+                            <div class="bg-gray-50 border border-gray-200 rounded-xl p-3.5 text-left max-w-sm mx-auto mb-4">
+                                <div class="font-mono text-xs text-gray-500 mb-1.5 uppercase tracking-wider">Auto-diagnosis result</div>
+                                <div class="bg-green-100 text-green-800 text-xs font-medium rounded-lg p-2.5 mb-2 border border-green-200">
+                                    <span class="font-bold">Root cause:</span> Escalation threshold too low. Response style mismatch.
+                                </div>
+                                <div class="flex justify-between items-center">
+                                    <div>
+                                        <div class="text-xs font-semibold text-gray-900">Apply optimization</div>
+                                        <div class="text-xs text-gray-500">One click. No code.</div>
+                                    </div>
+                                    <span class="bg-accent text-white text-xs font-semibold px-3 py-1.5 rounded-lg shadow-sm">Apply fix</span>
+                                </div>
+                            </div>
+                            <button onclick="showScene(3)" class="inline-flex items-center gap-1.5 bg-accent hover:bg-blue-700 text-white font-semibold text-sm px-5 py-2.5 rounded-lg shadow-sm transition">
+                                Apply optimization
+                                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Scene 4: Fixed -->
+                    <div class="scene" style="position: absolute; top: 0; right: 0; bottom: 0; left: 0; display: flex; flex-direction: column; justify-content: center; align-items: center; padding: 1.5rem; opacity: 0; z-index: 1;">
+                        <div class="w-full max-w-md text-center">
+                            <div class="inline-flex items-center gap-1.5 bg-green-50 border border-green-300 rounded-full px-3.5 py-1.5 text-xs text-green-700 font-medium mb-3">
+                                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+                                Agent rescued
+                            </div>
+                            <h3 class="text-lg md:text-xl font-bold text-gray-900 mb-2">Agent is back on track</h3>
+                            <p class="text-sm md:text-base text-gray-600 mb-4 max-w-sm mx-auto">
+                                The business owner clicked one button. The fix was applied in seconds. No developer needed.
+                            </p>
+                            <div class="bg-gray-50 border border-gray-200 rounded-xl p-3.5 text-left max-w-sm mx-auto mb-4">
+                                <div class="font-mono text-xs text-gray-500 mb-1.5 uppercase tracking-wider">support_bot_v3 &middot; Healthy</div>
+                                <div class="space-y-1.5">
+                                    <div class="flex justify-between text-xs">
+                                        <span class="text-gray-600">Customer sat.</span>
+                                        <span class="text-green-500 font-semibold">91% <span class="text-xs text-green-400">(up 33%)</span></span>
+                                    </div>
+                                    <div class="flex justify-between text-xs">
+                                        <span class="text-gray-600">Avg. resolution time</span>
+                                        <span class="text-green-500 font-semibold">3.2 min <span class="text-xs text-green-400">(down 9.2 min)</span></span>
+                                    </div>
+                                    <div class="flex justify-between text-xs">
+                                        <span class="text-gray-600">Escalation rate</span>
+                                        <span class="text-green-500 font-semibold">22% <span class="text-xs text-green-400">(down 45%)</span></span>
+                                    </div>
+                                </div>
+                                <div class="mt-2 pt-2 border-t border-gray-200 text-xs text-gray-400">
+                                    Fixed by: Automated optimization. 2.4 seconds.
+                                </div>
+                            </div>
+                            <button onclick="showScene(0)" class="inline-flex items-center gap-1.5 bg-gray-700 hover:bg-gray-800 text-white font-semibold text-sm px-5 py-2.5 rounded-lg shadow-sm transition">
+                                Watch again
+                                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Dots -->
+                    <div class="absolute bottom-4 left-0 right-0 flex justify-center gap-2 z-20">
+                        <span class="dot w-2.5 h-2.5 rounded-full" style="background-color: #00B2FF;"></span>
+                        <span class="dot w-2.5 h-2.5 rounded-full" style="background-color: #D1D5DB;"></span>
+                        <span class="dot w-2.5 h-2.5 rounded-full" style="background-color: #D1D5DB;"></span>
+                        <span class="dot w-2.5 h-2.5 rounded-full" style="background-color: #D1D5DB;"></span>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+    </section>
+
+<!-- The Problem -->
+        <section id="problem" class="pt-12 md:pt-20 mb-32">
+            <h2 class="text-center text-4xl font-bold mb-12">The Problem</h2>
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-5xl mx-auto">
+                <!-- Traditional Monitoring -->
+                <div class="bg-white border border-subtle p-8 rounded-2xl shadow-sm hover:-translate-y-2 transition-transform duration-300">
+                    <div class="text-xs font-mono text-gray-500 mb-2 uppercase">Infrastructure‑only tools</div>
+                    <div class="font-mono text-sm text-gray-700 mb-4">CPU: 5%, RAM: 2GB, Latency: 200ms</div>
+                    <h3 class="text-xl font-bold mb-2 text-gray-900">They see servers, not agents.</h3>
+                    <p class="text-gray-600 text-sm">They track hardware metrics, not agent performance, cost, or business impact.</p>
+                </div>
+
+                <!-- Synthforce HR -->
+                <div class="bg-white border border-subtle p-8 rounded-2xl shadow-sm relative overflow-hidden hover:-translate-y-2 transition-transform duration-300">
+                    <div class="absolute top-0 right-0 bg-accent text-white text-xs font-bold px-2 py-1">SYNTHFORCE</div>
+                    <div class="text-xs font-mono text-gray-500 mb-2 uppercase">HR for AI Agents</div>
+                    <div class="font-mono text-sm text-gray-700 mb-4">Agent: sales_bot_01 | Status: Active | Cost: $0.18/task</div>
+                    <h3 class="text-xl font-bold mb-2 text-gray-900">We see employees.</h3>
+                    <p class="text-gray-600 text-sm">We manage agents like employees: onboarding, performance reviews, policy enforcement, and offboarding.</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- The Solution -->
+        <section id="solution" class="grid grid-cols-1 md:grid-cols-3 gap-px bg-subtle border border-subtle mb-32">
+            <div class="bg-white p-8 group hover:bg-accent hover:text-white transition duration-300 rounded-2xl">
+                <div class="font-mono text-xs text-gray-500 group-hover:text-white mb-4">FINANCIAL RISK</div>
+                <h3 class="text-2xl font-bold mb-4">Budget Overspend.</h3>
+                <p class="text-sm leading-relaxed text-gray-600 group-hover:text-white">
+                    Agents can burn API credits in loops. We track spending per agent, set budgets, and automatically pause overspending agents before they break the budget.
+                </p>
+            </div>
+            <div class="bg-white p-8 group hover:bg-accent hover:text-white transition duration-300 rounded-2xl">
+                <div class="font-mono text-xs text-gray-500 group-hover:text-white mb-4">LIABILITY RISK</div>
+                <h3 class="text-2xl font-bold mb-4">Unauthorized Promises.</h3>
+                <p class="text-sm leading-relaxed text-gray-600 group-hover:text-white">
+                    Agents can make promises they shouldn't. We enforce policies (e.g., "no discounts >5%") and block unauthorized commitments before they become liabilities.
+                </p>
+            </div>
+            <div class="bg-white p-8 group hover:bg-accent hover:text-white transition duration-300 rounded-2xl">
+                <div class="font-mono text-xs text-gray-500 group-hover:text-white mb-4">COMPLIANCE RISK</div>
+                <h3 class="text-2xl font-bold mb-4">Role Violation.</h3>
+                <p class="text-sm leading-relaxed text-gray-600 group-hover:text-white">
+                    Agents can overstep their roles. We define role‑based boundaries (e.g., "support bot cannot access production DB") and enforce them automatically.
+                </p>
+            </div>
+        </section>
+
+        <!-- How it works -->
+        <section id="how-it-works" class="mb-32">
+            <h2 class="text-center text-4xl font-bold mb-12">How it works</h2>
+            <div class="max-w-6xl mx-auto bg-white border border-subtle rounded-3xl p-8 md:p-12">
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+                    <div class="space-y-4">
+                        <div class="text-accent font-mono text-sm uppercase">Agent Directory</div>
+                        <p class="text-gray-600 text-sm">See all your agents in one place. Assign owners, track status, and manage roles.</p>
+                        <div class="font-mono text-xs text-gray-500 border border-subtle rounded-lg p-4">
+                            <div class="flex justify-between"><span>lead_gen_01</span><span class="text-green-500">Active</span></div>
+                            <div class="flex justify-between"><span>support_bot</span><span class="text-yellow-500">Paused</span></div>
+                            <div class="flex justify-between"><span>invoice_automator</span><span class="text-red-500">Over budget</span></div>
+                        </div>
+                    </div>
+                    <div class="space-y-4">
+                        <div class="text-accent font-mono text-sm uppercase">Performance Reviews</div>
+                        <p class="text-gray-600 text-sm">Monthly performance reports with cost‑per‑task, error rate, and satisfaction scores.</p>
+                        <div class="font-mono text-xs text-gray-500 border border-subtle rounded-lg p-4">
+                            <div class="flex justify-between"><span>Tasks completed</span><span>1,240</span></div>
+                            <div class="flex justify-between"><span>Cost per task</span><span>$0.18</span></div>
+                            <div class="flex justify-between"><span>Satisfaction</span><span>94% 👍</span></div>
+                        </div>
+                    </div>
+                    <div class="space-y-4">
+                        <div class="text-accent font-mono text-sm uppercase">Policy Manager</div>
+                        <p class="text-gray-600 text-sm">Define guardrails in plain English. Enforce them automatically across all agents.</p>
+                        <div class="font-mono text-xs text-gray-500 border border-subtle rounded-lg p-4">
+                            <div class="text-green-500">✓ No discounts >5%</div>
+                            <div class="text-green-500">✓ No PII access</div>
+                            <div class="text-red-500">✗ Blocked: "I promise a refund"</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="text-center mt-12">
+                    <a href="/demo" class="btn-primary px-8 py-4 font-mono font-bold tracking-widest text-sm uppercase">
+                        Explore live demo
+                    </a>
+                </div>
+            </div>
+        </section>
+
+        <!-- Integrations -->
+        <section class="py-20">
+            <div class="container mx-auto px-6">
+                <div class="max-w-5xl mx-auto text-center">
+                    <h2 class="text-3xl font-bold text-gray-900 mb-4">Already have agents? No worries.</h2>
+                    <p class="text-gray-600 mb-12 max-w-2xl mx-auto">SynthForce works with the AI models and platforms you already use. Connect in minutes, no re‑training needed.</p>
+                    <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-6">
+                        <div class="integration-card group hover:bg-blue-50">
+                            <div class="text-2xl font-bold text-gray-900 group-hover:text-blue-600 transition">OpenAI</div>
+                            <div class="text-sm text-gray-500 mt-2">GPT‑4, GPT‑4o, Assistants</div>
+                        </div>
+                        <div class="integration-card group hover:bg-purple-50">
+                            <div class="text-2xl font-bold text-gray-900 group-hover:text-purple-600 transition">Anthropic</div>
+                            <div class="text-sm text-gray-500 mt-2">Claude 3, Claude Opus</div>
+                        </div>
+                        <div class="integration-card group hover:bg-teal-50">
+                            <div class="text-2xl font-bold text-gray-900 group-hover:text-teal-600 transition">Gemini</div>
+                            <div class="text-sm text-gray-500 mt-2">Google’s latest models</div>
+                        </div>
+                        <div class="integration-card group hover:bg-sky-50">
+                            <div class="text-2xl font-bold text-gray-900 group-hover:text-sky-600 transition">Azure AI</div>
+                            <div class="text-sm text-gray-500 mt-2">Microsoft’s cloud AI</div>
+                        </div>
+                        <div class="integration-card group hover:bg-indigo-50">
+                            <div class="text-2xl font-bold text-gray-900 group-hover:text-indigo-600 transition">Llama</div>
+                            <div class="text-sm text-gray-500 mt-2">Meta’s open models</div>
+                        </div>
+                        <div class="integration-card group hover:bg-rose-50">
+                            <div class="text-2xl font-bold text-gray-900 group-hover:text-rose-600 transition">Cohere</div>
+                            <div class="text-sm text-gray-500 mt-2">Command, Embed</div>
+                        </div>
+                        <div class="integration-card group hover:bg-orange-50">
+                            <div class="text-2xl font-bold text-gray-900 group-hover:text-orange-600 transition">Hugging Face</div>
+                            <div class="text-sm text-gray-500 mt-2">Open‑source models</div>
+                        </div>
+                        <div class="integration-card group hover:bg-amber-50">
+                            <div class="text-2xl font-bold text-gray-900 group-hover:text-amber-600 transition">DeepSeek</div>
+                            <div class="text-sm text-gray-500 mt-2">DeepSeek Chat, Reasoner</div>
+                        </div>
+                        <div class="integration-card group hover:bg-emerald-50">
+                            <div class="text-2xl font-bold text-gray-900 group-hover:text-emerald-600 transition">Groq</div>
+                            <div class="text-sm text-gray-500 mt-2">Ultra‑fast inference</div>
+                        </div>
+                        <div class="integration-card group hover:bg-green-50">
+                            <div class="text-2xl font-bold text-gray-900 group-hover:text-green-600 transition">Custom</div>
+                            <div class="text-sm text-gray-500 mt-2">Your own models</div>
+                        </div>
+                    </div>
+                    <p class="mt-12 text-sm text-gray-500">Plus on‑prem deployments, fine‑tuned models, and any API‑based agent.</p>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    
+        <!-- Waitlist -->
+        <section id="waitlist" class="py-20 bg-gradient-to-r from-accent/10 to-white">
+            <div class="container mx-auto px-6">
+                <div class="max-w-4xl mx-auto text-center">
+                    <h2 class="text-4xl font-bold text-gray-900 mb-4">Join the Waitlist</h2>
+                    <p class="text-xl text-gray-600 mb-8">Be the first to get early access, a free agent‑audit report, and manage your first 5 agents free for 6 months.</p>
+                    <div class="bg-white rounded-3xl border border-subtle p-12 shadow-lg max-w-2xl mx-auto">
+                        <div class="space-y-6">
+                            <div class="text-left">
+                                <h3 class="text-2xl font-bold text-gray-900 mb-2">What you’ll get:</h3>
+                                <ul class="space-y-3 text-gray-700">
+                                    <li class="flex items-start">
+                                        <svg class="w-5 h-5 text-accent mr-3 mt-0.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                                            <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/>
+                                        </svg>
+                                        <span><strong>Early access</strong> to SynthForce before public launch</span>
+                                    </li>
+                                    <li class="flex items-start">
+                                        <svg class="w-5 h-5 text-accent mr-3 mt-0.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                                            <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/>
+                                        </svg>
+                                        <span><strong>Free agent‑audit report</strong> – see where your AI agents are leaking money</span>
+                                    </li>
+                                    <li class="flex items-start">
+                                        <svg class="w-5 h-5 text-accent mr-3 mt-0.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                                            <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/>
+                                        </svg>
+                                        <span><strong>6 months free</strong> for your first 5 agents</span>
+                                    </li>
+                                </ul>
+                            </div>
+                            <div class="pt-6 border-t border-subtle">
+                                <a href="/waitlistsignup" class="btn-primary px-12 py-5 text-lg font-sans font-semibold uppercase rounded-lg inline-block">
+                                    Join the Waitlist
+                                </a>
+                                <p class="mt-4 text-sm text-gray-500">No spam. Unsubscribe anytime.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+<footer class="border-t border-subtle py-12 bg-gray-50">
+        <div class="container mx-auto px-6">
+            <div class="flex flex-col md:flex-row justify-between items-center">
+                <div class="mb-6 md:mb-0">
+                    <div class="flex items-center gap-3">
+                        <img src="../assets/logo_top_corner.png" class="h-8 max-h-8 w-auto object-contain" alt="SynthForce Logo">
+                    </div>
+                    <p class="text-sm text-gray-600 mt-2">HR for AI agents. Manage your synthetic workforce.</p>
+                </div>
+                <div class="flex flex-wrap gap-8 text-sm text-gray-600">
+                    <a href="/" class="hover:text-gray-900">Home</a>
+                    <a href="/product" class="hover:text-gray-900">Product</a>
+                    <a href="/demo" class="hover:text-gray-900">Demo</a>
+                    <a href="/about" class="hover:text-gray-900">About</a>
+                    <a href="/blog" class="hover:text-gray-900">Blog</a>
+                    <a href="/waitlistsignup" class="hover:text-gray-900">Waitlist</a>
+                    <a href="mailto:info@synthforceai.com" class="hover:text-gray-900">Contact</a>
+                    <a href="#" class="hover:text-gray-900">Privacy</a>
+                    <a href="#" class="hover:text-gray-900">Terms</a>
+                </div>
+            </div>
+            <div class="mt-8 pt-8 border-t border-subtle text-center text-sm text-gray-500">
+                <p><span class="text-gray-500">Contact: </span><a href="mailto:info@synthforceai.com" class="hover:text-gray-500">info@synthforceai.com</a> &nbsp;|&nbsp; © 2026 SynthForce AI. All rights reserved. | Built at Cornell University.</p>
+            </div>
+        </div>
+    </footer>
+
+
+    <script>
+        // Mobile menu toggle
+        const toggle = document.getElementById('mobile-menu-toggle');
+        const menu = document.getElementById('mobile-menu');
+        if (toggle && menu) {
+            toggle.addEventListener('click', () => {
+                menu.classList.toggle('hidden');
+            });
+            // Close menu when clicking a link
+            menu.querySelectorAll('a').forEach(link => {
+                link.addEventListener('click', () => {
+                    menu.classList.add('hidden');
+                });
+            });
+        }
+
+        // Story demo: display block/none toggle
+        (function() {
+            var scenes = document.querySelectorAll('.scene');
+            var dots = document.querySelectorAll('.dot');
+            var current = 0;
+
+            window.showScene = function(index) {
+                if (!scenes.length) return;
+                var direction = (index > current) ? 'right' : (index < current) ? 'left' : 'none';
+                for (var i = 0; i < scenes.length; i++) {
+                    scenes[i].style.display = 'flex';
+                    scenes[i].style.zIndex = (i === index) ? '10' : '1';
+                    if (i === index) {
+                        scenes[i].style.transform = 'translateX(0)';
+                        scenes[i].style.opacity = '1';
+                    } else if (i === current && direction !== 'none') {
+                        scenes[i].style.transform = (direction === 'right') ? 'translateX(-100%)' : 'translateX(100%)';
+                        scenes[i].style.opacity = '0';
+                    } else {
+                        scenes[i].style.transform = (direction === 'right') ? 'translateX(100%)' : 'translateX(-100%)';
+                        scenes[i].style.opacity = '0';
+                    }
+                }
+                for (var j = 0; j < dots.length; j++) {
+                    dots[j].style.backgroundColor = (j === index) ? '#00B2FF' : '#D1D5DB';
+                }
+                current = index;
+            };
+
+            for (var k = 0; k < dots.length; k++) {
+                (function(idx) {
+                    dots[k].addEventListener('click', function() {
+                        window.showScene(idx);
+                    });
+                })(k);
+            }
+
+            window.showScene(0);
+        })();
+
+    </script>
+</body>
+</html>

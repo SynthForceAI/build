@@ -1,0 +1,87 @@
+{
+  "builds": [
+    {
+      "src": "src/pages/**",
+      "use": "@vercel/static"
+    },
+    {
+      "src": "src/assets/**",
+      "use": "@vercel/static"
+    }
+  ],
+  "headers": [
+    {
+      "source": "/sitemap\\.xml",
+      "headers": [
+        {
+          "key": "Content-Type",
+          "value": "application/xml; charset=utf-8"
+        }
+      ]
+    },
+    {
+      "source": "/robots\\.txt",
+      "headers": [
+        {
+          "key": "Content-Type",
+          "value": "text/plain; charset=utf-8"
+        }
+      ]
+    },
+    {
+      "source": "/(.*)\\.svg",
+      "headers": [
+        {
+          "key": "Content-Type",
+          "value": "image/svg+xml; charset=utf-8"
+        }
+      ]
+    }
+  ],
+  "routes": [
+    {
+      "src": "/assets/(.*)",
+      "dest": "/src/assets/$1",
+      "headers": {
+        "cache-control": "public, max-age=31536000, immutable"
+      }
+    },
+    {
+      "src": "/sitemap\\.xml",
+      "dest": "/api/sitemap.js"
+    },
+    {
+      "handle": "filesystem"
+    },
+    {
+      "src": "/demo/?",
+      "dest": "/src/pages/demo.html"
+    },
+    {
+      "src": "/product/?",
+      "dest": "/src/pages/product.html"
+    },
+    {
+      "src": "/about/?",
+      "dest": "/src/pages/about.html"
+    },
+    {
+      "src": "/waitlistsignup/?",
+      "dest": "/src/pages/waitlistsignup.html"
+    },
+    {
+      "src": "/blog/?",
+      "dest": "/src/pages/blog.html"
+    },
+    {
+      "src": "/blog/posts/([^/]+)",
+      "dest": "/blog/posts/$1.html"
+    },
+    {
+      "src": "/(.*)",
+      "dest": "/src/pages/index.html"
+    }
+  ],
+  "cleanUrls": false,
+  "trailingSlash": false
+}
