@@ -46,7 +46,6 @@ export default function DashboardPage() {
             <Link href="/">
               <img src="/assets/synthforce-logo.png" className="h-8 w-auto object-contain" alt="SynthForce" />
             </Link>
-            <span className="font-bold text-lg text-gray-900">SynthForce</span>
           </div>
           <button onClick={handleLogout} className="text-sm text-gray-600 hover:text-gray-900 border border-gray-300 rounded-lg px-4 py-1.5">
             Log Out
