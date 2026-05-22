@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 
@@ -15,18 +15,22 @@ const TABS: { id: TabId; title: string; subtitle: string }[] = [
   { id: "offboarding", title: "Offboarding", subtitle: "Archive & audit" },
 ];
 
-const AGENTS = [
-  { name: "Lead Qualifier", role: "Sales", status: "Active", cost: "$0.09/call", tasks: "2,150", budget: "$2,400", spent: "$1,890", dot: "bg-green-500", badge: "bg-green-100 text-green-800" },
-  { name: "Support Agent", role: "Support", status: "Active", cost: "$0.12/call", tasks: "8,540", budget: "$4,800", spent: "$3,200", dot: "bg-green-500", badge: "bg-green-100 text-green-800" },
-  { name: "Escalation Specialist", role: "Support", status: "Paused", cost: "$0.15/call", tasks: "1,230", budget: "$1,200", spent: "$560", dot: "bg-yellow-500", badge: "bg-yellow-100 text-yellow-800" },
-  { name: "Invoice Processor", role: "Finance", status: "Over Budget", cost: "$0.45/call", tasks: "3,210", budget: "$2,000", spent: "$2,450", dot: "bg-red-500", badge: "bg-red-100 text-red-800" },
-  { name: "Expense Auditor", role: "Finance", status: "Training", cost: "$0.22/call", tasks: "890", budget: "$1,500", spent: "$420", dot: "bg-blue-500", badge: "bg-blue-100 text-blue-800" },
-  { name: "Content Writer", role: "Marketing", status: "Active", cost: "$0.18/call", tasks: "4,100", budget: "$3,000", spent: "$2,100", dot: "bg-green-500", badge: "bg-green-100 text-green-800" },
-];
-
 export default function DashboardPage() {
   const [activeTab, setActiveTab] = useState<TabId>("overview");
+  const [hasAgents, setHasAgents] = useState(false);
   const router = useRouter();
+
+  useEffect(() => {
+    // Check if user has any agents connected
+    fetch("/api/agents")
+      .then((res) => res.json())
+      .then((data) => {
+        if (Array.isArray(data) && data.length > 0) {
+          setHasAgents(true);
+        }
+      })
+      .catch(() => {});
+  }, []);
 
   const handleLogout = async () => {
     await fetch("/api/auth/logout", { method: "POST" });
@@ -73,73 +77,49 @@ export default function DashboardPage() {
 
       {/* Content */}
       <div className="max-w-7xl mx-auto px-6 py-8">
-        {activeTab === "overview" && (
+        {!hasAgents ? (
+          /* Empty State */
+          <div className="flex flex-col items-center justify-center py-24 text-center">
+            <div className="w-16 h-16 rounded-full bg-blue-50 flex items-center justify-center mb-6">
+              <svg className="w-8 h-8 text-[#00B2FF]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M12 4.5v15m7.5-7.5h-15" />
+              </svg>
+            </div>
+            <h2 className="text-2xl font-bold text-gray-900 mb-2">No agents connected yet</h2>
+            <p className="text-gray-500 mb-8 max-w-md">
+              Connect or deploy your first AI agent to start tracking performance, cost, and compliance from one dashboard.
+            </p>
+            <div className="flex gap-4">
+              <Link href="/demo" className="bg-[#00B2FF] text-white rounded-lg px-6 py-2.5 text-sm font-medium hover:bg-[#0099E6] transition">
+                View Demo
+              </Link>
+              <button
+                onClick={() => setActiveTab("onboard")}
+                className="border border-gray-300 text-gray-700 rounded-lg px-6 py-2.5 text-sm font-medium hover:bg-gray-50 transition"
+              >
+                Deploy an Agent
+              </button>
+            </div>
+          </div>
+        ) : (
           <>
             {/* Summary Cards */}
             <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
               <div className="bg-white rounded-xl border border-gray-200 p-6">
                 <p className="text-sm text-gray-500 mb-1">Total Agents</p>
-                <p className="text-3xl font-bold text-gray-900">6</p>
-                <p className="text-xs text-green-600 mt-1">+2 this month</p>
+                <p className="text-3xl font-bold text-gray-900">--</p>
               </div>
               <div className="bg-white rounded-xl border border-gray-200 p-6">
                 <p className="text-sm text-gray-500 mb-1">Monthly Spend</p>
-                <p className="text-3xl font-bold text-gray-900">$10,620</p>
-                <p className="text-xs text-red-600 mt-1">+12% vs last month</p>
+                <p className="text-3xl font-bold text-gray-900">--</p>
               </div>
               <div className="bg-white rounded-xl border border-gray-200 p-6">
                 <p className="text-sm text-gray-500 mb-1">Total Tasks</p>
-                <p className="text-3xl font-bold text-gray-900">20,120</p>
-                <p className="text-xs text-green-600 mt-1">+8% vs last month</p>
+                <p className="text-3xl font-bold text-gray-900">--</p>
               </div>
               <div className="bg-white rounded-xl border border-gray-200 p-6">
                 <p className="text-sm text-gray-500 mb-1">Efficiency Score</p>
-                <p className="text-3xl font-bold text-gray-900">82%</p>
-                <p className="text-xs text-yellow-600 mt-1">Needs attention</p>
-              </div>
-            </div>
-
-            {/* Agents Table */}
-            <div className="bg-white rounded-xl border border-gray-200">
-              <div className="px-6 py-4 border-b border-gray-100">
-                <h2 className="text-lg font-semibold text-gray-900">Your AI Agents</h2>
-              </div>
-              <div className="overflow-x-auto">
-                <table className="w-full text-sm">
-                  <thead>
-                    <tr className="text-left text-gray-500 border-b border-gray-100">
-                      <th className="px-6 py-3 font-medium">Agent</th>
-                      <th className="px-6 py-3 font-medium">Role</th>
-                      <th className="px-6 py-3 font-medium">Status</th>
-                      <th className="px-6 py-3 font-medium">Cost</th>
-                      <th className="px-6 py-3 font-medium">Tasks</th>
-                      <th className="px-6 py-3 font-medium">Budget</th>
-                      <th className="px-6 py-3 font-medium">Spent</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {AGENTS.map((agent) => (
-                      <tr key={agent.name} className="border-b border-gray-50 hover:bg-gray-50">
-                        <td className="px-6 py-4">
-                          <div className="flex items-center gap-2">
-                            <span className={`w-2 h-2 rounded-full ${agent.dot}`} />
-                            <span className="font-medium text-gray-900">{agent.name}</span>
-                          </div>
-                        </td>
-                        <td className="px-6 py-4 text-gray-600">{agent.role}</td>
-                        <td className="px-6 py-4">
-                          <span className={`text-xs font-medium px-2 py-1 rounded-full ${agent.badge}`}>
-                            {agent.status}
-                          </span>
-                        </td>
-                        <td className="px-6 py-4 text-gray-600">{agent.cost}</td>
-                        <td className="px-6 py-4 text-gray-600">{agent.tasks}</td>
-                        <td className="px-6 py-4 text-gray-600">{agent.budget}</td>
-                        <td className="px-6 py-4 text-gray-900 font-medium">{agent.spent}</td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
+                <p className="text-3xl font-bold text-gray-900">--</p>
               </div>
             </div>
           </>
