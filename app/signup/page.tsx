@@ -7,29 +7,29 @@ export default function SignupPage() {
       <div className="hidden lg:flex lg:w-1/2 flex-col justify-between p-16 bg-[#0D0D0D] border-r border-[#1a1a1a]">
         <div>
           <div className="flex items-center gap-3 mb-16">
-            <div className="w-8 h-8 rounded-lg bg-white" />
+            <img src="/assets/logo_white.svg" className="h-8 w-auto" alt="SynthForce" />
             <span className="text-xl font-bold text-[#EDEDED]">SynthForce</span>
           </div>
           <h2 className="text-3xl font-bold text-[#EDEDED] leading-tight mb-4">
-            Your workforce is getting smarter.
+            Welcome to the
             <br />
-            <span className="text-[#6366F1]">Your management should too.</span>
+            <span className="text-[#00B2FF]">HR department for your AI Workforce.</span>
           </h2>
           <ul className="space-y-4 mt-10">
             <li className="flex items-start gap-3 text-[#A1A1AA]">
-              <span className="text-[#6366F1] mt-1">▸</span>
+              <span className="text-[#00B2FF] mt-1">▸</span>
               <span>Track every AI agent's performance and cost in real time</span>
             </li>
             <li className="flex items-start gap-3 text-[#A1A1AA]">
-              <span className="text-[#6366F1] mt-1">▸</span>
+              <span className="text-[#00B2FF] mt-1">▸</span>
               <span>Set budgets and policies that agents follow automatically</span>
             </li>
             <li className="flex items-start gap-3 text-[#A1A1AA]">
-              <span className="text-[#6366F1] mt-1">▸</span>
+              <span className="text-[#00B2FF] mt-1">▸</span>
               <span>Get plain-English reports on exactly where your spend is going</span>
             </li>
             <li className="flex items-start gap-3 text-[#A1A1AA]">
-              <span className="text-[#6366F1] mt-1">▸</span>
+              <span className="text-[#00B2FF] mt-1">▸</span>
               <span>Free audit shows you how much you're wasting — before you commit</span>
             </li>
           </ul>

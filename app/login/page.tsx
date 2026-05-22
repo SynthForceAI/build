@@ -7,27 +7,25 @@ export default function LoginPage() {
       <div className="hidden lg:flex lg:w-1/2 flex-col justify-between p-16 bg-[#0D0D0D] border-r border-[#1a1a1a]">
         <div>
           <div className="flex items-center gap-3 mb-16">
-            <div className="w-8 h-8 rounded-lg bg-white" />
+            <img src="/assets/logo_white.svg" className="h-8 w-auto" alt="SynthForce" />
             <span className="text-xl font-bold text-[#EDEDED]">SynthForce</span>
           </div>
           <h2 className="text-3xl font-bold text-[#EDEDED] leading-tight mb-4">
-            Welcome back to
+            Welcome back to the
             <br />
-            <span className="text-[#6366F1]">the command center</span>
-            <br />
-            for your AI workforce.
+            <span className="text-[#00B2FF]">HR department for your AI Workforce.</span>
           </h2>
           <ul className="space-y-4 mt-10">
             <li className="flex items-start gap-3 text-[#A1A1AA]">
-              <span className="text-[#6366F1] mt-1">▸</span>
+              <span className="text-[#00B2FF] mt-1">▸</span>
               <span>Monitor agent spend and activity at a glance</span>
             </li>
             <li className="flex items-start gap-3 text-[#A1A1AA]">
-              <span className="text-[#6366F1] mt-1">▸</span>
+              <span className="text-[#00B2FF] mt-1">▸</span>
               <span>Review past audits and track improvements over time</span>
             </li>
             <li className="flex items-start gap-3 text-[#A1A1AA]">
-              <span className="text-[#6366F1] mt-1">▸</span>
+              <span className="text-[#00B2FF] mt-1">▸</span>
               <span>Manage policies, budgets, and team access in one place</span>
             </li>
           </ul>
