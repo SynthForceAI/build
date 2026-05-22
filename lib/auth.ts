@@ -45,3 +45,9 @@ export function requireRole(user: User, ...allowed: User["role"][]): void {
     });
   }
 }
+
+export const OWNER_EMAIL = "samarth@synthforceai.com";
+
+export function isOwner(email?: string): boolean {
+  return email === OWNER_EMAIL;
+}
