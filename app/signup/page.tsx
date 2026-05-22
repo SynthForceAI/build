@@ -6,8 +6,8 @@ export default function SignupPage() {
       {/* Left side — branding + value props */}
       <div className="hidden lg:flex lg:w-1/2 flex-col justify-between p-16 bg-[#0D0D0D] border-r border-[#1a1a1a]">
         <div>
-          <div className="mb-16">
-            <img src="/assets/logo-white.png" className="w-full max-w-md object-contain" alt="SynthForce" />
+          <div className="mb-8">
+            <img src="/assets/logo-white.png" className="w-full max-w-sm object-contain" alt="SynthForce" />
           </div>
           <h2 className="text-3xl font-bold text-[#EDEDED] leading-tight mb-4">
             Welcome to the
