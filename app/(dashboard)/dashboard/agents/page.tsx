@@ -1,20 +1,6 @@
 /**
  * Agents page — lists every agent for the company with status, spend,
  * department, model, and activate/pause controls.
- *
- * WHY a Server Component?
- * Same reasoning as the dashboard home: we query Prisma directly here
- * rather than calling GET /api/agents, avoiding an extra HTTP hop. The
- * `include` joins for department + provider + model are handled in one query.
- *
- * The only interactive part (activate/pause buttons) is isolated in
- * AgentStatusToggle — a small Client Component that POSTs to the API and
- * calls router.refresh() to re-render this Server Component with fresh data.
- *
- * WHY pass serialised data to AgentStatusToggle instead of the raw Prisma row?
- * Client Components can only receive JSON-safe props. Prisma returns BigInt
- * for spend/budget fields which can't be serialised by default. We convert
- * those to Number before rendering, keeping the Client Component boundary clean.
  */
 
 import { requireUser } from "@/lib/auth";

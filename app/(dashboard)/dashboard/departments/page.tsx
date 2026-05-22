@@ -1,0 +1,105 @@
+/*
+ * Departments page
+*/
+
+import { requireUser } from "@/lib/auth";
+import { prisma } from "@/lib/db";
+
+type Department = {
+    id: string;
+    name: string;
+    agentCount: number;
+};
+
+//fetch data from the DB directly for the server functionality
+async function fetchDepartments(companyId: string){
+    const rows = await prisma.department.findMany({
+        where: { companyId },
+        include: {
+            _count: { select: { agents: true } } // count agents per dept
+        }
+      });
+      return rows.map((d) => ({
+        id: d.id,
+        name: d.name,
+        agentCount: d._count.agents,
+    }));
+}
+
+// Page component
+export default async function DepartmentsPage() {
+    // ── TEMP: silent auth bypass — restore redirect before merging to nextjs-migration ──
+    // Same pattern as app/(dashboard)/dashboard/page.tsx. When restoring:
+    //   catch (err) {
+    //     if (err instanceof ApiError && err.status === 401) redirect("/");
+    //     throw err;
+    //   }
+    // and add: import { redirect } from "next/navigation"; import { ApiError } ...
+    // ── END TEMP ──────────────────────────────────────────────────────────────────────
+    let companyId: string | null = null;
+    try {
+      const { user } = await requireUser();
+      companyId = user.companyId;
+    } catch {
+      companyId = null; // TEMP: swallows 401 during dev; real code should redirect
+    }
+    let departments: Department[] = [];
+    if (companyId) {
+        try {
+          departments = await fetchDepartments(companyId);
+        } catch {
+          departments = [];
+        }
+      }
+  
+    return (
+      <div>
+        <h1 className="text-2xl font-bold text-gray-900 mb-8">Departments</h1>
+        <div className="bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden">
+        {departments.length === 0 ? (
+            /* Empty state — shown before any agents have been created */
+            <div className="px-6 py-16 text-center">
+            <p className="text-sm text-gray-500">No departments created yet.</p>
+            <p className="text-xs text-gray-400 mt-1 mb-6">
+              Onboard your first AI agent and assign it to a department to start tracking spend and status.
+            </p>
+            <a
+              href="/dashboard/agents"
+              className="px-4 py-2 text-sm bg-[#00B2FF] text-white rounded-lg hover:bg-transparent hover:text-[#00B2FF] border border-[#00B2FF] transition"
+            >
+              Go to Agents
+            </a>
+          </div>
+          ) : (
+            <table className="w-full text-sm">
+              <thead>
+                <tr className="text-left text-xs text-gray-500 border-b border-gray-100 bg-gray-50/50">
+                  <th className="px-6 py-3 font-medium">Name</th>
+                  <th className="px-6 py-3 font-medium">Agent Count</th>
+                </tr>
+              </thead>
+              <tbody>
+                {departments.map((department) => {
+  
+                  return (
+                    <tr
+                      key={department.id}
+                      className="border-b border-gray-50 last:border-b-0 hover:bg-gray-50/60 transition-colors"
+                    >
+                      {/* Name + optional truncated description as subtitle */}
+                      <td className="px-6 py-4">
+                        <p className="font-medium text-gray-900">{department.name}</p>
+                      </td>
+                      <td className="px-6 py-4 text-gray-600 whitespace-nowrap">
+                        {department.agentCount}
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          )}
+        </div>
+      </div>
+    );
+}
