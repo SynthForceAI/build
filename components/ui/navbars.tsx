@@ -22,7 +22,7 @@ export function DemoPageNavbar() {
             <div className="container mx-auto px-6 h-16 flex items-center justify-between">
                 <div className="flex items-center gap-3">
                     <a href="/">
-                        <img src="/assets/logo_top_corner.png" className="h-8 max-h-8 w-auto object-contain"
+                        <img src="/assets/logo_homepage.png" className="h-8 max-h-8 w-auto object-contain"
                              alt="SynthForce Logo"/>
                     </a>
                     <span

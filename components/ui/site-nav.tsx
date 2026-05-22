@@ -21,14 +21,11 @@ export function SiteNav({ position = "sticky" }: SiteNavProps) {
         <div className="flex items-center gap-3">
           <Link href="/">
             <img
-              src="/assets/logo_top_corner.png"
+              src="/assets/logo_homepage.png"
               className="h-8 max-h-8 w-auto object-contain"
               alt="SynthForce Logo"
             />
           </Link>
-          <span className="font-bold tracking-tighter text-lg text-gray-900 hidden sm:inline">
-            SynthForce
-          </span>
         </div>
 
         <div className="hidden md:flex items-center gap-8 text-sm font-sans text-gray-600">

@@ -10,7 +10,7 @@ export function Footer() {
           <div className="mb-6 md:mb-0">
             <div className="flex items-center gap-3">
               <img
-                src="/assets/logo_top_corner.png"
+                src="/assets/logo_homepage.png"
                 className="h-8 max-h-8 w-auto object-contain"
                 alt="SynthForce Logo"
               />
