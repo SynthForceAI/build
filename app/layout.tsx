@@ -1,22 +1,17 @@
 import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
-import "@/styles/globals.css";
-import Link from "next/link";
-import { Button } from "@/components/ui/button";
-
-const geist = Geist({
-  variable: "--font-geist-sans",
-  subsets: ["latin"],
-});
-
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
-  subsets: ["latin"],
-});
+import Script from "next/script";
+import { inter } from "@/lib/fonts";
+import "./globals.css";
+import React from "react";
+import { cn } from "@/lib/utils";
+import { Footer } from "@/components/ui/footer";
+import { Analytics } from "@vercel/analytics/react";
 
 export const metadata: Metadata = {
-  title: "SynthForce",
-  description: "Intelligent policy enforcement platform",
+  title: "SynthForce | HR for AI Agents - Manage Your Synthetic Workforce",
+  description:
+    "SynthForce is the HR platform for AI agents. " +
+      "Onboard, measure, and govern your synthetic workforce.",
 };
 
 export default function RootLayout({
@@ -25,30 +20,17 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="en">
-      <body
-        className={`${geist.variable} ${geistMono.variable} antialiased bg-[#0A0A0A] text-white`}
-      >
-        {/* Header */}
-        <header className="border-b border-gray-800 bg-[#0A0A0A]/95 backdrop-blur supports-[backdrop-filter]:bg-[#0A0A0A]/80 sticky top-0 z-50">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
-            {/* Logo */}
-            <Link href="/" className="flex items-center gap-2 hover:opacity-80 transition-opacity">
-              <span className="text-xl font-bold text-white">SynthForce</span>
-            </Link>
-
-            {/* Auth Button */}
-            <Link href="/signup">
-              <Button className="bg-blue-600 hover:bg-blue-700 text-white">
-                Sign up or in
-              </Button>
-            </Link>
-          </div>
-        </header>
-
-        {/* Main Content */}
-        <main>{children}</main>
+    <html lang="en" className={cn(inter.variable, inter.className)}>
+      <body>
+        {children}
+        <Analytics />
+        <Footer />
+        <Script src="https://tally.so/widgets/embed.js" strategy="afterInteractive" />
       </body>
     </html>
   );
 }
+
+// TODO: Each page could export its own metadata. Work on that for better SEO in the future.
+// TODO: Init migration is complete. 1:1 of legacy site is done. Now we can focus on refining the repo, clear any redundancies, mistakes, etc.
+// TODO: Start working on backend and schema. May have a meeting about this.
