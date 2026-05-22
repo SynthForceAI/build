@@ -36,7 +36,7 @@ export async function GET(req: NextRequest) {
 
     const total = await prisma.activityLog.count();
 
-    // Format response
+    // Format the response
     const formattedLogs = logs.map((log) => ({
       id: log.id,
       userId: log.userId,

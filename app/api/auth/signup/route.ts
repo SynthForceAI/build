@@ -31,7 +31,7 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "Signup failed" }, { status: 500 });
     }
 
-    // Create default company for user
+    // Create default company for user (if they don't have one)
     let company = await prisma.company.findFirst({
       where: {
         users: {

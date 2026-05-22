@@ -1,48 +1,45 @@
 import { Button } from "@/components/ui/button";
 import { UserList } from "@/components/owner/UserList";
 import { ActivityLog } from "@/components/owner/ActivityLog";
+import { useRouter } from "next/navigation";
 import Link from "next/link";
 
 async function getUsers() {
-  try {
-    const response = await fetch("http://localhost:3000/api/users", {
+  const response = await fetch(
+    new URL("/api/users", process.env.NEXT_PUBLIC_SUPABASE_URL || "http://localhost:3000"),
+    {
       method: "GET",
       headers: {
         "Content-Type": "application/json",
       },
       cache: "no-store",
-    });
-
-    if (!response.ok) {
-      return { users: [] };
     }
+  );
 
-    return response.json();
-  } catch (error) {
-    console.error("Failed to fetch users:", error);
+  if (!response.ok) {
     return { users: [] };
   }
+
+  return response.json();
 }
 
 async function getActivityLogs() {
-  try {
-    const response = await fetch("http://localhost:3000/api/activity-logs", {
+  const response = await fetch(
+    new URL("/api/activity-logs", process.env.NEXT_PUBLIC_SUPABASE_URL || "http://localhost:3000"),
+    {
       method: "GET",
       headers: {
         "Content-Type": "application/json",
       },
       cache: "no-store",
-    });
-
-    if (!response.ok) {
-      return { logs: [], total: 0 };
     }
+  );
 
-    return response.json();
-  } catch (error) {
-    console.error("Failed to fetch activity logs:", error);
+  if (!response.ok) {
     return { logs: [], total: 0 };
   }
+
+  return response.json();
 }
 
 export default async function OwnerUsersPage() {
@@ -58,7 +55,7 @@ export default async function OwnerUsersPage() {
           <form
             action={async () => {
               "use server";
-              await fetch("http://localhost:3000/api/auth/logout", { method: "POST" });
+              await fetch("/api/auth/logout", { method: "POST" });
             }}
           >
             <button

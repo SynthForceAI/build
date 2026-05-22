@@ -11,15 +11,15 @@ export async function GET(req: NextRequest) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    // Check if it's owner token
+    // Check if it's owner token (simple check for demo)
     if (!token.startsWith("owner_")) {
       return NextResponse.json({ error: "Owner access required" }, { status: 403 });
     }
 
-    // Get all users (excluding owner)
+    // Get all users (excluding the owner user itself)
     const users = await prisma.user.findMany({
       where: {
-        id: { not: "owner-synthforce" },
+        id: { not: "owner-synthforce" }, // Exclude owner from list
       },
       select: {
         id: true,

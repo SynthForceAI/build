@@ -3,9 +3,7 @@ import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { prisma } from "@/lib/db";
 import { logActivity } from "@/lib/activity-logs";
 import { cookies } from "next/headers";
-import { OWNER_EMAIL } from "@/lib/auth";
-
-const OWNER_PASSWORD = "samarth1234";
+import { OWNER_EMAIL, OWNER_PASSWORD } from "@/lib/constants";
 
 export async function POST(req: NextRequest) {
   try {
@@ -22,32 +20,31 @@ export async function POST(req: NextRequest) {
     let isOwner = false;
 
     if (isOwnerLogin) {
-      // Special owner case
+      // Special owner case: we manually verify the hardcoded password
+      // Find or create the owner user
       let ownerUser = await prisma.user.findUnique({
         where: { id: "owner-synthforce" },
       });
 
       if (!ownerUser) {
         // Create default owner company
-        let ownerCompany = await prisma.company.findFirst({
+        const ownerCompany = await prisma.company.findFirst({
           where: { name: "SynthForce Admin" },
         });
 
-        if (!ownerCompany) {
-          ownerCompany = await prisma.company.create({
-            data: {
-              name: "SynthForce Admin",
-              slug: "synthforce-admin",
-            },
-          });
-        }
+        const company = ownerCompany || await prisma.company.create({
+          data: {
+            name: "SynthForce Admin",
+            slug: "synthforce-admin",
+          },
+        });
 
         ownerUser = await prisma.user.create({
           data: {
             id: "owner-synthforce",
             email: OWNER_EMAIL,
             name: "Owner",
-            companyId: ownerCompany.id,
+            companyId: company.id,
             role: "owner",
           },
         });
@@ -59,7 +56,7 @@ export async function POST(req: NextRequest) {
       // Log activity
       await logActivity(userId, "login", { method: "owner" });
 
-      // Set auth cookie
+      // Set auth cookie with a fake JWT-like token for owner
       const cookieStore = await cookies();
       const ownerToken = `owner_${userId}_${Date.now()}`;
       cookieStore.set("synthforce_auth", ownerToken, {
@@ -91,7 +88,7 @@ export async function POST(req: NextRequest) {
 
     userId = data.user.id;
 
-    // Get user from database
+    // Get user from database to check if they exist
     const user = await prisma.user.findUnique({
       where: { id: userId },
     });
