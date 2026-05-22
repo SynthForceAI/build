@@ -3,7 +3,7 @@ import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { prisma } from "@/lib/db";
 import { logActivity } from "@/lib/activity-logs";
 import { cookies } from "next/headers";
-import { OWNER_EMAIL, OWNER_PASSWORD } from "@/lib/auth";
+import { OWNER_EMAIL, OWNER_PASSWORD } from "@/lib/constants";
 
 export async function POST(req: NextRequest) {
   try {
