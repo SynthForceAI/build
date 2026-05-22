@@ -44,7 +44,7 @@ export default function DashboardPage() {
         <div className="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between">
           <div className="flex items-center gap-3">
             <Link href="/">
-              <img src="/assets/logo_homepage.png" className="h-8 w-auto object-contain" alt="SynthForce" />
+              <img src="/assets/logo_black_with_name.png" className="h-8 w-auto object-contain" alt="SynthForce" />
             </Link>
             <span className="font-bold text-lg text-gray-900">SynthForce</span>
           </div>
