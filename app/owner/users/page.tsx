@@ -1,14 +1,11 @@
-"use client";
-
 import { Button } from "@/components/ui/button";
 import { UserList } from "@/components/owner/UserList";
 import { ActivityLog } from "@/components/owner/ActivityLog";
-import { useRouter } from "next/navigation";
 import Link from "next/link";
 
 async function getUsers() {
   const response = await fetch(
-    new URL("/api/users", process.env.NEXT_PUBLIC_SUPABASE_URL || "http://localhost:3000"),
+    new URL("/api/users", process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000"),
     {
       method: "GET",
       headers: {
@@ -27,7 +24,7 @@ async function getUsers() {
 
 async function getActivityLogs() {
   const response = await fetch(
-    new URL("/api/activity-logs", process.env.NEXT_PUBLIC_SUPABASE_URL || "http://localhost:3000"),
+    new URL("/api/activity-logs", process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000"),
     {
       method: "GET",
       headers: {
