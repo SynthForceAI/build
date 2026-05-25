@@ -1,3 +1,5 @@
+"use client";
+
 import { Button } from "@/components/ui/button";
 import { UserList } from "@/components/owner/UserList";
 import { ActivityLog } from "@/components/owner/ActivityLog";
