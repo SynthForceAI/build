@@ -3,7 +3,9 @@
  * department, model, and activate/pause controls.
  */
 
+import { redirect } from "next/navigation";
 import { requireUser } from "@/lib/auth";
+import { ApiError } from "@/lib/api-errors";
 import { prisma } from "@/lib/db";
 import { AgentsClient, type AgentRow } from "@/components/ui/agents-client";
 
@@ -58,30 +60,21 @@ async function fetchDepartments(companyId: string) {
 // ── Page ───────────────────────────────────────────────────────────────────
 
 export default async function AgentsPage() {
-  // ── TEMP: silent auth bypass — restore redirect before merging to nextjs-migration ──
-  // Same pattern as app/(dashboard)/dashboard/page.tsx. When restoring:
-  //   catch (err) {
-  //     if (err instanceof ApiError && err.status === 401) redirect("/");
-  //     throw err;
-  //   }
-  // and add: import { redirect } from "next/navigation"; import { ApiError } ...
-  // ── END TEMP ──────────────────────────────────────────────────────────────────────
-  let companyId: string | null = null;
+  let companyId: string;
   try {
     const { user } = await requireUser();
     companyId = user.companyId;
-  } catch {
-    companyId = "08e2e455-c6eb-4c57-b94b-4faeb7dc1942"; // TEMP: swallows 401 during dev; real code should redirect
+  } catch (err) {
+    if (err instanceof ApiError && err.status === 401) redirect("/");
+    throw err;
   }
 
-  const [agents, providers, models, departments] = companyId
-    ? await Promise.all([
-        fetchAgents(companyId).catch(() => [] as AgentRow[]),
-        fetchProviders().catch(() => []),
-        fetchModels().catch(() => []),
-        fetchDepartments(companyId).catch(() => []),
-      ])
-    : [[], [], [], []];
+  const [agents, providers, models, departments] = await Promise.all([
+    fetchAgents(companyId).catch(() => [] as AgentRow[]),
+    fetchProviders().catch(() => []),
+    fetchModels().catch(() => []),
+    fetchDepartments(companyId).catch(() => []),
+  ]);
 
   return (
     <AgentsClient

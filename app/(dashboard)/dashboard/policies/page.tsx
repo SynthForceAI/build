@@ -2,7 +2,9 @@
  * Agent Policies Page
 */
 
+import { redirect } from "next/navigation";
 import { requireUser } from "@/lib/auth";
+import { ApiError } from "@/lib/api-errors";
 import { prisma } from "@/lib/db";
 import { PoliciesClient } from "@/components/ui/policies-client";
 
@@ -32,25 +34,16 @@ async function fetchData(companyId: string) {
 }
 
 export default async function PolicyPage() {
-  // ── TEMP: silent auth bypass — restore redirect before merging to nextjs-migration ──
-  // Same pattern as app/(dashboard)/dashboard/page.tsx. When restoring:
-  //   catch (err) {
-  //     if (err instanceof ApiError && err.status === 401) redirect("/");
-  //     throw err;
-  //   }
-  // and add: import { redirect } from "next/navigation"; import { ApiError } ...
-  // ── END TEMP ──────────────────────────────────────────────────────────────────────
-  let companyId: string | null = null;
+  let companyId: string;
   try {
     const { user } = await requireUser();
     companyId = user.companyId;
-  } catch {
-    companyId = "08e2e455-c6eb-4c57-b94b-4faeb7dc1942"; // TEMP: swallows 401 during dev
+  } catch (err) {
+    if (err instanceof ApiError && err.status === 401) redirect("/");
+    throw err;
   }
 
-  const { policies, departments } = companyId
-    ? await fetchData(companyId).catch(() => ({ policies: [], departments: [] }))
-    : { policies: [], departments: [] };
+  const { policies, departments } = await fetchData(companyId).catch(() => ({ policies: [], departments: [] }));
 
   return <PoliciesClient policies={policies} departments={departments} />;
 }

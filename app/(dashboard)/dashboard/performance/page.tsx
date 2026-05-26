@@ -9,7 +9,9 @@
  *   4. Agent table     — all agents sorted by MTD spend descending
  */
 
+import { redirect } from "next/navigation";
 import { requireUser } from "@/lib/auth";
+import { ApiError } from "@/lib/api-errors";
 import { prisma } from "@/lib/db";
 
 // ── Types ──────────────────────────────────────────────────────────────────
@@ -148,23 +150,16 @@ const REC_STYLES: Record<Recommendation["severity"], { bar: string; bg: string; 
 // ── Page ───────────────────────────────────────────────────────────────────
 
 export default async function PerformancePage() {
-  // ── TEMP: silent auth bypass — restore redirect before merging to nextjs-migration ──
-  // To restore: replace catch body with:
-  //   if (err instanceof ApiError && err.status === 401) redirect("/");
-  //   throw err;
-  // and add: import { redirect } from "next/navigation"; import { ApiError } ...
-  // ── END TEMP ──────────────────────────────────────────────────────────────────────
-  let companyId: string | null = null;
+  let companyId: string;
   try {
     const { user } = await requireUser();
     companyId = user.companyId;
-  } catch {
-    companyId = "08e2e455-c6eb-4c57-b94b-4faeb7dc1942"; // TEMP: swallows 401 during dev
+  } catch (err) {
+    if (err instanceof ApiError && err.status === 401) redirect("/");
+    throw err;
   }
 
-  const agents: AgentRow[] = companyId
-    ? await fetchAgents(companyId).catch(() => [])
-    : [];
+  const agents: AgentRow[] = await fetchAgents(companyId).catch(() => []);
 
   // ── Derived stats ──────────────────────────────────────────────────────
   const totalSpend  = agents.reduce((sum, a) => sum + a.spendCents, 0);

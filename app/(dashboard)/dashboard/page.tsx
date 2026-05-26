@@ -17,7 +17,9 @@
  * table shows an empty state instead of a crash page.
  */
 
+import { redirect } from "next/navigation";
 import { requireUser } from "@/lib/auth";
+import { ApiError } from "@/lib/api-errors";
 import { prisma } from "@/lib/db";
 
 // ── Types ──────────────────────────────────────────────────────────────────
@@ -137,32 +139,20 @@ const STATUS_PILL: Record<string, string> = {
 // ── Page ───────────────────────────────────────────────────────────────────
 
 export default async function DashboardPage() {
-  // ── TEMP: silent auth bypass — restore redirect before merging to nextjs-migration ──
-  // The layout (app/(dashboard)/layout.tsx) has real auth commented out for local dev.
-  // This catch swallows the 401 instead of redirecting so the page still renders
-  // with empty/zero data when there's no session.
-  //
-  // To restore: replace the catch block body with:
-  //   if (err instanceof ApiError && err.status === 401) redirect("/");
-  //   throw err;
-  // and re-add: import { redirect } from "next/navigation"; import { ApiError } ...
-  // ── END TEMP ──────────────────────────────────────────────────────────────────────
-  let companyId: string | null = null;
+  let companyId: string;
   try {
     const { user } = await requireUser();
     companyId = user.companyId;
-  } catch {
-    companyId = "08e2e455-c6eb-4c57-b94b-4faeb7dc1942"; // TEMP: silences 401 during dev; real code should redirect
+  } catch (err) {
+    if (err instanceof ApiError && err.status === 401) redirect("/");
+    throw err;
   }
 
-  // Skip the DB call when companyId is null — avoids passing an invalid UUID to Prisma
   let data: Summary = EMPTY;
-  if (companyId) {
-    try {
-      data = await fetchSummary(companyId);
-    } catch {
-      data = EMPTY;
-    }
+  try {
+    data = await fetchSummary(companyId);
+  } catch {
+    data = EMPTY;
   }
 
   // Period label for the subtitle ("May 2026")
