@@ -397,7 +397,7 @@ model Audit {
   // Window of usage data analyzed (typically 30 days back from creation).
   dataPeriodStart        DateTime?   @map("data_period_start") @db.Timestamptz(6)
   dataPeriodEnd          DateTime?   @map("data_period_end") @db.Timestamptz(6)
-  // Summary metrics surfaced on the dashboard card.
+  // Summary metrics surfaced on the LoginDashboard card.
   totalMonthlySpendCents BigInt?     @map("total_monthly_spend_cents")
   estimatedWasteCents    BigInt?     @map("estimated_waste_cents")
   efficiencyScore        Decimal?    @map("efficiency_score") @db.Decimal(5, 2)
@@ -475,19 +475,19 @@ enum FindingSeverity {
 }
 
 model DiscoveredAgent {
-  id               String   @id @default(uuid()) @db.Uuid
-  auditId          String   @map("audit_id") @db.Uuid
+  id               String @id @default(uuid()) @db.Uuid
+  auditId          String @map("audit_id") @db.Uuid
   // "Agent name" here is a best-effort label — the model id by default,
   // or a hint pulled from request metadata if the customer tagged their calls.
-  name             String   @db.VarChar(255)
-  model            String   @db.VarChar(255)
-  providerName     String   @map("provider_name") @db.VarChar(100)
-  tasksCompleted   Int      @default(0) @map("tasks_completed")
-  totalCostCents   BigInt   @default(0) @map("total_cost_cents")
-  totalTokensIn    BigInt   @default(0) @map("total_tokens_in")
-  totalTokensOut   BigInt   @default(0) @map("total_tokens_out")
-  efficiencyRating String   @default("unknown") @map("efficiency_rating") @db.VarChar(20) // 'good' | 'fair' | 'poor' | 'unknown'
-  details          Json     @default("{}")
+  name             String @db.VarChar(255)
+  model            String @db.VarChar(255)
+  providerName     String @map("provider_name") @db.VarChar(100)
+  tasksCompleted   Int    @default(0) @map("tasks_completed")
+  totalCostCents   BigInt @default(0) @map("total_cost_cents")
+  totalTokensIn    BigInt @default(0) @map("total_tokens_in")
+  totalTokensOut   BigInt @default(0) @map("total_tokens_out")
+  efficiencyRating String @default("unknown") @map("efficiency_rating") @db.VarChar(20) // 'good' | 'fair' | 'poor' | 'unknown'
+  details          Json   @default("{}")
 
   audit Audit @relation(fields: [auditId], references: [id], onDelete: Cascade)
 

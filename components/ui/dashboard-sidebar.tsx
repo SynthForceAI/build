@@ -20,12 +20,12 @@ import { cn } from "@/lib/utils";
 import type { UserRole } from "@prisma/client";
 
 const NAV_ITEMS = [
-  { href: "/dashboard",             label: "Dashboard"   },
-  { href: "/dashboard/agents",      label: "Agents"      },
-  { href: "/dashboard/performance", label: "Performance" },
-  { href: "/dashboard/departments", label: "Departments" },
-  { href: "/dashboard/policies",    label: "Policies"    },
-  { href: "/dashboard/settings",    label: "Settings"    },
+  { href: "/LoginDashboard",             label: "Dashboard"   },
+  { href: "/LoginDashboard/agents",      label: "Agents"      },
+  { href: "/LoginDashboard/performance", label: "Performance" },
+  { href: "/LoginDashboard/departments", label: "Departments" },
+  { href: "/LoginDashboard/policies",    label: "Policies"    },
+  { href: "/LoginDashboard/settings",    label: "Settings"    },
 ] as const;
 
 type Props = {
@@ -95,8 +95,8 @@ export function DashboardSidebar({ userName, userEmail, userRole, isOpen, onClos
           <nav className="flex-1 px-3 py-4 flex flex-col gap-0.5" aria-label="Main navigation">
             {NAV_ITEMS.map(({ href, label }) => {
               const isActive =
-                href === "/dashboard"
-                  ? pathname === "/dashboard"
+                href === "/LoginDashboard"
+                  ? pathname === "/LoginDashboard"
                   : pathname.startsWith(href);
 
               return (

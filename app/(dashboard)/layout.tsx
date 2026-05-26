@@ -1,7 +1,7 @@
 /**
  * Dashboard layout — the authenticated shell for the SynthForce product.
  *
- * This is a SERVER Component. It runs on every request before any dashboard
+ * This is a SERVER Component. It runs on every request before any LoginDashboard
  * page renders. Two things happen here:
  *
  *   1. AUTH GATE — requireUser() reads the Supabase auth cookie and looks up
@@ -18,10 +18,10 @@
  * the server and pass the user data down as props to the DashboardSidebar
  * Client Component, which only needs it for display.
  *
- * File location — app/(dashboard)/layout.tsx:
- * The "(dashboard)" route group doesn't add a URL segment. Pages under this
- * directory are accessed at their normal paths (e.g. /dashboard, /dashboard/agents).
- * The group just lets this layout apply to dashboard pages while the
+ * File location — app/(LoginDashboard)/layout.tsx:
+ * The "(LoginDashboard)" route group doesn't add a URL segment. Pages under this
+ * directory are accessed at their normal paths (e.g. /LoginDashboard, /LoginDashboard/agents).
+ * The group just lets this layout apply to LoginDashboard pages while the
  * (marketing) layout applies to public pages, keeping the Footer out of the app.
  */
 

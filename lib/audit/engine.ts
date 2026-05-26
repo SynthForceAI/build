@@ -3,7 +3,7 @@
  *
  * Inputs: a normalized ProviderUsageReport.
  * Output: a list of structured Findings + a top-line metrics object that
- *         will be stored on the audit row and rendered on the dashboard.
+ *         will be stored on the audit row and rendered on the LoginDashboard.
  *
  * All math here is pure — given the same input, returns the same output.
  * No I/O, no LLM. The LLM step (report.ts) is separate and only writes

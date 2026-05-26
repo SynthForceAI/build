@@ -5,10 +5,10 @@
  * Tally embed script. That's it.
  *
  * WHY no Footer here?
- * The Footer belongs on marketing pages but NOT on authenticated dashboard
+ * The Footer belongs on marketing pages but NOT on authenticated LoginDashboard
  * pages. Putting it here would render it everywhere. Instead:
  *   - app/(marketing)/layout.tsx  adds Footer for all public pages
- *   - app/(dashboard)/layout.tsx  adds the sidebar shell for product pages
+ *   - app/(LoginDashboard)/layout.tsx  adds the sidebar shell for product pages
  */
 import type { Metadata } from "next";
 import Script from "next/script";

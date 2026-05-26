@@ -33,7 +33,7 @@ async function fetchData(companyId: string) {
 
 export default async function PolicyPage() {
   // ── TEMP: silent auth bypass — restore redirect before merging to nextjs-migration ──
-  // Same pattern as app/(dashboard)/dashboard/page.tsx. When restoring:
+  // Same pattern as app/(LoginDashboard)/LoginDashboard/page.tsx. When restoring:
   //   catch (err) {
   //     if (err instanceof ApiError && err.status === 401) redirect("/");
   //     throw err;

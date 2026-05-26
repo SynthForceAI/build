@@ -1,7 +1,7 @@
 /**
  * OpenAI billing data puller.
  *
- * Hits the deprecated-but-still-functional dashboard billing endpoints to
+ * Hits the deprecated-but-still-functional LoginDashboard billing endpoints to
  * pull usage history. OpenAI has removed these from public docs in favor
  * of the Usage API; if those go away entirely we'll need to switch to
  * the per-organization Usage API endpoints + cost calculation from
@@ -111,7 +111,7 @@ type OpenAIUsageResponse = {
 /**
  * Normalize OpenAI's billing response into our generic shape.
  *
- * The dashboard billing endpoints have changed format over time. We code
+ * The LoginDashboard billing endpoints have changed format over time. We code
  * defensively — missing fields become zeros — rather than throwing on
  * shape mismatches the customer can't debug.
  */

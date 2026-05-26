@@ -138,7 +138,7 @@ const STATUS_PILL: Record<string, string> = {
 
 export default async function DashboardPage() {
   // ── TEMP: silent auth bypass — restore redirect before merging to nextjs-migration ──
-  // The layout (app/(dashboard)/layout.tsx) has real auth commented out for local dev.
+  // The layout (app/(LoginDashboard)/layout.tsx) has real auth commented out for local dev.
   // This catch swallows the 401 instead of redirecting so the page still renders
   // with empty/zero data when there's no session.
   //
