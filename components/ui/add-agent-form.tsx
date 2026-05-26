@@ -8,7 +8,7 @@ type Provider = { id: string; name: string; displayName: string };
 type Model = { id: string; modelId: string; displayName: string; providerId: string };
 
 export function AddAgentForm({
-  departments,
+  departments: initialDepartments,
   providers,
   models,
   onSuccess,
@@ -21,6 +21,7 @@ export function AddAgentForm({
   const router = useRouter();
   const [name, setName] = useState("");
   const [description, setDescription] = useState("");
+  const [departments, setDepartments] = useState<Department[]>(initialDepartments);
   const [departmentId, setDepartmentId] = useState("");
   const [providerId, setProviderId] = useState("");
   const [modelId, setModelId] = useState("");
@@ -28,10 +29,37 @@ export function AddAgentForm({
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
+  // inline department creation
+  const [showNewDept, setShowNewDept] = useState(false);
+  const [newDeptName, setNewDeptName] = useState("");
+  const [newDeptLoading, setNewDeptLoading] = useState(false);
+  const [newDeptError, setNewDeptError] = useState<string | null>(null);
+
   // filter models based on selected provider
   const filteredModels = models.filter((m) => m.providerId === providerId);
 
-  // your submit function and JSX goes here
+  async function handleCreateDepartment() {
+    if (!newDeptName.trim()) return;
+    setNewDeptLoading(true);
+    setNewDeptError(null);
+    const res = await fetch("/api/departments", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ name: newDeptName.trim() }),
+    });
+    setNewDeptLoading(false);
+    if (!res.ok) {
+      const body = await res.json().catch(() => ({}));
+      setNewDeptError(body?.error?.message ?? "Could not create department.");
+      return;
+    }
+    const { department } = await res.json();
+    setDepartments((prev) => [...prev, { id: department.id, name: department.name }]);
+    setDepartmentId(department.id);
+    setNewDeptName("");
+    setShowNewDept(false);
+  }
+
   async function handleSubmit(e:React.FormEvent) {
     e.preventDefault();
     setLoading(true);
@@ -88,12 +116,58 @@ export function AddAgentForm({
 
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-1">Department</label>
-          <select value={departmentId} onChange={(e) => setDepartmentId(e.target.value)} className="w-full px-4 py-2 border border-gray-300 rounded-lg text-sm">
+          <select
+            value={departmentId}
+            onChange={(e) => {
+              if (e.target.value === "__new__") {
+                setShowNewDept(true);
+                setDepartmentId("");
+              } else {
+                setShowNewDept(false);
+                setDepartmentId(e.target.value);
+              }
+            }}
+            className="w-full px-4 py-2 border border-gray-300 rounded-lg text-sm"
+          >
             <option value="">Select department</option>
             {departments.map((d) => (
               <option key={d.id} value={d.id}>{d.name}</option>
             ))}
+            <option value="__new__">+ New Department</option>
           </select>
+
+          {showNewDept && (
+            <div className="mt-2 flex gap-2 items-start">
+              <div className="flex-1">
+                <input
+                  type="text"
+                  value={newDeptName}
+                  onChange={(e) => setNewDeptName(e.target.value)}
+                  placeholder="Department name"
+                  className="w-full px-3 py-1.5 border border-gray-300 rounded-lg text-sm"
+                  onKeyDown={(e) => e.key === "Enter" && (e.preventDefault(), handleCreateDepartment())}
+                />
+                {newDeptError && (
+                  <p className="text-xs text-red-600 mt-1">{newDeptError}</p>
+                )}
+              </div>
+              <button
+                type="button"
+                onClick={handleCreateDepartment}
+                disabled={newDeptLoading || !newDeptName.trim()}
+                className="px-3 py-1.5 bg-[#00B2FF] text-white rounded-lg text-sm font-medium border border-[#00B2FF] hover:bg-transparent hover:text-[#00B2FF] transition disabled:opacity-50 whitespace-nowrap"
+              >
+                {newDeptLoading ? "Creating..." : "Create"}
+              </button>
+              <button
+                type="button"
+                onClick={() => { setShowNewDept(false); setNewDeptName(""); setNewDeptError(null); }}
+                className="px-3 py-1.5 text-sm text-gray-400 hover:text-gray-600"
+              >
+                Cancel
+              </button>
+            </div>
+          )}
         </div>
 
         <div>

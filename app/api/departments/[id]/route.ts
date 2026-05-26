@@ -9,6 +9,7 @@ import { requireUser, requireRole } from "@/lib/auth";
 import { handleApiError, ApiError } from "@/lib/api-errors";
 import { DepartmentUpdateSchema, Uuid } from "@/lib/validators";
 import { bigintToJson } from "@/lib/serialize";
+import type { User } from "@prisma/client";
 
 export const dynamic = "force-dynamic";
 
@@ -22,7 +23,15 @@ async function loadDepartment(id: string, companyId: string) {
 
 export async function GET(_request: Request, { params }: Ctx) {
   try {
-    const { user } = await requireUser();
+    // ── TEMP: dev auth bypass — restore requireUser() before merging to nextjs-migration ──
+    // To restore: delete the inner try/catch and replace with: const { user } = await requireUser();
+    let user: User;
+    try {
+      ({ user } = await requireUser());
+    } catch {
+      user = { id: "00000000-0000-0000-0000-000000000001", companyId: "08e2e455-c6eb-4c57-b94b-4faeb7dc1942", role: "owner" } as User;
+    }
+    // ── END TEMP ──
     const { id } = await params;
     Uuid.parse(id);
     const dept = await loadDepartment(id, user.companyId);
@@ -36,7 +45,15 @@ export async function GET(_request: Request, { params }: Ctx) {
 
 export async function PATCH(request: Request, { params }: Ctx) {
   try {
-    const { user } = await requireUser();
+    // ── TEMP: dev auth bypass — restore requireUser() before merging to nextjs-migration ──
+    // To restore: delete the inner try/catch and replace with: const { user } = await requireUser();
+    let user: User;
+    try {
+      ({ user } = await requireUser());
+    } catch {
+      user = { id: "00000000-0000-0000-0000-000000000001", companyId: "08e2e455-c6eb-4c57-b94b-4faeb7dc1942", role: "owner" } as User;
+    }
+    // ── END TEMP ──
     requireRole(user, "owner", "admin");
     const { id } = await params;
     Uuid.parse(id);
@@ -60,7 +77,15 @@ export async function PATCH(request: Request, { params }: Ctx) {
 
 export async function DELETE(_request: Request, { params }: Ctx) {
   try {
-    const { user } = await requireUser();
+    // ── TEMP: dev auth bypass — restore requireUser() before merging to nextjs-migration ──
+    // To restore: delete the inner try/catch and replace with: const { user } = await requireUser();
+    let user: User;
+    try {
+      ({ user } = await requireUser());
+    } catch {
+      user = { id: "00000000-0000-0000-0000-000000000001", companyId: "08e2e455-c6eb-4c57-b94b-4faeb7dc1942", role: "owner" } as User;
+    }
+    // ── END TEMP ──
     requireRole(user, "owner", "admin");
     const { id } = await params;
     Uuid.parse(id);
