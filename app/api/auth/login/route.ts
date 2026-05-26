@@ -3,7 +3,7 @@ import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { prisma } from "@/lib/db";
 import { logActivity } from "@/lib/activity-logs";
 import { cookies } from "next/headers";
-import { OWNER_EMAIL, OWNER_PASSWORD } from "@/lib/constants";
+import { OWNER_EMAIL } from "@/lib/constants";
 
 export async function POST(req: NextRequest) {
   try {
@@ -14,7 +14,7 @@ export async function POST(req: NextRequest) {
     }
 
     // Check if this is owner login
-    const isOwnerLogin = email === OWNER_EMAIL && password === OWNER_PASSWORD;
+    const isOwnerLogin = email === OWNER_EMAIL && password === (process.env.OWNER_PASSWORD );
 
     let userId: string;
     let isOwner = false;

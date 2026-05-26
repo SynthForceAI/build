@@ -1,6 +1,5 @@
 // Auth constants
 export const OWNER_EMAIL = "samarth@synthforceai.com";
-export const OWNER_PASSWORD = "samarth1234";
 
 // Cookie names
 export const AUTH_COOKIE_NAME = "synthforce_auth";
