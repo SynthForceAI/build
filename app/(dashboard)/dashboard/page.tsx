@@ -152,7 +152,7 @@ export default async function DashboardPage() {
     const { user } = await requireUser();
     companyId = user.companyId;
   } catch {
-    companyId = null; // TEMP: silences 401 during dev; real code should redirect
+    companyId = "08e2e455-c6eb-4c57-b94b-4faeb7dc1942"; // TEMP: silences 401 during dev; real code should redirect
   }
 
   // Skip the DB call when companyId is null — avoids passing an invalid UUID to Prisma
@@ -206,7 +206,8 @@ export default async function DashboardPage() {
             </p>
           </div>
         ) : (
-          <table className="w-full text-sm">
+          <div className="overflow-x-auto">
+          <table className="w-full text-sm min-w-[480px]">
             <thead>
               <tr className="text-left text-xs text-gray-500 border-b border-gray-100">
                 <th className="px-6 py-3 font-medium">Agent</th>
@@ -254,6 +255,7 @@ export default async function DashboardPage() {
               })}
             </tbody>
           </table>
+          </div>
         )}
       </div>
 

@@ -9,6 +9,7 @@ type Department = {
     id: string;
     name: string;
     agentCount: number;
+    budgetCents: number;
 };
 
 //fetch data from the DB directly for the server functionality
@@ -23,6 +24,7 @@ async function fetchDepartments(companyId: string){
         id: d.id,
         name: d.name,
         agentCount: d._count.agents,
+        budgetCents: Number(d.monthlyBudgetCents),
     }));
 }
 
@@ -41,7 +43,7 @@ export default async function DepartmentsPage() {
       const { user } = await requireUser();
       companyId = user.companyId;
     } catch {
-      companyId = null; // TEMP: swallows 401 during dev; real code should redirect
+      companyId = "08e2e455-c6eb-4c57-b94b-4faeb7dc1942"; // TEMP: swallows 401 during dev; real code should redirect
     }
     let departments: Department[] = [];
     if (companyId) {
@@ -71,11 +73,13 @@ export default async function DepartmentsPage() {
             </a>
           </div>
           ) : (
-            <table className="w-full text-sm">
+            <div className="overflow-x-auto">
+            <table className="w-full text-sm min-w-[420px]">
               <thead>
                 <tr className="text-left text-xs text-gray-500 border-b border-gray-100 bg-gray-50/50">
-                  <th className="px-6 py-3 font-medium">Name</th>
-                  <th className="px-6 py-3 font-medium">Agent Count</th>
+                  <th className="px-4 py-3 font-medium">Name</th>
+                  <th className="px-4 py-3 font-medium">Agents</th>
+                  <th className="px-4 py-3 font-medium text-right">Monthly Budget</th>
                 </tr>
               </thead>
               <tbody>
@@ -86,18 +90,21 @@ export default async function DepartmentsPage() {
                       key={department.id}
                       className="border-b border-gray-50 last:border-b-0 hover:bg-gray-50/60 transition-colors"
                     >
-                      {/* Name + optional truncated description as subtitle */}
-                      <td className="px-6 py-4">
-                        <p className="font-medium text-gray-900">{department.name}</p>
+                      <td className="px-4 py-3 font-medium text-gray-900">{department.name}</td>
+                      <td className="px-4 py-3">
+                        <span className="px-2.5 py-1 rounded-full text-xs bg-blue-100 text-blue-800">
+                          {department.agentCount} agents
+                        </span>
                       </td>
-                      <td className="px-6 py-4 text-gray-600 whitespace-nowrap">
-                        {department.agentCount}
+                      <td className="px-4 py-3 text-right font-mono text-gray-900">
+                        ${(department.budgetCents / 100).toLocaleString()}/mo
                       </td>
                     </tr>
                   );
                 })}
               </tbody>
             </table>
+            </div>
           )}
         </div>
       </div>

@@ -28,7 +28,7 @@
 import { redirect } from "next/navigation";
 import { requireUser } from "@/lib/auth";
 import { ApiError } from "@/lib/api-errors";
-import { DashboardSidebar } from "@/components/ui/dashboard-sidebar";
+import { DashboardShell } from "@/components/ui/dashboard-shell";
 
 export default async function DashboardLayout({
   children,
@@ -65,47 +65,16 @@ export default async function DashboardLayout({
   // ── END TEMP ──────────────────────────────────────────────────────────
 
   // ── Shell layout ───────────────────────────────────────────────────────
+  // DashboardShell is a Client Component that manages sidebar open/close state
+  // and renders the hamburger button. We pass user data as plain props so the
+  // server-side requireUser() DB cost is paid exactly once.
   return (
-    // Full-viewport container. overflow-hidden prevents double scrollbars —
-    // only the <main> area below scrolls, not the whole page.
-    <div className="flex h-screen overflow-hidden bg-gray-50">
-
-      {/*
-       * Sidebar — Client Component.
-       * We pass user data as plain serialisable props rather than letting the
-       * sidebar fetch on its own. requireUser() already paid the DB cost;
-       * no reason to pay it twice.
-       */}
-      <DashboardSidebar
-        userName={user.name}
-        userEmail={user.email}
-        userRole={user.role}
-      />
-
-      {/* Right column: thin top bar + scrollable page content */}
-      <div className="flex flex-col flex-1 min-w-0 overflow-hidden">
-
-        {/* ── Top bar ─────────────────────────────────────── */}
-        {/* Minimal for now — just branding and an escape hatch to the
-            marketing site. Will grow to include breadcrumbs / notifications. */}
-        <header className="h-16 shrink-0 bg-white border-b border-subtle flex items-center justify-between px-6">
-          <span className="text-sm font-semibold text-gray-900">SynthForce</span>
-          <a
-            href="/"
-            className="text-xs text-gray-400 hover:text-gray-600 transition-colors"
-          >
-            ← Back to site
-          </a>
-        </header>
-
-        {/* ── Page content ────────────────────────────────── */}
-        {/* Each page under app/(dashboard)/ renders here. The overflow-y-auto
-            means only this region scrolls, so the sidebar stays fixed in view. */}
-        <main className="flex-1 overflow-y-auto p-6">
-          {children}
-        </main>
-
-      </div>
-    </div>
+    <DashboardShell
+      userName={user.name}
+      userEmail={user.email}
+      userRole={user.role}
+    >
+      {children}
+    </DashboardShell>
   );
 }
