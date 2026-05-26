@@ -26,6 +26,7 @@ export function AddAgentForm({
   const [modelId, setModelId] = useState("");
   const [monthlyBudgetDollars, setMonthlyBudgetDollars] = useState("");
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   // filter models based on selected provider
   const filteredModels = models.filter((m) => m.providerId === providerId);
@@ -35,7 +36,8 @@ export function AddAgentForm({
     e.preventDefault();
     setLoading(true);
 
-    await fetch("/api/agents", {
+    setError(null);
+    const res = await fetch("/api/agents", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -49,10 +51,15 @@ export function AddAgentForm({
             : undefined,
         }),
       });
-    
+
       setLoading(false);
+      if (!res.ok) {
+        const body = await res.json().catch(() => ({}));
+        setError(body?.error?.message ?? "Something went wrong. Please try again.");
+        return;
+      }
       router.refresh();
-      onSuccess?.(); 
+      onSuccess?.();
   }
   return(
     <form onSubmit={handleSubmit} className="space-y-4">
@@ -132,6 +139,12 @@ export function AddAgentForm({
         />
         </div>
         
+
+        {error && (
+          <p className="text-sm text-red-600 bg-red-50 border border-red-200 rounded-lg px-3 py-2">
+            {error}
+          </p>
+        )}
 
         <button
             type="submit"

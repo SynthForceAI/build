@@ -20,6 +20,7 @@ export function AddPolicyForm({
   const [scopeDepartmentId, setScopeDepartmentId] = useState("");
   const [ruleType, setRuleType] = useState("content_guard");
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   // content_guard fields
   const [blockedTerms, setBlockedTerms] = useState("");
@@ -84,7 +85,8 @@ export function AddPolicyForm({
       };
     }
 
-    await fetch("/api/policies", {
+    setError(null);
+    const res = await fetch("/api/policies", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
@@ -98,6 +100,11 @@ export function AddPolicyForm({
     });
 
     setLoading(false);
+    if (!res.ok) {
+      const body = await res.json().catch(() => ({}));
+      setError(body?.error?.message ?? "Something went wrong. Please try again.");
+      return;
+    }
     router.refresh();
     onSuccess?.();
   }
@@ -279,6 +286,12 @@ export function AddPolicyForm({
             placeholder="e.g. dept-uuid-1, dept-uuid-2 (comma separated)"
           />
         </div>
+      )}
+
+      {error && (
+        <p className="text-sm text-red-600 bg-red-50 border border-red-200 rounded-lg px-3 py-2">
+          {error}
+        </p>
       )}
 
       <button
