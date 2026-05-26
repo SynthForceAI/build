@@ -22,6 +22,7 @@ import type { UserRole } from "@prisma/client";
 const NAV_ITEMS = [
   { href: "/dashboard",             label: "Dashboard"   },
   { href: "/dashboard/agents",      label: "Agents"      },
+  { href: "/dashboard/performance", label: "Performance" },
   { href: "/dashboard/departments", label: "Departments" },
   { href: "/dashboard/policies",    label: "Policies"    },
   { href: "/dashboard/settings",    label: "Settings"    },
