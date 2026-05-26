@@ -4,7 +4,6 @@ import { prisma } from "@/lib/db";
 import { requireUser, requireRole } from "@/lib/auth";
 import { handleApiError, ApiError } from "@/lib/api-errors";
 import { Uuid } from "@/lib/validators";
-
 export const dynamic = "force-dynamic";
 
 export async function POST(_request: Request, { params }: { params: Promise<{ id: string }> }) {

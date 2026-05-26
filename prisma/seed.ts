@@ -66,6 +66,7 @@ const PROVIDERS: ProviderSeed[] = [
 ];
 
 async function main() {
+  // ── Providers + models ─────────────────────────
   for (const p of PROVIDERS) {
     const provider = await prisma.provider.upsert({
       where:  { name: p.name },
@@ -93,6 +94,179 @@ async function main() {
     }
     console.log(`  ✓ ${p.displayName}  (${p.models.length} models)`);
   }
+
+  // ── Company ────────────────────────────────────
+  const company = await prisma.company.upsert({
+    where: { slug: "demo-corp" },
+    update: {},
+    create: {
+      name: "Demo Corp",
+      slug: "demo-corp",
+      subscriptionTier: "team",
+    },
+  });
+  console.log(`  ✓ Company: ${company.name}`);
+
+  // ── Departments ────────────────────────────────
+  const departments = await Promise.all([
+    prisma.department.upsert({
+      where: { companyId_name: { companyId: company.id, name: "Sales" } },
+      update: {},
+      create: { companyId: company.id, name: "Sales", monthlyBudgetCents: 500000 },
+    }),
+    prisma.department.upsert({
+      where: { companyId_name: { companyId: company.id, name: "Support" } },
+      update: {},
+      create: { companyId: company.id, name: "Support", monthlyBudgetCents: 300000 },
+    }),
+    prisma.department.upsert({
+      where: { companyId_name: { companyId: company.id, name: "Finance" } },
+      update: {},
+      create: { companyId: company.id, name: "Finance", monthlyBudgetCents: 200000 },
+    }),
+  ]);
+  console.log(`  ✓ Departments: ${departments.length}`);
+
+  // ── Policies ────────────────────────────────────────────────────────
+const [salesDept, supportDept, financeDept] = departments;
+
+await Promise.all([
+  prisma.policy.upsert({
+    where: { companyId_name: { companyId: company.id, name: "No discounts without approval" } },
+    update: {},
+    create: {
+      companyId: company.id,
+      name: "No discounts without approval",
+      description: "Agents must never promise discounts greater than 5% without manager approval",
+      severity: "block",
+      scope: "department",
+      scopeDepartmentId: salesDept.id,
+      ruleDefinition: { type: "discount_limit", maxPercent: 5 },
+    },
+  }),
+  prisma.policy.upsert({
+    where: { companyId_name: { companyId: company.id, name: "No PII access without consent" } },
+    update: {},
+    create: {
+      companyId: company.id,
+      name: "No PII access without consent",
+      description: "Do not access or share customer personally identifiable information without explicit consent",
+      severity: "block",
+      scope: "department",
+      scopeDepartmentId: supportDept.id,
+      ruleDefinition: { type: "pii_access", requireConsent: true },
+    },
+  }),
+    prisma.policy.upsert({
+      where: { companyId_name: { companyId: company.id, name: "Invoice approval threshold" } },
+      update: {},
+      create: {
+        companyId: company.id,
+        name: "Invoice approval threshold",
+        description: "Never approve invoices over $10,000 without a manual audit flag",
+        severity: "flag",
+        scope: "department",
+        scopeDepartmentId: financeDept.id,
+        ruleDefinition: { type: "invoice_limit", maxAmountCents: 1000000 },
+      },
+    }),
+    prisma.policy.upsert({
+      where: { companyId_name: { companyId: company.id, name: "No future roadmap disclosure" } },
+      update: {},
+      create: {
+        companyId: company.id,
+        name: "No future roadmap disclosure",
+        description: "Agents must never share unannounced product features or roadmap dates",
+        severity: "warning",
+        scope: "global",
+        ruleDefinition: { type: "content_filter", topic: "roadmap" },
+      },
+    }),
+  ]);
+  console.log("  ✓ Policies: 4");
+
+  // Get provider + models for agents
+const openai = await prisma.provider.findUnique({ where: { name: "openai" } });
+const anthropic = await prisma.provider.findUnique({ where: { name: "anthropic" } });
+const gpt4o = await prisma.providerModel.findFirst({
+  where: { providerId: openai!.id, modelId: "gpt-4o" }
+});
+const gpt4oMini = await prisma.providerModel.findFirst({
+  where: { providerId: openai!.id, modelId: "gpt-4o-mini" }
+});
+const claudeHaiku = await prisma.providerModel.findFirst({
+  where: { providerId: anthropic!.id, modelId: "claude-3-5-haiku" }
+});
+
+const [sales, support, finance] = departments;
+
+const agents = await Promise.all([
+  prisma.agent.upsert({
+    where: { id: "aaaaaaaa-0001-0001-0001-000000000001" },
+    update: {},
+    create: {
+      id: "aaaaaaaa-0001-0001-0001-000000000001",
+      companyId: company.id,
+      departmentId: sales.id,
+      name: "Lead Qualifier",
+      description: "Qualifies inbound leads from website forms",
+      status: "active",
+      providerId: openai!.id,
+      modelId: gpt4o!.id,
+      monthlyBudgetCents: 50000n,
+      currentMonthSpendCents: 42000n,
+    },
+  }),
+  prisma.agent.upsert({
+    where: { id: "aaaaaaaa-0002-0002-0002-000000000002" },
+    update: {},
+    create: {
+      id: "aaaaaaaa-0002-0002-0002-000000000002",
+      companyId: company.id,
+      departmentId: support.id,
+      name: "Support Agent",
+      description: "Handles tier-1 customer support tickets",
+      status: "paused",
+      providerId: anthropic!.id,
+      modelId: claudeHaiku!.id,
+      monthlyBudgetCents: 30000n,
+      currentMonthSpendCents: 28500n,
+    },
+  }),
+  prisma.agent.upsert({
+    where: { id: "aaaaaaaa-0003-0003-0003-000000000003" },
+    update: {},
+    create: {
+      id: "aaaaaaaa-0003-0003-0003-000000000003",
+      companyId: company.id,
+      departmentId: finance.id,
+      name: "Invoice Processor",
+      description: "Extracts and validates invoice data",
+      status: "flagged",
+      providerId: openai!.id,
+      modelId: gpt4oMini!.id,
+      monthlyBudgetCents: 20000n,
+      currentMonthSpendCents: 19800n,
+    },
+  }),
+  prisma.agent.upsert({
+    where: { id: "aaaaaaaa-0004-0004-0004-000000000004" },
+    update: {},
+    create: {
+      id: "aaaaaaaa-0004-0004-0004-000000000004",
+      companyId: company.id,
+      departmentId: sales.id,
+      name: "Sales Representative",
+      description: "Handles outbound sales outreach",
+      status: "active",
+      providerId: openai!.id,
+      modelId: gpt4o!.id,
+      monthlyBudgetCents: 40000n,
+      currentMonthSpendCents: 12000n,
+    },
+  }),
+]);
+console.log(`  ✓ Agents: ${agents.length}`);
 }
 
 main()

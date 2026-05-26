@@ -8,7 +8,6 @@ import { requireUser, requireRole } from "@/lib/auth";
 import { handleApiError } from "@/lib/api-errors";
 import { DepartmentCreateSchema } from "@/lib/validators";
 import { bigintToJson } from "@/lib/serialize";
-
 export const dynamic = "force-dynamic";
 
 export async function GET() {

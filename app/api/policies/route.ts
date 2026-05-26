@@ -7,7 +7,6 @@ import { prisma } from "@/lib/db";
 import { requireUser, requireRole } from "@/lib/auth";
 import { handleApiError } from "@/lib/api-errors";
 import { PolicyCreateSchema } from "@/lib/validators";
-
 export const dynamic = "force-dynamic";
 
 export async function GET() {

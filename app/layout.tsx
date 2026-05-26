@@ -1,10 +1,21 @@
+/**
+ * Root layout — the HTML shell applied to every page in the app.
+ *
+ * This is intentionally minimal: fonts, global styles, analytics, and the
+ * Tally embed script. That's it.
+ *
+ * WHY no Footer here?
+ * The Footer belongs on marketing pages but NOT on authenticated LoginDashboard
+ * pages. Putting it here would render it everywhere. Instead:
+ *   - app/(marketing)/layout.tsx  adds Footer for all public pages
+ *   - app/(LoginDashboard)/layout.tsx  adds the sidebar shell for product pages
+ */
 import type { Metadata } from "next";
 import Script from "next/script";
 import { inter } from "@/lib/fonts";
 import "./globals.css";
 import React from "react";
 import { cn } from "@/lib/utils";
-import { Footer } from "@/components/ui/footer";
 import { Analytics } from "@vercel/analytics/react";
 
 export const metadata: Metadata = {
@@ -24,7 +35,7 @@ export default function RootLayout({
       <body>
         {children}
         <Analytics />
-        <Footer />
+        {/* Tally embed — needed by WaitlistTrigger on marketing pages */}
         <Script src="https://tally.so/widgets/embed.js" strategy="afterInteractive" />
       </body>
     </html>
