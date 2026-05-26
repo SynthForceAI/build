@@ -2,7 +2,9 @@
  * Departments page
  */
 
+import { redirect } from "next/navigation";
 import { requireUser } from "@/lib/auth";
+import { ApiError } from "@/lib/api-errors";
 import { prisma } from "@/lib/db";
 import { DepartmentsClient, type DepartmentRow } from "@/components/ui/departments-client";
 
@@ -28,25 +30,16 @@ async function fetchDepartments(companyId: string): Promise<DepartmentRow[]> {
 }
 
 export default async function DepartmentsPage() {
-  // ── TEMP: silent auth bypass — restore redirect before merging to nextjs-migration ──
-  // Same pattern as app/(LoginDashboard)/LoginDashboard/page.tsx. When restoring:
-  //   catch (err) {
-  //     if (err instanceof ApiError && err.status === 401) redirect("/");
-  //     throw err;
-  //   }
-  // and add: import { redirect } from "next/navigation"; import { ApiError } ...
-  // ── END TEMP ──────────────────────────────────────────────────────────────────────
-  let companyId: string | null = null;
+  let companyId: string;
   try {
     const { user } = await requireUser();
     companyId = user.companyId;
-  } catch {
-    companyId = "08e2e455-c6eb-4c57-b94b-4faeb7dc1942"; // TEMP: swallows 401 during dev
+  } catch (err) {
+    if (err instanceof ApiError && err.status === 401) redirect("/");
+    throw err;
   }
 
-  const departments = companyId
-    ? await fetchDepartments(companyId).catch(() => [] as DepartmentRow[])
-    : [];
+  const departments = await fetchDepartments(companyId).catch(() => [] as DepartmentRow[]);
 
   return <DepartmentsClient departments={departments} />;
 }

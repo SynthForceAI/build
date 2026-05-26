@@ -82,7 +82,7 @@ export function DashboardSidebar({ userName, userEmail, userRole, isOpen, onClos
 
           {/* ── Logo ─────────────────────────────────────────── */}
           <div className="h-16 shrink-0 flex items-center px-5 border-b border-white/10">
-            <Link href="/dashboard" aria-label="Go to dashboard home">
+            <Link href="/LoginDashboard" aria-label="Go to dashboard home">
               <img
                 src="/assets/logo_white_with_name.png"
                 alt="SynthForce"

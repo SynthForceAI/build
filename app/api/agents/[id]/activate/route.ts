@@ -4,21 +4,11 @@ import { prisma } from "@/lib/db";
 import { requireUser, requireRole } from "@/lib/auth";
 import { handleApiError, ApiError } from "@/lib/api-errors";
 import { Uuid } from "@/lib/validators";
-import type { User } from "@prisma/client";
-
 export const dynamic = "force-dynamic";
 
 export async function POST(_request: Request, { params }: { params: Promise<{ id: string }> }) {
   try {
-    // ── TEMP: dev auth bypass — restore requireUser() before merging to nextjs-migration ──
-    // To restore: delete the inner try/catch and replace with: const { user } = await requireUser();
-    let user: User;
-    try {
-      ({ user } = await requireUser());
-    } catch {
-      user = { id: "00000000-0000-0000-0000-000000000001", companyId: "08e2e455-c6eb-4c57-b94b-4faeb7dc1942", role: "owner" } as User;
-    }
-    // ── END TEMP ──
+    const { user } = await requireUser();
     requireRole(user, "owner", "admin", "member");
     const { id } = await params;
     Uuid.parse(id);

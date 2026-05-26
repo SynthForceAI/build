@@ -29,6 +29,7 @@ import { redirect } from "next/navigation";
 import { requireUser } from "@/lib/auth";
 import { ApiError } from "@/lib/api-errors";
 import { DashboardShell } from "@/components/ui/dashboard-shell";
+import type { User } from "@prisma/client";
 
 export default async function DashboardLayout({
   children,
@@ -42,27 +43,16 @@ export default async function DashboardLayout({
   // Both cases should redirect to login. Any other error is unexpected and
   // gets re-thrown so Next.js can show an error boundary.
 
-  // ── TEMP: hardcoded user — restore real auth before merging to nextjs-migration ──
-  // To restore: delete the `const user = {...}` block below and uncomment
-  // the try/catch block. Also un-comment the imports at the top of the file
-  // (redirect, requireUser, ApiError).
-  //
-  // try {
-  //   const { user: _user } = await requireUser();
-  //   user = _user;
-  // } catch (err) {
-  //   if (err instanceof ApiError && err.status === 401) {
-  //     redirect("/"); // change to "/login" once that page exists
-  //   }
-  //   throw err;
-  // }
-  const user = {
-    name: "Dev User",
-    email: "dev@test.com",
-    role: "owner" as const,
-    companyId: "test-company-id",
-  };
-  // ── END TEMP ──────────────────────────────────────────────────────────
+  let user: User;
+  try {
+    const { user: _user } = await requireUser();
+    user = _user;
+  } catch (err) {
+    if (err instanceof ApiError && err.status === 401) {
+      redirect("/");
+    }
+    throw err;
+  }
 
   // ── Shell layout ───────────────────────────────────────────────────────
   // DashboardShell is a Client Component that manages sidebar open/close state
@@ -70,7 +60,7 @@ export default async function DashboardLayout({
   // server-side requireUser() DB cost is paid exactly once.
   return (
     <DashboardShell
-      userName={user.name}
+      userName={user.name ?? ""}
       userEmail={user.email}
       userRole={user.role}
     >
