@@ -56,3 +56,4 @@ yarn-error.log*
 
 # Claude Code worktrees (transient, per-session)
 .claude/worktrees/
+.vercel
