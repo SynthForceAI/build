@@ -7,14 +7,12 @@
  */
 import { createServerClient, type CookieOptions } from "@supabase/ssr";
 import { cookies } from "next/headers";
-import { env } from "../env";
 
 type CookiesToSet = { name: string; value: string; options?: CookieOptions }[];
 
 export async function createSupabaseServerClient() {
   const cookieStore = await cookies();
-  const e = env();
-  return createServerClient(e.NEXT_PUBLIC_SUPABASE_URL, e.NEXT_PUBLIC_SUPABASE_ANON_KEY, {
+  return createServerClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!, {
     cookies: {
       getAll() {
         return cookieStore.getAll();
@@ -46,8 +44,7 @@ let serviceClient: ReturnType<typeof createClient> | undefined;
 
 export function createSupabaseServiceClient() {
   if (serviceClient) return serviceClient;
-  const e = env();
-  serviceClient = createClient(process.env.NEXT_PUBLIC_SUPABASE_URL, process.env.SUPABASE_SERVICE_ROLE_KEY, {
+  serviceClient = createClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.SUPABASE_SERVICE_ROLE_KEY!, {
     auth: { persistSession: false, autoRefreshToken: false },
   });
   return serviceClient;
