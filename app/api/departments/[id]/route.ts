@@ -9,7 +9,6 @@ import { requireUser, requireRole } from "@/lib/auth";
 import { handleApiError, ApiError } from "@/lib/api-errors";
 import { DepartmentUpdateSchema, Uuid } from "@/lib/validators";
 import { bigintToJson } from "@/lib/serialize";
-
 export const dynamic = "force-dynamic";
 
 type Ctx = { params: Promise<{ id: string }> };

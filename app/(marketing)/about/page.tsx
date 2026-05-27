@@ -51,8 +51,8 @@ export default function AboutPage() {
               </div>
               <p className="text-gray-600 leading-relaxed">
                 Matthew is a Founding Full-Stack Engineer at SynthForce, bringing a strong
-                foundation in both software development and cutting-edge research. A Computer
-                Engineering student at Florida State University, he also serves as a Research
+                foundation in both software development and cutting-edge research. A senior in Computer
+                Engineering at Florida State University, he also serves as a Research
                 Intern in the Optimal Robotics Lab under Dr. Christian Hubicki, where he works
                 at the intersection of robotics and intelligent systems. His experience spanning
                 research and industry gives him a unique perspective on building scalable,

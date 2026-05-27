@@ -1,10 +1,12 @@
 /**
  * Refreshes the Supabase auth session on every request that passes through
- * Next.js middleware. Without this, cookies expire and protected routes
+ * Next.js proxy. Without this, cookies expire and protected routes
  * start 401-ing intermittently.
  */
-import { createServerClient } from "@supabase/ssr";
+import { createServerClient, type CookieOptions } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
+
+type CookiesToSet = { name: string; value: string; options?: CookieOptions }[];
 
 export async function updateSupabaseSession(request: NextRequest) {
   let response = NextResponse.next({ request });
@@ -17,7 +19,7 @@ export async function updateSupabaseSession(request: NextRequest) {
         getAll() {
           return request.cookies.getAll();
         },
-        setAll(cookiesToSet) {
+        setAll(cookiesToSet: CookiesToSet) {
           for (const { name, value } of cookiesToSet) request.cookies.set(name, value);
           response = NextResponse.next({ request });
           for (const { name, value, options } of cookiesToSet) {

@@ -1,47 +1,52 @@
-# SynthForce Platform
+# SynthForce
 
-**HR for AI agents.** A governance layer for managing AI agent workforces.
+**HR for AI agents.** A governance, budgeting, and audit layer that lets companies hire, manage, and oversee AI agent workforces the way they manage human staff.
 
-## Repository Structure
+Production site: [synthforceai.com](https://synthforceai.com)
+
+## Status
+
+The site is in the middle of a Next.js rewrite.
+
+- `main` — legacy static HTML site (still serving production).
+- `nextjs-migration` — Next.js + Tailwind v4 rewrite of the marketing site. Frontend is complete.
+- `backend/audit-foundation` — Prisma + Supabase backend scaffold, including the free OpenAI billing audit pipeline. Not yet end-to-end runnable (needs `.env`, Supabase project, and a few missing routes — see CLAUDE.md "Known gotchas").
+- Current Tasks: Turn backend scaffold into a fuly-functional prototype/MVP. Add CI/CD as we go. Backend is priority and frontend can come later.
+
+## Tech stack
+
+Next.js 16 (App Router) · React 19 · TypeScript · Tailwind CSS v4 · shadcn/ui · Prisma 6 · PostgreSQL (Supabase) · Supabase Auth · Zod · Vitest · Vercel.
+
+## Project structure
 
 ```
-/
-├── api/                  # Vercel serverless functions
-│   └── sitemap.js        # Dynamic sitemap
-├── blog/
-│   └── the-agent-explosion-how-to-prepare.html
-├── src/
-│   ├── assets/           # Images, SVGs, favicon, integration logos
-│   ├── pages/            # HTML pages (to be migrated to TypeScript)
-│   │   ├── index.html          # Landing page
-│   │   ├── about.html          # About / team
-│   │   ├── product.html        # Product overview
-│   │   ├── demo.html           # Interactive demo
-│   │   ├── blog.html           # Blog listing
-│   │   └── waitlistsignup.html # Waitlist
-│   ├── components/       # Reusable UI components (future)
-│   └── styles/           # CSS styles (future)
-├── docs/                 # Architecture specs, design docs
-├── scripts/              # Build and deployment scripts
-├── .gitignore
-├── package.json
-├── vercel.json           # Vercel deployment config
-└── CNAME                 # Custom domain (synthforceai.com)
+app/             Next.js App Router (pages + API routes)
+components/ui/   UI components (shadcn-style)
+hooks/           Reusable React hooks
+lib/             Server-side library code (db, auth, audit, crypto, validators…)
+prisma/          Schema, migrations, seed
+public/assets/   Logos, favicons, integration icons
+legacy-html/     Frozen pre-migration static site, for reference
 ```
 
-## Tech Stack (Current)
+## Deployment
 
-- **Frontend:** Pure HTML + Tailwind CSS (CDN)
-- **Deployment:** Vercel
-- **Domain:** synthforceai.com
-- **Analytics:** Vercel Analytics
+Hosted on Vercel. Deploys are driven by Vercel's Git integration — push a branch and you get a preview URL; merge to the production branch and it ships to `synthforceai.com`. Database migrations are **not** auto-run on deploy; see CLAUDE.md → CI/CD for the manual flow.
 
-## Migration Plan
+PRs run lint + build via GitHub Actions (`.github/workflows/ci.yml`) before they can be merged.
 
-The current HTML pages in `src/pages/` will be migrated to TypeScript/React. The backend architecture (PostgreSQL, API, auth, policy engine) will be built in parallel.
+## Contributing
 
-## Access
+Internal repo — open a PR against the branch you forked from (typically `nextjs-migration`), wait for CI green, then merge. See [CLAUDE.md](./CLAUDE.md) for conventions, branching model, and deeper context.
+
+## Notes when Developing
+Please run local builds first before pushing. Easier to debug and pass CI checks this way.
+- `npm run build`
+- `npm run dev`
+
+## Ownership
+
+Proprietary. © SynthForce AI Inc. See `COPYRIGHT`.
 
 - **Owner:** Samarth Kambli (samarth@synthforceai.com)
 - **Founding Full-Stack Engineer:** Matthew Gomez-Morales (matthew@synthforceai.com)
-- All code is proprietary and owned by SynthForce AI Inc.

@@ -14,7 +14,6 @@ import { requireUser, requireRole } from "@/lib/auth";
 import { handleApiError } from "@/lib/api-errors";
 import { AgentCreateSchema, AgentStatusEnum, Uuid } from "@/lib/validators";
 import { bigintToJson } from "@/lib/serialize";
-
 export const dynamic = "force-dynamic";
 
 function serializeAgent<T extends {

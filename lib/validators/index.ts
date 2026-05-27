@@ -99,8 +99,6 @@ export const PolicyRuleSchema = z.discriminatedUnion("type", [
     perMinute: z.number().int().positive().optional(),
     perHour:   z.number().int().positive().optional(),
     perDay:    z.number().int().positive().optional(),
-  }).refine((v) => v.perMinute || v.perHour || v.perDay, {
-    message: "Specify at least one of perMinute / perHour / perDay.",
   }),
   z.object({
     type: z.literal("time_restriction"),
@@ -111,8 +109,6 @@ export const PolicyRuleSchema = z.discriminatedUnion("type", [
     type: z.literal("content_guard"),
     blockedTerms:   z.array(NonEmptyString).max(500).optional(),
     blockedPatterns: z.array(NonEmptyString).max(50).optional(),
-  }).refine((v) => v.blockedTerms?.length || v.blockedPatterns?.length, {
-    message: "Specify blockedTerms or blockedPatterns.",
   }),
   z.object({
     type:           z.literal("model_restriction"),
@@ -122,7 +118,24 @@ export const PolicyRuleSchema = z.discriminatedUnion("type", [
     type:                 z.literal("department_isolation"),
     allowedDepartmentIds: z.array(Uuid).min(1),
   }),
-]);
+]).superRefine((data, ctx) => {
+  if (data.type === "rate_limit" && !data.perMinute && !data.perHour && !data.perDay) {
+    ctx.addIssue({
+      code: z.ZodIssueCode.custom,
+      message: "Specify at least one of perMinute / perHour / perDay.",
+    });
+  }
+  if (
+    data.type === "content_guard" &&
+    !data.blockedTerms?.length &&
+    !data.blockedPatterns?.length
+  ) {
+    ctx.addIssue({
+      code: z.ZodIssueCode.custom,
+      message: "Specify blockedTerms or blockedPatterns.",
+    });
+  }
+});
 
 export const PolicyCreateSchema = z.object({
   name:              NonEmptyString.max(255),

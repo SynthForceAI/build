@@ -53,3 +53,7 @@ yarn-error.log*
 
 # Local scratch from this scaffolding session
 /.write_test
+
+# Claude Code worktrees (transient, per-session)
+.claude/worktrees/
+.vercel
