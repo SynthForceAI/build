@@ -47,8 +47,9 @@ let serviceClient: ReturnType<typeof createClient> | undefined;
 export function createSupabaseServiceClient() {
   if (serviceClient) return serviceClient;
   const e = env();
-  serviceClient = createClient(e.NEXT_PUBLIC_SUPABASE_URL, e.SUPABASE_SERVICE_ROLE_KEY, {
+  serviceClient = createClient(process.env.NEXT_PUBLIC_SUPABASE_URL, process.env.SUPABASE_SERVICE_ROLE_KEY, {
     auth: { persistSession: false, autoRefreshToken: false },
   });
   return serviceClient;
 }
+
