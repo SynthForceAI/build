@@ -3,6 +3,7 @@ on:
   push:
     branches:
       - main
+
 env:
   VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
   VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
@@ -18,6 +19,9 @@ jobs:
         
       - name: Pull Vercel Environment Information
         run: vercel pull --yes --environment=production --token=${{ secrets.AUTH_TOKEN_VERCEL }}
+        
+      - name: Inject Env Variables for Next.js Build
+        run: vercel env pull .env.production.local --environment=production --token=${{ secrets.AUTH_TOKEN_VERCEL }}
         
       - name: Build Project Artifacts
         run: vercel build --prod --token=${{ secrets.AUTH_TOKEN_VERCEL }}
