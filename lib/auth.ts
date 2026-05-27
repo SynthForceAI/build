@@ -9,6 +9,7 @@
 import { prisma } from "./db";
 import { createSupabaseServerClient } from "./supabase/server";
 import { ApiError } from "./api-errors";
+import { OWNER_EMAIL } from "./constants";
 import type { User } from "@prisma/client";
 
 export type AuthContext = {
@@ -46,7 +47,8 @@ export function requireRole(user: User, ...allowed: User["role"][]): void {
   }
 }
 
-export const OWNER_EMAIL = "samarth@synthforceai.com";
+// Owner-specific auth check
+
 
 export function isOwner(email?: string): boolean {
   return email === OWNER_EMAIL;

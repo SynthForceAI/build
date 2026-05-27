@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="SynthForce blog: insights on managing your synthetic workforce, AI agent operations, cost optimization, policy enforcement, and the future of AI HR.">
+    <title>Blog | SynthForce - Managing Your Synthetic Workforce</title>
+    <link rel="icon" type="image/x-icon" href="../assets/favicon.ico">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        void: '#000000',
+                        paper: '#FFFFFF',
+                        subtle: '#e5e5e5',
+                        accent: '#00B2FF'
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                        mono: ['ui-monospace', 'SFMono-Regular', 'Menlo', 'Monaco', 'Consolas', 'monospace']
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body { background-color: #ffffff; color: #1a1a1a; font-family: 'Inter', sans-serif; overflow-x: hidden; scroll-behavior: smooth; }
+        .btn-primary {
+            background: #00B2FF; color: #fff; border: 1px solid #00B2FF;
+            transition: all 0.2s ease;
+            border-radius: 8px;
+        }
+        .btn-primary:hover {
+            background: transparent; color: #00B2FF;
+        }
+    </style>
+<script defer src="https://cdn.vercel-insights.com/v1/script.js"></script></head>
+<body>
+    <!-- Navbar -->
+    <nav class="sticky top-0 z-50 bg-white/80 backdrop-blur-md border-b border-subtle">
+        <div class="max-w-6xl mx-auto px-6 h-16 flex items-center justify-between">
+            <a href="/" class="flex items-center gap-3">
+                <img src="../assets/logo_top_corner.png" class="h-7 max-h-7 w-auto object-contain" alt="SynthForce">
+            </a>
+            <div class="hidden md:flex items-center gap-8 text-sm">
+                <a href="/product" class="text-gray-600 hover:text-gray-900 transition">Product</a>
+                <a href="/demo" class="text-gray-600 hover:text-gray-900 transition">Demo</a>
+                <a href="/blog" class="text-gray-900 font-semibold">Blog</a>
+                <a href="/about" class="text-gray-600 hover:text-gray-900 transition">About</a>
+                <a href="/waitlistsignup" class="text-gray-900 hover:underline decoration-1 underline-offset-4">Waitlist</a>
+            </div>
+            <button id="mobile-menu-toggle" class="md:hidden p-2 text-gray-900">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/>
+                </svg>
+            </button>
+        </div>
+        <div id="mobile-menu" class="hidden md:hidden border-t border-subtle bg-white">
+            <div class="px-6 py-4 space-y-3">
+                <a href="/product" class="block py-2 text-gray-900 font-medium">Product</a>
+                <a href="/demo" class="block py-2 text-gray-900 font-medium">Demo</a>
+                <a href="/blog" class="block py-2 text-gray-900 font-medium">Blog</a>
+                <a href="/about" class="block py-2 text-gray-900 font-medium">About</a>
+                <a href="/waitlistsignup" class="block py-2 text-gray-900 font-medium">Waitlist</a>
+            </div>
+        </div>
+    </nav>
+
+    <main class="pb-20">
+        <!-- Hero -->
+        <div class="bg-gray-50 border-b border-subtle py-20">
+            <div class="max-w-3xl mx-auto px-6 text-center">
+                <p class="text-sm uppercase tracking-widest text-gray-500 mb-6">Blog</p>
+                <h1 class="text-5xl md:text-6xl font-bold text-gray-900 mb-6">Insights on Managing Your Synthetic Workforce</h1>
+                <p class="text-xl text-gray-600">Thoughts on AI agent operations, cost optimization, policy enforcement, and building the HR layer for AI.</p>
+            </div>
+        </div>
+
+        <!-- Published Post -->
+        <div class="max-w-5xl mx-auto px-6 py-16">
+            <h2 class="text-3xl font-bold text-gray-900 mb-10 text-center">Latest Post</h2>
+            <div class="bg-white border border-gray-200 rounded-2xl p-10 hover:shadow-lg transition">
+                <div class="flex items-center gap-3 mb-4">
+                    <span class="text-xs uppercase tracking-wider text-green-600 font-semibold bg-green-50 px-3 py-1 rounded-full">Published April 26, 2026</span>
+                </div>
+                <h3 class="text-3xl font-bold text-gray-900 mb-4">
+                    <a href="/blog/posts/the-agent-explosion-how-to-prepare" class="hover:text-accent transition">The Agent Explosion: How to Prepare for 500 AI Agents</a>
+                </h3>
+                <p class="text-lg text-gray-600 mb-6">You have 5 agents today. By next year you will have 50. By 2028 you will have 500. Based on research from Gartner, G2, Deloitte, McKinsey, and Stanford: what breaks at each stage and how to prepare.</p>
+                <div class="flex items-center gap-4">
+                    <a href="/blog/posts/the-agent-explosion-how-to-prepare" class="text-accent hover:underline font-medium">Read the full post &rarr;</a>
+                    <span class="text-gray-400">|</span>
+                    <span class="text-sm text-gray-500">22 min read &middot; 7 sources cited</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Upcoming Topics Preview -->
+        <div class="max-w-5xl mx-auto px-6 py-10 mb-10">
+            <h2 class="text-3xl font-bold text-gray-900 mb-10 text-center">Upcoming Topics</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                <div class="border border-gray-200 rounded-2xl p-8 hover:shadow-lg transition">
+                    <div class="flex items-center gap-3 mb-4">
+                        <span class="text-xs uppercase tracking-wider text-accent font-semibold">Coming Soon</span>
+                    </div>
+                    <h3 class="text-2xl font-bold text-gray-900 mb-3">The Cost of Runaway Agents</h3>
+                    <p class="text-gray-600">An analysis of real-world AI agent cost overruns, why they happen, and how to prevent them. Why companies with 50+ agents see 15%+ API spend waste from runaway loops and zombie processes.</p>
+                </div>
+                <div class="border border-gray-200 rounded-2xl p-8 hover:shadow-lg transition">
+                    <div class="flex items-center gap-3 mb-4">
+                        <span class="text-xs uppercase tracking-wider text-accent font-semibold">Coming Soon</span>
+                    </div>
+                    <h3 class="text-2xl font-bold text-gray-900 mb-3">Why You Need an Org Chart for Your AI Agents</h3>
+                    <p class="text-gray-600">A framework for assigning business owners, departments, and roles to synthetic employees. Move beyond SLAs to actual management.</p>
+                </div>
+                <div class="border border-gray-200 rounded-2xl p-8 hover:shadow-lg transition">
+                    <div class="flex items-center gap-3 mb-4">
+                        <span class="text-xs uppercase tracking-wider text-accent font-semibold">Coming Soon</span>
+                    </div>
+                    <h3 class="text-2xl font-bold text-gray-900 mb-3">Policies Every AI Agent Needs</h3>
+                    <p class="text-gray-600">From no-PII rules to refund guardrails: the policies that prevent silent liability. A checklist for anyone deploying AI agents in customer-facing roles.</p>
+                </div>
+                <div class="border border-gray-200 rounded-2xl p-8 hover:shadow-lg transition">
+                    <div class="flex items-center gap-3 mb-4">
+                        <span class="text-xs uppercase tracking-wider text-accent font-semibold">Coming Soon</span>
+                    </div>
+                    <h3 class="text-2xl font-bold text-gray-900 mb-3">AI Agent ROI: A Calculator Framework</h3>
+                    <p class="text-gray-600">How to measure whether your sales bot, support bot, or coding bot is actually worth what it costs. A practical framework for non-technical managers.</p>
+                </div>
+                <div class="border border-gray-200 rounded-2xl p-8 hover:shadow-lg transition bg-gray-50 border-dashed">
+                    <div class="flex items-center gap-3 mb-4">
+                        <span class="text-xs uppercase tracking-wider text-gray-400 font-semibold">Future</span>
+                    </div>
+                    <h3 class="text-2xl font-bold text-gray-900 mb-3">More to come...</h3>
+                    <p class="text-gray-600">We are building the knowledge base for the age of synthetic work. Subscribe to follow along.</p>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <footer class="border-t border-subtle py-12 bg-gray-50">
+        <div class="container mx-auto px-6">
+            <div class="flex flex-col md:flex-row justify-between items-center">
+                <div class="mb-6 md:mb-0">
+                    <div class="flex items-center gap-3">
+                        <img src="../assets/logo_top_corner.png" class="h-8 max-h-8 w-auto object-contain" alt="SynthForce Logo">
+                    </div>
+                    <p class="text-sm text-gray-600 mt-2">HR for AI agents. Manage your synthetic workforce.</p>
+                </div>
+                <div class="flex flex-wrap gap-8 text-sm text-gray-600">
+                    <a href="/" class="hover:text-gray-900">Home</a>
+                    <a href="/product" class="hover:text-gray-900">Product</a>
+                    <a href="/demo" class="hover:text-gray-900">Demo</a>
+                    <a href="/blog" class="hover:text-gray-900">Blog</a>
+                    <a href="/about" class="hover:text-gray-900">About</a>
+                    <a href="/waitlistsignup" class="hover:text-gray-900">Waitlist</a>
+                    <a href="mailto:info@synthforceai.com" class="hover:text-gray-900">Contact</a>
+                    <a href="#" class="hover:text-gray-900">Privacy</a>
+                    <a href="#" class="hover:text-gray-900">Terms</a>
+                </div>
+            </div>
+            <div class="mt-8 pt-8 border-t border-subtle text-center text-sm text-gray-500">
+                <p><span class="text-gray-500">Contact: </span><a href="mailto:info@synthforceai.com" class="hover:text-gray-500">info@synthforceai.com</a> &nbsp;|&nbsp; 2026 SynthForce AI. All rights reserved. | Built at Cornell University.</p>
+            </div>
+        </div>
+    </footer>
+    <script>
+        const toggle = document.getElementById('mobile-menu-toggle');
+        const menu = document.getElementById('mobile-menu');
+        if (toggle && menu) {
+            toggle.addEventListener('click', () => {
+                menu.classList.toggle('hidden');
+            });
+            menu.querySelectorAll('a').forEach(link => {
+                link.addEventListener('click', () => {
+                    menu.classList.add('hidden');
+                });
+            });
+        }
+    </script>
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "Blog",
+      "name": "SynthForce Blog",
+      "description": "Insights on managing your synthetic workforce, AI agent operations, cost optimization, policy enforcement, and the future of AI HR.",
+      "publisher": {
+        "@type": "Organization",
+        "name": "SynthForce",
+        "logo": "../assets/logo_top_corner.png"
+      }
+    }
+    </script>
+</body>
+</html>

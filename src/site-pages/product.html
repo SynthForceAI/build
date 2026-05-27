@@ -1,0 +1,374 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="SynthForce Product: HR platform for AI agents. Manage performance, enforce policies, control costs. Read our manifesto, see features, and learn how it works.">
+    <title>SynthForce | Product - HR Platform for AI Agents</title>
+    <link rel="icon" type="image/x-icon" href="../assets/favicon.ico">    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Merriweather:wght@400;700&display=swap" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        void: '#000000',
+                        paper: '#FFFFFF',
+                        subtle: '#e5e5e5',
+                        accent: '#00B2FF'
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                        serif: ['Merriweather', 'serif']
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body { background-color: #ffffff; color: #1a1a1a; font-family: 'Inter', sans-serif; overflow-x: hidden; }
+        .btn-primary {
+            background: #00B2FF; color: #fff; border: 1px solid #00B2FF;
+            transition: all 0.2s ease;
+            border-radius: 8px;
+        }
+        .btn-primary:hover {
+            background: transparent; color: #00B2FF;
+        }
+        .prose { max-width: 65ch; }
+        .sidebar a { border-left: 3px solid transparent; }
+        .sidebar a.active { border-left-color: #00B2FF; background: #f0f9ff; }
+    </style>
+<script defer src="https://cdn.vercel-insights.com/v1/script.js"></script></head>
+<body class="min-h-screen bg-white">
+
+    <!-- Nav -->
+    <nav class="sticky top-0 w-full z-50 border-b border-subtle bg-white/80 backdrop-blur-md">
+        <div class="container mx-auto px-6 h-16 flex items-center justify-between">
+            <div class="flex items-center gap-3">
+                <a href="/">
+                    <img src="../assets/logo_top_corner.png" class="h-8 max-h-8 w-auto object-contain" alt="SynthForce Logo">
+                </a>
+            </div>
+            <!-- Desktop Navigation -->
+            <div class="hidden md:flex gap-8 text-sm font-sans text-gray-600">
+                <a href="/" class="hover:text-gray-900">Home</a>
+                <a href="/product" class="hover:text-gray-900">Product</a>
+                <a href="/demo" class="hover:text-gray-900">Demo</a>
+                <a href="/blog" class="hover:text-gray-900">Blog</a>
+                <a href="/about" class="hover:text-gray-900">About</a>
+                <a href="/waitlistsignup" class="text-gray-900 hover:underline decoration-1 underline-offset-4">Waitlist →</a>
+            </div>
+            <!-- Mobile Hamburger -->
+            <button id="mobile-menu-toggle" class="md:hidden text-gray-700">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
+                </svg>
+            </button>
+        </div>
+        <!-- Mobile Menu (hidden by default) -->
+        <div id="mobile-menu" class="md:hidden hidden bg-white border-t border-subtle px-6 py-4">
+            <div class="flex flex-col gap-4 text-sm font-sans text-gray-600">
+                <a href="/" class="py-2 hover:text-gray-900">Home</a>
+                <a href="/product" class="py-2 hover:text-gray-900">Product</a>
+                <a href="/demo" class="py-2 hover:text-gray-900">Demo</a>
+                <a href="/blog" class="py-2 hover:text-gray-900">Blog</a>
+                <a href="/about" class="py-2 hover:text-gray-900">About</a>
+                <a href="/waitlistsignup" class="py-2 text-gray-900 font-medium">Waitlist →</a>
+            </div>
+        </div>
+    </nav>
+
+    <main class="pt-12 pb-20 container mx-auto px-6">
+        <div class="flex flex-col lg:flex-row gap-12">
+            <!-- Sidebar -->
+            <div class="lg:w-1/4">
+                <div class="sticky top-24 p-6 border border-subtle rounded-2xl bg-gray-50">
+                    <h3 class="font-sans font-bold text-gray-900 text-xl mb-4">In This Page</h3>
+                    <div class="space-y-2 sidebar">
+                        <a href="#story" class="block px-4 py-3 rounded-lg hover:bg-gray-100">
+                            <span class="font-sans font-medium text-gray-900">The Story</span>
+                            <span class="text-xs text-gray-500 block">Synthetic workforce, the cost of neglect</span>
+                        </a>
+                        <a href="#the-shift" class="block px-4 py-3 rounded-lg hover:bg-gray-100">
+                            <span class="font-sans font-medium text-gray-900">The Shift</span>
+                            <span class="text-xs text-gray-500 block">From infrastructure to workforce</span>
+                        </a>
+                        <a href="#how-it-works" class="block px-4 py-3 rounded-lg hover:bg-gray-100">
+                            <span class="font-sans font-medium text-gray-900">How It Works</span>
+                            <span class="text-xs text-gray-500 block">Onboard, measure, govern</span>
+                        </a>
+                        <a href="#comparison" class="block px-4 py-3 rounded-lg hover:bg-gray-100">
+                            <span class="font-sans font-medium text-gray-900">The Comparison</span>
+                            <span class="text-xs text-gray-500 block">HR for humans vs. HR for agents</span>
+                        </a>
+                        <a href="#use-cases" class="block px-4 py-3 rounded-lg hover:bg-gray-100">
+                            <span class="font-sans font-medium text-gray-900">Who Needs This</span>
+                            <span class="text-xs text-gray-500 block">Startups & enterprises</span>
+                        </a>
+                    </div>
+                    <div class="mt-8 pt-6 border-t border-subtle">
+                        <p class="text-sm text-gray-600">SynthForce is the HR platform for AI agents. Manage your synthetic workforce with the same rigor as your human team.</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Main Content -->
+            <div class="lg:w-3/4">
+                <div class="max-w-3xl mx-auto">
+
+                    <!-- Hero -->
+                    <div class="text-center mb-16">
+                        <h1 class="text-5xl md:text-6xl font-bold text-gray-900 mb-6">The only HR platform built for AI agents.</h1>
+                        <p class="text-xl text-gray-600">Onboard, measure, and govern your synthetic workforce - without code or jargon.</p>
+                        <div class="mt-10">
+                            <a href="/demo" class="btn-primary px-8 py-4 font-sans font-semibold text-sm uppercase rounded-lg inline-block mr-4">
+                                View Demo
+                            </a>
+                            <a href="/waitlistsignup" class="px-8 py-4 font-sans font-semibold text-sm uppercase border border-subtle rounded-lg hover:border-gray-900 transition">
+                                Join Waitlist
+                            </a>
+                        </div>
+                    </div>
+
+                    <!-- The Story: Synthetic Workforce -->
+                    <section id="story" class="mb-20">
+                        <div class="mb-16">
+                            <h2 class="text-4xl font-bold text-gray-900 mb-8">The Synthetic Workforce Is Here</h2>
+                            <p class="text-lg text-gray-700 mb-6 leading-relaxed">Your company is no longer just humans. It's hybrid.</p>
+                            <p class="text-lg text-gray-700 mb-6 leading-relaxed">You have a sales team, a support team, a dev team. And now you have a sales bot, a support bot, a coding bot. They are not tools. They are synthetic employees.</p>
+                            <p class="text-lg text-gray-700 mb-6 leading-relaxed">In 2025, you had five agents. You could read their logs. In 2026, you have fifty. You cannot. In 2027, you will have five hundred. You will not even know their names.</p>
+                        </div>
+
+                        <div class="border-l-4 border-accent pl-6 mb-16">
+                            <p class="text-xl text-gray-900 font-semibold mb-4">The companies that survive the agent explosion will be the ones that manage their synthetic workforce with the same rigor as their human one.</p>
+                            <p class="text-gray-600">Everyone else faces three consequences.</p>
+                        </div>
+
+                        <div class="space-y-8 mb-16">
+                            <div class="bg-white border border-gray-200 rounded-2xl p-8 hover:border-red-200 transition">
+                                <h3 class="text-2xl font-bold text-gray-900 mb-3">Financial Bleed</h3>
+                                <p class="text-lg text-gray-700 leading-relaxed">An agent loops, burns $10k in API credits overnight. Nobody notices until the bill arrives. Companies with 50+ agents report an average of 15% API spend waste from runaway agents, undetected errors, and zombie processes that serve no purpose.</p>
+                                <p class="text-gray-500 mt-3 text-sm">The teams that track per-agent costs cut waste by 40% in six months.</p>
+                            </div>
+
+                            <div class="bg-white border border-gray-200 rounded-2xl p-8 hover:border-red-200 transition">
+                                <h3 class="text-2xl font-bold text-gray-900 mb-3">Silent Liability</h3>
+                                <p class="text-lg text-gray-700 leading-relaxed">A support bot promises a refund it cannot deliver. A sales bot quotes a price that violates policy. A coding agent pushes code with a security flaw. No guardrails caught it. Legal and compliance are blindsided.</p>
+                                <p class="text-gray-500 mt-3 text-sm">Without policy enforcement, every agent is a potential lawsuit waiting to happen.</p>
+                            </div>
+
+                            <div class="bg-white border border-gray-200 rounded-2xl p-8 hover:border-red-200 transition">
+                                <h3 class="text-2xl font-bold text-gray-900 mb-3">Manager Blindness</h3>
+                                <p class="text-lg text-gray-700 leading-relaxed">Today, agents are managed by SWEs. The "manager" of your sales bot is a software developer who speaks in tokens and embeddings, not in leads and conversions. A sales bot should be managed by the Sales Manager. A support bot by the Support Lead. A coding bot by the Dev Manager.</p>
+                                <p class="text-gray-500 mt-3 text-sm">You cannot scale a synthetic workforce if only engineers can read the dashboards.</p>
+                            </div>
+                        </div>
+                    </section>
+
+                    <!-- The Shift -->
+                    <section id="the-shift" class="mb-20">
+                        <div class="bg-gray-50 border border-gray-200 rounded-2xl p-10 text-center">
+                            <h2 class="text-3xl font-bold text-gray-900 mb-6">The Shift: From Infrastructure to Workforce</h2>
+                            <p class="text-lg text-gray-700 mb-6 leading-relaxed max-w-2xl mx-auto">Most tools today treat agents as infrastructure. They monitor uptime, latency, tokens. That is like measuring a human employee by their heartbeat and calorie intake. Necessary, but not sufficient.</p>
+                            <p class="text-lg text-gray-700 leading-relaxed max-w-2xl mx-auto">SynthForce treats agents as <strong>employees</strong>. We measure their output, their value, their adherence to policy. We give managers the language and tools to manage agents like they manage their human team.</p>
+                            <div class="mt-8 pt-8 border-t border-gray-200">
+                                <p class="font-semibold text-gray-900 text-lg">If you can manage employees, you can manage agents.</p>
+                            </div>
+                        </div>
+                    </section>
+
+                    <!-- How SynthForce Works -->
+                    <section id="how-it-works" class="mb-20">
+                        <h2 class="text-4xl font-bold text-gray-900 mb-10 text-center">How SynthForce Works</h2>
+                        <div class="space-y-8">
+                            <div class="bg-white border border-gray-200 rounded-2xl p-8 shadow-sm hover:shadow-lg transition">
+                                <div class="flex items-start gap-6">
+                                    <div class="flex-shrink-0 w-16 h-16 bg-accent/10 rounded-2xl flex items-center justify-center">
+                                        <svg class="w-8 h-8 text-accent" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 6v6m0 0v6m0-6h6m-6 0H6"/>
+                                        </svg>
+                                    </div>
+                                    <div>
+                                        <h3 class="text-2xl font-bold text-gray-900 mb-2">Onboard</h3>
+                                        <p class="text-lg text-gray-700">Create new agents from templates or connect existing ones. Assign a business owner, department, and budget. Your Sales Manager does not need to know what an API key is.</p>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="bg-white border border-gray-200 rounded-2xl p-8 shadow-sm hover:shadow-lg transition">
+                                <div class="flex items-start gap-6">
+                                    <div class="flex-shrink-0 w-16 h-16 bg-accent/10 rounded-2xl flex items-center justify-center">
+                                        <svg class="w-8 h-8 text-accent" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/>
+                                        </svg>
+                                    </div>
+                                    <div>
+                                        <h3 class="text-2xl font-bold text-gray-900 mb-2">Measure</h3>
+                                        <p class="text-lg text-gray-700">Track performance, cost, and compliance in real-time. Dashboards show business-level metrics: tasks completed, cost per task, error rate, ROI. In plain English, not token counts.</p>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="bg-white border border-gray-200 rounded-2xl p-8 shadow-sm hover:shadow-lg transition">
+                                <div class="flex items-start gap-6">
+                                    <div class="flex-shrink-0 w-16 h-16 bg-accent/10 rounded-2xl flex items-center justify-center">
+                                        <svg class="w-8 h-8 text-accent" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/>
+                                        </svg>
+                                    </div>
+                                    <div>
+                                        <h3 class="text-2xl font-bold text-gray-900 mb-2">Govern</h3>
+                                        <p class="text-lg text-gray-700">Enforce guardrails, set policies, and automate offboarding. Prevent unauthorized promises, PII leaks, and budget overruns before they happen. Policies are written in plain English, not code.</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </section>
+
+                    <!-- What HR Does vs. What SynthForce Does -->
+                    <section id="comparison" class="mb-20">
+                        <h2 class="text-4xl font-bold text-gray-900 mb-10 text-center">The Same Rigor, Applied Differently</h2>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                            <div>
+                                <h3 class="text-2xl font-bold text-gray-700 mb-6">What HR Does for Humans</h3>
+                                <div class="space-y-4">
+                                    <div class="flex items-start">
+                                        <div class="flex-shrink-0 w-8 h-8 bg-accent/10 rounded-full flex items-center justify-center text-sm font-bold text-accent mr-4">1</div>
+                                        <div><strong class="block text-gray-900">Hiring</strong><span class="text-gray-600"> Defines roles, selects candidates, negotiates terms.</span></div>
+                                    </div>
+                                    <div class="flex items-start">
+                                        <div class="flex-shrink-0 w-8 h-8 bg-accent/10 rounded-full flex items-center justify-center text-sm font-bold text-accent mr-4">2</div>
+                                        <div><strong class="block text-gray-900">Onboarding</strong><span class="text-gray-600"> Sets expectations, provides tools, assigns a manager.</span></div>
+                                    </div>
+                                    <div class="flex items-start">
+                                        <div class="flex-shrink-0 w-8 h-8 bg-accent/10 rounded-full flex items-center justify-center text-sm font-bold text-accent mr-4">3</div>
+                                        <div><strong class="block text-gray-900">Performance</strong><span class="text-gray-600"> Tracks output, provides feedback, conducts reviews.</span></div>
+                                    </div>
+                                    <div class="flex items-start">
+                                        <div class="flex-shrink-0 w-8 h-8 bg-accent/10 rounded-full flex items-center justify-center text-sm font-bold text-accent mr-4">4</div>
+                                        <div><strong class="block text-gray-900">Compensation</strong><span class="text-gray-600"> Manages salary, bonuses, equity.</span></div>
+                                    </div>
+                                    <div class="flex items-start">
+                                        <div class="flex-shrink-0 w-8 h-8 bg-accent/10 rounded-full flex items-center justify-center text-sm font-bold text-accent mr-4">5</div>
+                                        <div><strong class="block text-gray-900">Policy</strong><span class="text-gray-600"> Enforces company rules, ensures compliance.</span></div>
+                                    </div>
+                                    <div class="flex items-start">
+                                        <div class="flex-shrink-0 w-8 h-8 bg-accent/10 rounded-full flex items-center justify-center text-sm font-bold text-accent mr-4">6</div>
+                                        <div><strong class="block text-gray-900">Offboarding</strong><span class="text-gray-600"> Revokes access, archives records, conducts exit.</span></div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div>
+                                <h3 class="text-2xl font-bold text-gray-700 mb-6">What SynthForce Does for Agents</h3>
+                                <div class="space-y-4">
+                                    <div class="flex items-start">
+                                        <div class="flex-shrink-0 w-8 h-8 bg-accent/10 rounded-full flex items-center justify-center text-sm font-bold text-accent mr-4">1</div>
+                                        <div><strong class="block text-gray-900">Agent Creation</strong><span class="text-gray-600"> Templates for roles, predefined guardrails, no code.</span></div>
+                                    </div>
+                                    <div class="flex items-start">
+                                        <div class="flex-shrink-0 w-8 h-8 bg-accent/10 rounded-full flex items-center justify-center text-sm font-bold text-accent mr-4">2</div>
+                                        <div><strong class="block text-gray-900">Agent Onboarding</strong><span class="text-gray-600"> Assign a business owner, cost center, and workflows.</span></div>
+                                    </div>
+                                    <div class="flex items-start">
+                                        <div class="flex-shrink-0 w-8 h-8 bg-accent/10 rounded-full flex items-center justify-center text-sm font-bold text-accent mr-4">3</div>
+                                        <div><strong class="block text-gray-900">Agent Performance</strong><span class="text-gray-600"> Business-level metrics: tasks, cost per task, satisfaction.</span></div>
+                                    </div>
+                                    <div class="flex items-start">
+                                        <div class="flex-shrink-0 w-8 h-8 bg-accent/10 rounded-full flex items-center justify-center text-sm font-bold text-accent mr-4">4</div>
+                                        <div><strong class="block text-gray-900">Agent Compensation</strong><span class="text-gray-600"> API spend tracking, ROI calculations, budget optimization.</span></div>
+                                    </div>
+                                    <div class="flex items-start">
+                                        <div class="flex-shrink-0 w-8 h-8 bg-accent/10 rounded-full flex items-center justify-center text-sm font-bold text-accent mr-4">5</div>
+                                        <div><strong class="block text-gray-900">Agent Policy</strong><span class="text-gray-600"> Real-time guardrails, plain-English rules, violation logs.</span></div>
+                                    </div>
+                                    <div class="flex items-start">
+                                        <div class="flex-shrink-0 w-8 h-8 bg-accent/10 rounded-full flex items-center justify-center text-sm font-bold text-accent mr-4">6</div>
+                                        <div><strong class="block text-gray-900">Agent Offboarding</strong><span class="text-gray-600"> Archive logs, revoke permissions, generate audit trails.</span></div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </section>
+
+                    <!-- Use Cases -->
+                    <section id="use-cases" class="mb-20">
+                        <h2 class="text-4xl font-bold text-gray-900 mb-10 text-center">Who Needs This</h2>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                            <div class="border border-gray-200 rounded-2xl p-8 hover:shadow-lg transition">
+                                <h3 class="text-2xl font-bold text-gray-900 mb-4">AI-First Startups</h3>
+                                <p class="text-xl text-gray-700 mb-6">You have built multiple agents for sales, support, and product. Now you need to track cost, enforce guardrails, and give your non-technical founders visibility.</p>
+                                <ul class="text-gray-600 space-y-2 text-lg">
+                                    <li>Track ROI per agent</li>
+                                    <li>Prevent budget overruns</li>
+                                    <li>Share dashboards with investors</li>
+                                </ul>
+                            </div>
+                            <div class="border border-gray-200 rounded-2xl p-8 hover:shadow-lg transition">
+                                <h3 class="text-2xl font-bold text-gray-900 mb-4">Enterprise AI Teams</h3>
+                                <p class="text-xl text-gray-700 mb-6">Your company uses AI across departments. You need centralized management, compliance reporting, and charge-back to business units.</p>
+                                <ul class="text-gray-600 space-y-2 text-lg">
+                                    <li>Enforce company-wide AI policies</li>
+                                    <li>Audit trails for regulators</li>
+                                    <li>Showback and charge-back by department</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </section>
+
+                    <!-- CTA -->
+                    <div class="text-center border-t border-subtle pt-16">
+                        <h2 class="text-4xl font-bold text-gray-900 mb-6">Ready to Manage Your Synthetic Workforce?</h2>
+                        <p class="text-xl text-gray-600 mb-10 max-w-2xl mx-auto">Join the waitlist for early access. Pilot customers get 3 months free and a dedicated onboarding call.</p>
+                        <a href="/waitlistsignup" class="btn-primary px-10 py-5 font-sans font-semibold text-sm uppercase rounded-lg inline-block">
+                            Join Waitlist - Early Access
+                        </a>
+                        <p class="mt-6 text-gray-500">Or <a href="/demo" class="text-accent hover:underline">explore the demo</a> to see SynthForce in action.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <footer class="border-t border-subtle py-12 bg-gray-50">
+        <div class="container mx-auto px-6">
+            <div class="flex flex-col md:flex-row justify-between items-center">
+                <div class="mb-6 md:mb-0">
+                    <div class="flex items-center gap-3">
+                        <img src="../assets/logo_top_corner.png" class="h-8 max-h-8 w-auto object-contain" alt="SynthForce Logo">
+                    </div>
+                    <p class="text-sm text-gray-600 mt-2">This isn't AI for HR. This is HR for AI.</p>
+                </div>
+                <div class="flex flex-wrap gap-8 text-sm text-gray-600">
+                    <a href="/" class="hover:text-gray-900">Home</a>
+                    <a href="/product" class="hover:text-gray-900">Product</a>
+                    <a href="/demo" class="hover:text-gray-900">Demo</a>
+                    <a href="/about" class="hover:text-gray-900">About</a>
+                    <a href="/blog" class="hover:text-gray-900">Blog</a>
+                    <a href="/waitlistsignup" class="hover:text-gray-900">Waitlist</a>
+                    <a href="mailto:info@synthforceai.com" class="hover:text-gray-900">Contact</a>
+                    <a href="#" class="hover:text-gray-900">Privacy</a>
+                    <a href="#" class="hover:text-gray-900">Terms</a>
+                </div>
+            </div>
+            <div class="mt-8 pt-8 border-t border-subtle text-center text-sm text-gray-500">
+                <p><span class="text-gray-500">Contact: </span><a href="mailto:info@synthforceai.com" class="hover:text-gray-500">info@synthforceai.com</a> &nbsp;|&nbsp; © 2026 SynthForce AI. All rights reserved. | Built at Cornell University. | Manifesto v1.0 • April 2026</p>
+            </div>
+        </div>
+    </footer>
+    <script>
+        // Mobile menu toggle
+        const toggle = document.getElementById('mobile-menu-toggle');
+        const menu = document.getElementById('mobile-menu');
+        if (toggle && menu) {
+            toggle.addEventListener('click', () => {
+                menu.classList.toggle('hidden');
+            });
+            menu.querySelectorAll('a').forEach(link => {
+                link.addEventListener('click', () => {
+                    menu.classList.add('hidden');
+                });
+            });
+        }
+    </script>
+</body>
+</html>

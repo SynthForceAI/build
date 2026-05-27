@@ -8,6 +8,9 @@
  * In production (Vercel serverless), each function invocation gets a
  * fresh module scope, so the global cache is a no-op there.
  */
+import { config } from "dotenv";
+config({ path: ".env.local" });
+
 import { PrismaClient } from "@prisma/client";
 
 const globalForPrisma = globalThis as unknown as { prisma?: PrismaClient };

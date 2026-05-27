@@ -1,0 +1,13 @@
+<svg width="500" height="500" viewBox="0 0 500 500" xmlns="http://www.w3.org/2000/svg">
+    <!-- Transparent Background -->
+    
+    <!-- Circle -->
+    <circle cx="250" cy="250" r="180" stroke="black" stroke-width="14" fill="none" />
+    
+    <!-- S Shape Logic -->
+    <g stroke="black" stroke-width="14" fill="none" stroke-linecap="square" stroke-linejoin="miter">
+        <path d="M 330 200 L 250 200 L 170 280 L 170 330" />
+        <path d="M 170 300 L 250 300 L 330 220 L 330 170" />
+        <line x1="210" y1="210" x2="290" y2="290" />
+    </g>
+</svg>
