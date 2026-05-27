@@ -62,7 +62,7 @@ export function SignupForm() {
         return;
       }
 
-      router.push("/dashboard");
+      router.push("/LoginDashboard");
     } catch (err) {
       setError(err instanceof Error ? err.message : "An error occurred");
       setLoading(false);
