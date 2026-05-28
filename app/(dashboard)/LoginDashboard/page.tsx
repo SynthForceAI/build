@@ -17,10 +17,12 @@
  * table shows an empty state instead of a crash page.
  */
 
+import Link from "next/link";
 import { redirect } from "next/navigation";
 import { requireUser } from "@/lib/auth";
 import { ApiError } from "@/lib/api-errors";
 import { prisma } from "@/lib/db";
+import { AgentGrid, type AgentCardData } from "./components/AgentGrid";
 
 // ── Types ──────────────────────────────────────────────────────────────────
 
@@ -38,6 +40,7 @@ type Summary = {
   tokens: number;     // tokensIn + tokensOut combined
   agents: { active: number; paused: number; total: number };
   topAgents: AgentRow[];
+  gridAgents: AgentCardData[];
 };
 
 // Zero-value fallback — used when the DB call fails or returns nothing
@@ -47,6 +50,7 @@ const EMPTY: Summary = {
   tokens: 0,
   agents: { active: 0, paused: 0, total: 0 },
   topAgents: [],
+  gridAgents: [],
 };
 
 // ── Data fetching ──────────────────────────────────────────────────────────
@@ -88,6 +92,13 @@ async function fetchSummary(companyId: string): Promise<Summary> {
     }),
   ]);
 
+  // All agents for the directory grid (fetched separately so top-5 logic stays intact)
+  const allAgents = await prisma.agent.findMany({
+    where: { companyId },
+    orderBy: { name: "asc" },
+    include: { department: { select: { name: true } } },
+  });
+
   // Convert [{ status, _count }] array → plain object for easy key lookup
   const byStatus = Object.fromEntries(
     agentGroups.map((g) => [g.status, g._count.status])
@@ -110,6 +121,16 @@ async function fetchSummary(companyId: string): Promise<Summary> {
       status: a.status as string,
       spendCents: Number(a.currentMonthSpendCents),
       budgetCents: Number(a.monthlyBudgetCents),
+    })),
+    // Grid uses all agents — tasksCompleted placeholder until UsageLog counts are wired
+    gridAgents: allAgents.map((a) => ({
+      id:             a.id,
+      name:           a.name,
+      role:           a.name,                           // TODO: add a "role" field to Agent model
+      department:     a.department?.name ?? "Unassigned",
+      status:         a.status as string,
+      spendCents:     Number(a.currentMonthSpendCents),
+      tasksCompleted: 0,                                // TODO: wire to usageLog count per agent
     })),
   };
 }
@@ -162,9 +183,17 @@ export default async function DashboardPage() {
     <div>
 
       {/* ── Page header ─────────────────────────────────── */}
-      <div className="mb-8">
-        <h1 className="text-2xl font-bold text-gray-900">Dashboard</h1>
-        <p className="text-sm text-gray-500 mt-1">{month} · Month-to-date</p>
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-8">
+        <div>
+          <h1 className="text-2xl font-bold text-gray-900">Dashboard</h1>
+          <p className="text-sm text-gray-500 mt-1">{month} · Month-to-date</p>
+        </div>
+        <Link
+          href="/LoginDashboard/onboard"
+          className="inline-flex items-center px-5 py-2.5 text-sm font-medium bg-[#00B2FF] text-white border border-[#00B2FF] rounded-lg hover:bg-transparent hover:text-[#00B2FF] transition whitespace-nowrap"
+        >
+          + Onboard New Agent
+        </Link>
       </div>
 
       {/* ── Stat cards ──────────────────────────────────── */}
@@ -247,6 +276,12 @@ export default async function DashboardPage() {
           </table>
           </div>
         )}
+      </div>
+
+      {/* ── Agent directory grid ────────────────────────── */}
+      <div className="mt-10">
+        <h2 className="text-base font-semibold text-gray-900 mb-4">Your Agent Directory</h2>
+        <AgentGrid agents={data.gridAgents} />
       </div>
 
     </div>

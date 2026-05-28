@@ -30,14 +30,15 @@ model Company {
   createdAt        DateTime         @default(now()) @map("created_at") @db.Timestamptz(6)
   updatedAt        DateTime         @updatedAt @map("updated_at") @db.Timestamptz(6)
 
-  users        User[]
-  departments  Department[]
-  agents       Agent[]
-  policies     Policy[]
-  budgetAlerts BudgetAlert[]
-  apiKeys      ApiKey[]
-  usageLogs    UsageLog[]
-  audits       Audit[]
+  users           User[]
+  departments     Department[]
+  agents          Agent[]
+  policies        Policy[]
+  budgetAlerts    BudgetAlert[]
+  apiKeys         ApiKey[]
+  usageLogs       UsageLog[]
+  audits          Audit[]
+  connectedAgents ConnectedAgent[]
 
   @@map("companies")
 }
@@ -99,10 +100,11 @@ model Department {
   createdAt          DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
   updatedAt          DateTime @updatedAt @map("updated_at") @db.Timestamptz(6)
 
-  company      Company       @relation(fields: [companyId], references: [id], onDelete: Cascade)
-  agents       Agent[]
-  policies     Policy[]      @relation("PolicyScope")
-  budgetAlerts BudgetAlert[]
+  company         Company          @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  agents          Agent[]
+  policies        Policy[]         @relation("PolicyScope")
+  budgetAlerts    BudgetAlert[]
+  connectedAgents ConnectedAgent[]
 
   @@unique([companyId, name])
   @@index([companyId])
@@ -345,23 +347,26 @@ enum BudgetAlertType {
 // ---------------------------------------------------------------------------
 
 model ApiKey {
-  id            String    @id @default(uuid()) @db.Uuid
-  companyId     String    @map("company_id") @db.Uuid
-  providerId    String    @map("provider_id") @db.Uuid
-  label         String?   @db.VarChar(255)
-  encryptedKey  String    @map("encrypted_key")
-  keyIdentifier String?   @map("key_identifier") @db.VarChar(100)
-  isActive      Boolean   @default(true) @map("is_active")
+  id              String    @id @default(uuid()) @db.Uuid
+  companyId       String    @map("company_id") @db.Uuid
+  providerId      String    @map("provider_id") @db.Uuid
+  label           String?   @db.VarChar(255)
+  encryptedKey    String    @map("encrypted_key")
+  keyIdentifier   String?   @map("key_identifier") @db.VarChar(100)
+  isActive        Boolean   @default(true) @map("is_active")
+  verifiedAt      DateTime? @map("verified_at") @db.Timestamptz(6)
+  availableModels Json?     @map("available_models")
   // When set, the key has been soft-deleted by the audit privacy flow.
   // The row is retained for FK integrity with audits.api_key_id; the
   // encrypted_key column should be zeroed via the soft-delete path.
-  deletedAt     DateTime? @map("deleted_at") @db.Timestamptz(6)
-  createdAt     DateTime  @default(now()) @map("created_at") @db.Timestamptz(6)
+  deletedAt       DateTime? @map("deleted_at") @db.Timestamptz(6)
+  createdAt       DateTime  @default(now()) @map("created_at") @db.Timestamptz(6)
 
-  company  Company  @relation(fields: [companyId], references: [id], onDelete: Cascade)
-  provider Provider @relation(fields: [providerId], references: [id])
-  agents   Agent[]
-  audits   Audit[]
+  company         Company          @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  provider        Provider         @relation(fields: [providerId], references: [id])
+  agents          Agent[]
+  audits          Audit[]
+  connectedAgents ConnectedAgent[]
 
   @@unique([companyId, providerId, label])
   @@index([companyId])
@@ -525,4 +530,40 @@ model ActivityLog {
   @@index([userId])
   @@index([createdAt(sort: Desc)])
   @@map("activity_logs")
+}
+
+// ---------------------------------------------------------------------------
+// Connected Agents — tracks provider API key connections made via the
+// Onboard page. One ConnectedAgent per provider key connection; separate
+// from the full-platform Agent model (which is assigned/managed differently).
+// ---------------------------------------------------------------------------
+
+model ConnectedAgent {
+  id             String               @id @default(uuid()) @db.Uuid
+  companyId      String               @map("company_id") @db.Uuid
+  apiKeyId       String               @map("api_key_id") @db.Uuid
+  departmentId   String?              @map("department_id") @db.Uuid
+  name           String               @db.VarChar(255)
+  providerName   String               @map("provider_name") @db.VarChar(100)
+  modelUsed      String               @default("") @map("model_used") @db.VarChar(255)
+  status         ConnectedAgentStatus @default(pending)
+  tasksMonitored Int                  @default(0) @map("tasks_monitored")
+  connectedAt    DateTime             @default(now()) @map("connected_at") @db.Timestamptz(6)
+  deletedAt      DateTime?            @map("deleted_at") @db.Timestamptz(6)
+
+  company    Company     @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  apiKey     ApiKey      @relation(fields: [apiKeyId], references: [id], onDelete: Cascade)
+  department Department? @relation(fields: [departmentId], references: [id], onDelete: SetNull)
+
+  @@index([companyId])
+  @@index([apiKeyId])
+  @@map("connected_agents")
+}
+
+enum ConnectedAgentStatus {
+  pending
+  active
+  inactive
+
+  @@map("connected_agent_status")
 }
