@@ -160,7 +160,14 @@ export default async function PerformancePage() {
     throw err;
   }
 
-  const agents: AgentRow[] = await fetchAgents(companyId).catch(() => []);
+  const [agents, departments] = await Promise.all([
+    fetchAgents(companyId).catch(() => []),
+    prisma.department.findMany({
+      where:   { companyId },
+      orderBy: { name: "asc" },
+      select:  { id: true, name: true },
+    }).catch(() => []),
+  ]);
 
   // ── Derived stats ──────────────────────────────────────────────────────
   const totalSpend  = agents.reduce((sum, a) => sum + a.spendCents, 0);
@@ -313,6 +320,7 @@ export default async function PerformancePage() {
           name:       a.name,
           department: a.department,
         }))}
+        departments={departments}
       />
 
     </div>

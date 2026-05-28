@@ -8,9 +8,20 @@ export type AgentOption = {
   department: string | null;
 };
 
-export function ErrorDeepDive({ agents }: { agents: AgentOption[] }) {
+export type DepartmentOption = {
+  id: string;
+  name: string;
+};
+
+export function ErrorDeepDive({
+  agents,
+  departments,
+}: {
+  agents: AgentOption[];
+  departments: DepartmentOption[];
+}) {
   const [transferAgent, setTransferAgent] = useState(agents[0]?.id ?? "");
-  const [targetDept, setTargetDept]       = useState("Marketing");
+  const [targetDept, setTargetDept]       = useState(departments[0]?.id ?? "");
   const [reason, setReason]               = useState("");
 
   const inputClass =
@@ -59,9 +70,13 @@ export function ErrorDeepDive({ agents }: { agents: AgentOption[] }) {
                 onChange={(e) => setTargetDept(e.target.value)}
                 className={inputClass}
               >
-                {["Marketing", "Sales", "Support", "Finance", "Operations"].map((d) => (
-                  <option key={d} value={d}>{d}</option>
-                ))}
+                {departments.length === 0 ? (
+                  <option value="">No departments created</option>
+                ) : (
+                  departments.map((d) => (
+                    <option key={d.id} value={d.id}>{d.name}</option>
+                  ))
+                )}
               </select>
             </div>
             <div>
