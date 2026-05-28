@@ -168,3 +168,26 @@ export const ApiKeyCreateSchema = z.object({
   // never returned, never logged.
   apiKey:     NonEmptyString.max(500),
 }).strict();
+
+// ---------------------------------------------------------------------------
+// Provider key connection (Onboard page)
+// ---------------------------------------------------------------------------
+
+export const ProviderConnectSchema = z.object({
+  providerId:   Uuid,
+  apiKey:       NonEmptyString.max(500),
+  label:        NonEmptyString.max(255).optional(),
+  agentName:    NonEmptyString.min(3).max(255),
+  departmentId: Uuid.optional(),
+}).strict();
+
+// ---------------------------------------------------------------------------
+// Audits (free audit wedge)
+// ---------------------------------------------------------------------------
+
+export const AuditCreateSchema = z.object({
+  // Raw OpenAI API key (will be encrypted before storage)
+  apiKey:     NonEmptyString.max(500),
+  // How many days back to audit (default 30)
+  periodDays: z.number().int().positive().max(90).optional(),
+}).strict();
