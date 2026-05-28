@@ -20,13 +20,15 @@ import { cn } from "@/lib/utils";
 import type { UserRole } from "@prisma/client";
 
 const NAV_ITEMS = [
-  { href: "/LoginDashboard",             label: "Dashboard"   },
-  { href: "/LoginDashboard/agents",      label: "Agents"      },
-  { href: "/LoginDashboard/onboard",     label: "Onboard"     },
-  { href: "/LoginDashboard/performance", label: "Performance" },
-  { href: "/LoginDashboard/departments", label: "Departments" },
-  { href: "/LoginDashboard/policies",    label: "Policies"    },
-  { href: "/LoginDashboard/settings",    label: "Settings"    },
+  { href: "/LoginDashboard",              label: "Dashboard"    },
+  { href: "/LoginDashboard/onboard",      label: "Onboard"      },
+  { href: "/LoginDashboard/performance",  label: "Performance"  },
+  { href: "/LoginDashboard/compensation", label: "Compensation" },
+  { href: "/LoginDashboard/policies",     label: "Policies"     },
+  { href: "/LoginDashboard/offboarding",  label: "Offboarding"  },
+  { href: "/LoginDashboard/agents",       label: "Agents"       },
+  { href: "/LoginDashboard/departments",  label: "Departments"  },
+  { href: "/LoginDashboard/settings",     label: "Settings"     },
 ] as const;
 
 type Props = {

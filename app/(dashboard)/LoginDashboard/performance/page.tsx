@@ -13,6 +13,7 @@ import { redirect } from "next/navigation";
 import { requireUser } from "@/lib/auth";
 import { ApiError } from "@/lib/api-errors";
 import { prisma } from "@/lib/db";
+import { ErrorDeepDive } from "../components/ErrorDeepDive";
 
 // ── Types ──────────────────────────────────────────────────────────────────
 
@@ -332,6 +333,15 @@ export default async function PerformancePage() {
           )}
         </div>
       </div>
+
+      {/* ── Error Deep Dive ─────────────────────────────── */}
+      <ErrorDeepDive
+        agents={agents.map((a) => ({
+          id:         a.id,
+          name:       a.name,
+          department: a.department,
+        }))}
+      />
 
     </div>
   );
