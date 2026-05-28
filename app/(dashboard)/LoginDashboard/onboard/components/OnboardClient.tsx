@@ -53,7 +53,7 @@ function ChoiceView({ onSelect }: { onSelect: (v: "deploy" | "connect") => void 
         {/* Deploy card */}
         <button
           onClick={() => onSelect("deploy")}
-          className="border border-gray-200 rounded-2xl p-8 hover:border-blue-300 hover:shadow-lg transition cursor-pointer flex flex-col h-full text-left"
+          className="border border-gray-200 rounded-2xl p-8 hover:border-blue-300 hover:shadow-lg transition cursor-pointer flex flex-col items-center text-center h-full"
         >
           <div className="text-[#00B2FF] mb-4">
             <svg className="w-12 h-12" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -64,18 +64,21 @@ function ChoiceView({ onSelect }: { onSelect: (v: "deploy" | "connect") => void 
           <p className="text-sm text-gray-600 mb-5">
             Create a brand-new AI agent from scratch with department, budget, and guardrails.
           </p>
-          <ul className="text-sm text-gray-500 list-disc pl-5 space-y-1 mb-6">
-            <li>Full control over role and permissions</li>
-            <li>Built-in cost tracking from day one</li>
-            <li>Pre-configured guardrails</li>
-          </ul>
-          <span className={`mt-auto ${btnPrimary} text-center`}>Start Building</span>
+          <div className="space-y-2 mb-6 w-full">
+            {["Full control over role and permissions", "Built-in cost tracking from day one", "Pre-configured guardrails"].map((item) => (
+              <div key={item} className="flex items-center justify-center gap-2 text-sm text-gray-500">
+                <span className="w-1.5 h-1.5 rounded-full bg-[#00B2FF] shrink-0" />
+                {item}
+              </div>
+            ))}
+          </div>
+          <span className={`mt-auto ${btnPrimary}`}>Start Building</span>
         </button>
 
         {/* Connect card */}
         <button
           onClick={() => onSelect("connect")}
-          className="border border-gray-200 rounded-2xl p-8 hover:border-purple-300 hover:shadow-lg transition cursor-pointer flex flex-col h-full text-left"
+          className="border border-gray-200 rounded-2xl p-8 hover:border-purple-300 hover:shadow-lg transition cursor-pointer flex flex-col items-center text-center h-full"
         >
           <div className="text-purple-600 mb-4">
             <svg className="w-12 h-12" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -86,12 +89,15 @@ function ChoiceView({ onSelect }: { onSelect: (v: "deploy" | "connect") => void 
           <p className="text-sm text-gray-600 mb-5">
             Already have agents running on OpenAI, Anthropic, or other platforms? Wrap them with SynthForce in minutes.
           </p>
-          <ul className="text-sm text-gray-500 list-disc pl-5 space-y-1 mb-6">
-            <li>Works with 10+ AI providers</li>
-            <li>No code changes required</li>
-            <li>Add oversight without disrupting workflows</li>
-          </ul>
-          <span className={`mt-auto ${btnPrimary} text-center`}>Connect Now</span>
+          <div className="space-y-2 mb-6 w-full">
+            {["Works with 10+ AI providers", "No code changes required", "Add oversight without disrupting workflows"].map((item) => (
+              <div key={item} className="flex items-center justify-center gap-2 text-sm text-gray-500">
+                <span className="w-1.5 h-1.5 rounded-full bg-purple-500 shrink-0" />
+                {item}
+              </div>
+            ))}
+          </div>
+          <span className={`mt-auto ${btnPrimary}`}>Connect Now</span>
         </button>
       </div>
 
@@ -126,7 +132,7 @@ function DeployView({ onBack }: { onBack: () => void }) {
         </p>
         <button
           onClick={onBack}
-          className="mt-8 px-6 py-2.5 bg-[#00B2FF] text-white rounded-lg text-sm font-medium hover:bg-[#00B2FF]/90 transition"
+          className={`mt-8 ${btnPrimary}`}
         >
           Connect an Existing Agent
         </button>
