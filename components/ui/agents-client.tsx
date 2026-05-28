@@ -3,9 +3,12 @@
 import { useState } from "react";
 import { AgentStatusToggle } from "./agent-status-toggle";
 import { AddAgentForm } from "./add-agent-form";
+import { useRouter } from "next/navigation";
+import { DepartmentsClient } from "./departments-client";
 
 export type AgentRow = {
   id: string;
+  departmentId: string | null;
   name: string;
   description: string | null;
   status: string;
@@ -53,10 +56,31 @@ export function AgentsClient({
   providers: Provider[];
   models: Model[];
 }) {
+  const router = useRouter();
   const [showModal, setShowModal] = useState(false);
+  const [editingAgentId, setEditingAgentId] = useState<string | null>(null);
+  const [savingAgentId, setSavingAgentId] = useState<string | null>(null);
 
   const activeCount = agents.filter((a) => a.status === "active").length;
   const pausedCount = agents.filter((a) => a.status === "paused").length;
+
+  async function updateDepartments(agentId: string, departmentId: string | null) {
+  
+    setSavingAgentId(agentId);
+    try{
+      const response = await fetch(`/api/agents/${agentId}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ departmentId }),
+      });
+      if (response.ok){
+        router.refresh();
+      }
+    } catch {} finally {
+      setSavingAgentId(null);
+      setEditingAgentId(null);
+    }
+  }
 
   return (
     <div>
@@ -135,7 +159,28 @@ export function AgentsClient({
                       </td>
 
                       <td className="px-6 py-4 text-gray-600">
-                        {agent.department ?? <span className="text-gray-400">—</span>}
+                        {editingAgentId === agent.id ? (
+                          <select
+                            autoFocus
+                            disabled={savingAgentId === agent.id}
+                            defaultValue={agent.departmentId ?? ""}
+                            onChange={(e) => updateDepartments(agent.id, e.target.value || null)}
+                            onBlur={() => setEditingAgentId(null)}
+                            className="text-sm border border-gray-300 rounded px-2 py-1"
+                          >
+                            <option value="">No department</option>
+                            {departments.map((d) => (
+                              <option key={d.id} value={d.id}>{d.name}</option>
+                            ))}
+                          </select>
+                        ) : (
+                          <span
+                            onClick={() => setEditingAgentId(agent.id)}
+                            className="cursor-pointer hover:text-[#00B2FF] transition-colors"
+                          >
+                            {agent.department ?? <span className="text-gray-400">—</span>}
+                          </span>
+                        )}
                       </td>
 
                       <td className="px-4 py-3 text-gray-600">{modelLabel}</td>
