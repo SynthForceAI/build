@@ -7,14 +7,16 @@ import { RecentlyConnected } from "./RecentlyConnected";
 type Provider = { id: string; name: string; displayName: string };
 type Department = { id: string; name: string };
 type Agent = {
-  id:             string;
-  name:           string;
-  providerName:   string;
-  modelUsed:      string;
-  status:         "pending" | "active" | "inactive";
-  tasksMonitored: number;
-  connectedAt:    string;
-  department:     string | null;
+  id:                  string;
+  name:                string;
+  providerName:        string;
+  modelUsed:           string;
+  status:              "pending" | "active" | "inactive";
+  tasksMonitored:      number;
+  totalCostCents:      number | string;
+  connectedAt:         string;
+  lastUsageReportedAt: string | null;
+  department:          string | null;
 };
 
 type Props = {

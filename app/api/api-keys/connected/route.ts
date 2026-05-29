@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
 import { requireUser } from "@/lib/auth";
 import { handleApiError } from "@/lib/api-errors";
+import { bigintToJson } from "@/lib/serialize";
 
 export const dynamic = "force-dynamic";
 
@@ -17,14 +18,20 @@ export async function GET() {
 
     return NextResponse.json({
       agents: agents.map((a) => ({
-        id:             a.id,
-        name:           a.name,
-        providerName:   a.providerName,
-        modelUsed:      a.modelUsed,
-        status:         a.status,
-        tasksMonitored: a.tasksMonitored,
-        connectedAt:    a.connectedAt,
-        department:     a.department?.name ?? null,
+        id:                 a.id,
+        name:               a.name,
+        providerName:       a.providerName,
+        modelUsed:          a.modelUsed,
+        status:             a.status,
+        tasksMonitored:     a.tasksMonitored,
+        totalCostCents:     bigintToJson(a.totalCostCents),
+        monthlySpendCents:  bigintToJson(a.monthlySpendCents),
+        totalTokensIn:      bigintToJson(a.totalTokensIn),
+        totalTokensOut:     bigintToJson(a.totalTokensOut),
+        connectedAt:         a.connectedAt,
+        lastActiveAt:        a.lastActiveAt,
+        lastUsageReportedAt: a.lastUsageReportedAt,
+        department:          a.department?.name ?? null,
       })),
     });
   } catch (err) {

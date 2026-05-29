@@ -3,14 +3,16 @@
 import { useEffect, useState } from "react";
 
 type Agent = {
-  id:             string;
-  name:           string;
-  providerName:   string;
-  modelUsed:      string;
-  status:         "pending" | "active" | "inactive";
-  tasksMonitored: number;
-  connectedAt:    string;
-  department:     string | null;
+  id:                  string;
+  name:                string;
+  providerName:        string;
+  modelUsed:           string;
+  status:              "pending" | "active" | "inactive";
+  tasksMonitored:      number;
+  totalCostCents:      number | string;
+  connectedAt:         string;
+  lastUsageReportedAt: string | null;
+  department:          string | null;
 };
 
 type Props = {
@@ -47,6 +49,12 @@ function timeAgo(iso: string): string {
   if (days === 0) return "Today";
   if (days === 1) return "1 day ago";
   return `${days} days ago`;
+}
+
+function formatCost(cents: number | string): string {
+  const n = typeof cents === "number" ? cents : Number(cents);
+  if (!Number.isFinite(n)) return "$0.00";
+  return `$${(n / 100).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
 }
 
 export function RecentlyConnected({ initialAgents, refreshKey }: Props) {
@@ -119,11 +127,23 @@ export function RecentlyConnected({ initialAgents, refreshKey }: Props) {
                 </p>
                 <p className="text-xs text-gray-500 mt-1">
                   Connected {timeAgo(agent.connectedAt)}
-                  {agent.tasksMonitored > 0
-                    ? ` · ${agent.tasksMonitored.toLocaleString()} tasks monitored`
-                    : ""}
                   {agent.department ? ` · ${agent.department}` : ""}
                 </p>
+                <div className="flex items-center gap-x-3 gap-y-1 flex-wrap mt-1.5 text-xs">
+                  <span className="font-medium text-gray-700">
+                    {agent.tasksMonitored.toLocaleString()} tasks monitored
+                  </span>
+                  <span className="text-gray-400">·</span>
+                  <span className="font-medium text-gray-700">
+                    {formatCost(agent.totalCostCents)} spent
+                  </span>
+                  <span className="text-gray-400">·</span>
+                  <span className="text-gray-500">
+                    {agent.lastUsageReportedAt
+                      ? `Last used ${timeAgo(agent.lastUsageReportedAt)}`
+                      : "No usage yet"}
+                  </span>
+                </div>
               </div>
               <button
                 onClick={() => revoke(agent.id)}
