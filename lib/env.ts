@@ -35,9 +35,10 @@ const ServerEnvSchema = z.object({
   NEXT_PUBLIC_APP_URL: z.string().url().default("http://localhost:3000"),
   NODE_ENV:            z.enum(["development", "test", "production"]).default("development"),
 
-  // Shared secret for the provider-usage cron endpoint. Vercel Cron injects it
-  // as a Bearer token when set; the job route fails closed if it is absent.
-  CRON_SECRET: z.string().min(16).optional(),
+  // Shared secret for the provider-usage cron endpoint. The GitHub Actions
+  // workflow at .github/workflows/sync-provider-usage.yml sends it as a
+  // Bearer token; the job route fails closed if it is absent.
+  SYNC_JOB_SECRET: z.string().min(16).optional(),
 });
 
 export type ServerEnv = z.infer<typeof ServerEnvSchema>;
