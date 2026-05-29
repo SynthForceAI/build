@@ -182,6 +182,80 @@ export default async function OffboardingPage() {
         </div>
       </div>
 
+      {/* ── Audit Trail Generator ────────────────────────── */}
+      <div className="border-t border-gray-200 pt-8">
+        <h2 className="text-base font-semibold text-gray-900 mb-1">Audit Trail Generator</h2>
+        <p className="text-sm text-gray-500 mb-6">
+          Generate compliance reports for archived agents and policy events (SOC 2, ISO 27001, GDPR).
+        </p>
+
+        <div className="bg-white border border-gray-200 shadow-sm rounded-2xl p-6">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+
+            {/* Left — report config */}
+            <div>
+              <h3 className="text-sm font-semibold text-gray-900 mb-4">Generate Compliance Report</h3>
+              <div className="space-y-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Time Range</label>
+                  <select className="w-full px-4 py-3 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#00B2FF]">
+                    <option>Last 30 days</option>
+                    <option>Last quarter</option>
+                    <option>Last year</option>
+                    <option>Custom range</option>
+                  </select>
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Include</label>
+                  <div className="space-y-2">
+                    {[
+                      { label: "Access logs",       defaultChecked: true  },
+                      { label: "Policy violations", defaultChecked: true  },
+                      { label: "Cost breakdowns",   defaultChecked: false },
+                      { label: "Offboarding events",defaultChecked: true  },
+                    ].map((item) => (
+                      <label key={item.label} className="flex items-center gap-2 text-sm text-gray-700 cursor-pointer">
+                        <input
+                          type="checkbox"
+                          defaultChecked={item.defaultChecked}
+                          className="h-4 w-4 accent-[#00B2FF] rounded"
+                        />
+                        {item.label}
+                      </label>
+                    ))}
+                  </div>
+                </div>
+                <button
+                  disabled
+                  className="w-full py-3 bg-[#00B2FF] text-white rounded-lg text-sm font-medium opacity-50 cursor-not-allowed"
+                  title="Available once agent usage data is connected"
+                >
+                  Generate Audit Report
+                </button>
+                <p className="text-xs text-gray-400 text-center">
+                  Report generation requires connected agent usage data.
+                </p>
+              </div>
+            </div>
+
+            {/* Right — recent reports */}
+            <div>
+              <h3 className="text-sm font-semibold text-gray-900 mb-4">Recent Audit Reports</h3>
+              <div className="flex flex-col items-center justify-center text-center py-10 px-4 bg-gray-50 rounded-xl border border-gray-100">
+                <div className="w-10 h-10 rounded-full bg-gray-200 flex items-center justify-center mb-3">
+                  <svg className="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                  </svg>
+                </div>
+                <p className="text-sm text-gray-500">No reports generated yet.</p>
+                <p className="text-xs text-gray-400 mt-1">Reports will appear here once the audit engine is connected.</p>
+              </div>
+            </div>
+
+          </div>
+        </div>
+      </div>
+
     </div>
   );
 }

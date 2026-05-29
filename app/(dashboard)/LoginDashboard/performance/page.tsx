@@ -160,7 +160,14 @@ export default async function PerformancePage() {
     throw err;
   }
 
-  const agents: AgentRow[] = await fetchAgents(companyId).catch(() => []);
+  const [agents, departments] = await Promise.all([
+    fetchAgents(companyId).catch(() => []),
+    prisma.department.findMany({
+      where:   { companyId },
+      orderBy: { name: "asc" },
+      select:  { id: true, name: true },
+    }).catch(() => []),
+  ]);
 
   // ── Derived stats ──────────────────────────────────────────────────────
   const totalSpend  = agents.reduce((sum, a) => sum + a.spendCents, 0);
@@ -259,24 +266,13 @@ export default async function PerformancePage() {
                     <th className="px-6 py-3 font-medium">Agent</th>
                     <th className="px-6 py-3 font-medium">Model</th>
                     <th className="px-6 py-3 font-medium">Status</th>
+                    <th className="px-6 py-3 font-medium text-right">Error Rate</th>
                     <th className="px-6 py-3 font-medium text-right">MTD Spend</th>
-                    <th className="px-6 py-3 font-medium text-right">Budget</th>
-                    <th className="px-6 py-3 font-medium text-right">Utilization</th>
                     <th className="px-6 py-3 font-medium text-right">Last Active</th>
                   </tr>
                 </thead>
                 <tbody>
                   {agents.map((agent) => {
-                    const pct = agent.budgetCents > 0
-                      ? Math.round((agent.spendCents / agent.budgetCents) * 100)
-                      : null;
-                    const isOverBudget = pct !== null && pct > 100;
-                    const utilColor =
-                      pct === null  ? ""
-                      : pct > 100   ? "text-red-600 font-medium"
-                      : pct >= 90   ? "text-red-600 font-medium"
-                      : pct >= 75   ? "text-yellow-600"
-                      : "text-gray-700";
                     const pill = STATUS_PILL[agent.status] ?? "bg-gray-100 text-gray-600";
                     const modelLabel =
                       agent.provider && agent.model
@@ -286,11 +282,7 @@ export default async function PerformancePage() {
                     return (
                       <tr
                         key={agent.id}
-                        className={`border-b border-gray-50 last:border-b-0 transition-colors ${
-                          isOverBudget
-                            ? "bg-red-50/40 hover:bg-red-50/60"
-                            : "hover:bg-gray-50/60"
-                        }`}
+                        className="border-b border-gray-50 last:border-b-0 hover:bg-gray-50/60 transition-colors"
                       >
                         <td className="px-6 py-4">
                           <p className="font-medium text-gray-900">{agent.name}</p>
@@ -304,22 +296,9 @@ export default async function PerformancePage() {
                             {agent.status}
                           </span>
                         </td>
+                        <td className="px-6 py-4 text-right text-gray-400">—</td>
                         <td className="px-6 py-4 text-right font-mono text-gray-900">
                           {fmtDollars(agent.spendCents)}
-                        </td>
-                        <td className="px-6 py-4 text-right font-mono text-gray-500">
-                          {agent.budgetCents > 0
-                            ? fmtDollars(agent.budgetCents)
-                            : <span className="text-gray-400">No cap</span>}
-                        </td>
-                        <td className="px-6 py-4 text-right">
-                          {pct === null ? (
-                            <span className="text-gray-400">—</span>
-                          ) : (
-                            <span className={utilColor}>
-                              {pct > 100 ? `${pct}% · over` : `${pct}%`}
-                            </span>
-                          )}
                         </td>
                         <td className="px-6 py-4 text-right text-xs text-gray-400 whitespace-nowrap">
                           {agent.lastActiveAt ? fmtRelativeTime(agent.lastActiveAt) : "—"}
@@ -341,6 +320,7 @@ export default async function PerformancePage() {
           name:       a.name,
           department: a.department,
         }))}
+        departments={departments}
       />
 
     </div>
@@ -351,7 +331,7 @@ export default async function PerformancePage() {
 
 function Stat({ value, label, tone }: { value: string; label: string; tone: string }) {
   return (
-    <div className={`${tone} p-6 rounded-xl`}>
+    <div className={`${tone} p-6 rounded-xl shadow-sm hover:shadow-md hover:-translate-y-0.5 transition-all duration-200`}>
       <div className="text-3xl font-bold text-gray-900">{value}</div>
       <div className="text-sm text-gray-600 mt-1">{label}</div>
     </div>

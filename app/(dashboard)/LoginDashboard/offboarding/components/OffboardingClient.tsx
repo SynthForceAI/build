@@ -12,6 +12,30 @@ export function OffboardingClient({ activeAgents }: { activeAgents: ActiveAgentO
   const [finalDate, setFinalDate]   = useState("");
   const [notes, setNotes]           = useState("");
   const [submitted, setSubmitted]   = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
+
+  async function handleOffBoard(){
+    setLoading(true);
+    setError("");
+    try{
+      const response = await fetch(`/api/agents/${selectedId}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ status: "deactivated" }),
+      });
+      if(!response.ok){
+        setError("Failed to offboard agent. Please try again.");
+      }
+      else{
+        setSubmitted(true);
+      }
+    } catch {
+      setError("Something went wrong!");
+    } finally {
+      setLoading(false);
+    }
+  }
 
   if (submitted) {
     return (
@@ -104,13 +128,13 @@ export function OffboardingClient({ activeAgents }: { activeAgents: ActiveAgentO
           </div>
 
           <button
-            disabled={!reason || !finalDate}
-            onClick={() => setSubmitted(true)}
-            // TODO: wire to PUT /api/agents/:id { status: "deactivated" }
+            disabled={!reason || !finalDate || loading}
+            onClick={() => handleOffBoard()}
             className="w-full py-3 bg-red-500 text-white rounded-lg hover:bg-red-600 transition text-sm font-medium disabled:opacity-40 disabled:cursor-not-allowed"
           >
-            Complete Offboarding
+            {loading ?  "Processing..." : "Offboarding Complete"}
           </button>
+          {error && <p className="text-sm text-red-500 mt-2">{error}</p>}
         </div>
       )}
     </div>

@@ -53,7 +53,7 @@ function ChoiceView({ onSelect }: { onSelect: (v: "deploy" | "connect") => void 
         {/* Deploy card */}
         <button
           onClick={() => onSelect("deploy")}
-          className="border border-gray-200 rounded-2xl p-8 hover:border-blue-300 hover:shadow-lg transition cursor-pointer flex flex-col h-full text-left"
+          className="border border-gray-200 rounded-2xl p-8 hover:border-blue-300 hover:shadow-lg transition cursor-pointer flex flex-col items-center text-center h-full"
         >
           <div className="text-[#00B2FF] mb-4">
             <svg className="w-12 h-12" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -64,18 +64,21 @@ function ChoiceView({ onSelect }: { onSelect: (v: "deploy" | "connect") => void 
           <p className="text-sm text-gray-600 mb-5">
             Create a brand-new AI agent from scratch with department, budget, and guardrails.
           </p>
-          <ul className="text-sm text-gray-500 list-disc pl-5 space-y-1 mb-6">
-            <li>Full control over role and permissions</li>
-            <li>Built-in cost tracking from day one</li>
-            <li>Pre-configured guardrails</li>
-          </ul>
-          <span className={`mt-auto ${btnPrimary} text-center`}>Start Building</span>
+          <div className="space-y-2 mb-6 w-full">
+            {["Full control over role and permissions", "Built-in cost tracking from day one", "Pre-configured guardrails"].map((item) => (
+              <div key={item} className="flex items-center justify-center gap-2 text-sm text-gray-500">
+                <span className="w-1.5 h-1.5 rounded-full bg-[#00B2FF] shrink-0" />
+                {item}
+              </div>
+            ))}
+          </div>
+          <span className={`mt-auto ${btnPrimary}`}>Start Building</span>
         </button>
 
         {/* Connect card */}
         <button
           onClick={() => onSelect("connect")}
-          className="border border-gray-200 rounded-2xl p-8 hover:border-purple-300 hover:shadow-lg transition cursor-pointer flex flex-col h-full text-left"
+          className="border border-gray-200 rounded-2xl p-8 hover:border-purple-300 hover:shadow-lg transition cursor-pointer flex flex-col items-center text-center h-full"
         >
           <div className="text-purple-600 mb-4">
             <svg className="w-12 h-12" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -86,12 +89,15 @@ function ChoiceView({ onSelect }: { onSelect: (v: "deploy" | "connect") => void 
           <p className="text-sm text-gray-600 mb-5">
             Already have agents running on OpenAI, Anthropic, or other platforms? Wrap them with SynthForce in minutes.
           </p>
-          <ul className="text-sm text-gray-500 list-disc pl-5 space-y-1 mb-6">
-            <li>Works with 10+ AI providers</li>
-            <li>No code changes required</li>
-            <li>Add oversight without disrupting workflows</li>
-          </ul>
-          <span className={`mt-auto ${btnPrimary} text-center`}>Connect Now</span>
+          <div className="space-y-2 mb-6 w-full">
+            {["Works with 10+ AI providers", "No code changes required", "Add oversight without disrupting workflows"].map((item) => (
+              <div key={item} className="flex items-center justify-center gap-2 text-sm text-gray-500">
+                <span className="w-1.5 h-1.5 rounded-full bg-purple-500 shrink-0" />
+                {item}
+              </div>
+            ))}
+          </div>
+          <span className={`mt-auto ${btnPrimary}`}>Connect Now</span>
         </button>
       </div>
 
@@ -106,30 +112,32 @@ function ChoiceView({ onSelect }: { onSelect: (v: "deploy" | "connect") => void 
 
 function DeployView({ onBack }: { onBack: () => void }) {
   return (
-    <div className="max-w-lg">
+    <div>
       <BackButton onClick={onBack} />
-      <div className="bg-blue-50 rounded-2xl p-10 text-center">
-        <div className="w-14 h-14 rounded-full bg-[#00B2FF]/10 flex items-center justify-center mx-auto mb-5">
-          <svg className="w-7 h-7 text-[#00B2FF]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
-          </svg>
+      <div className="max-w-lg mx-auto">
+        <div className="bg-blue-50 rounded-2xl p-10 text-center">
+          <div className="w-14 h-14 rounded-full bg-[#00B2FF]/10 flex items-center justify-center mx-auto mb-5">
+            <svg className="w-7 h-7 text-[#00B2FF]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+            </svg>
+          </div>
+          <h2 className="text-xl font-bold text-gray-900 mb-3">Deploy a New Agent</h2>
+          <p className="text-sm text-gray-700 leading-relaxed mb-4">
+            We&rsquo;re building the ability to create and deploy new AI agents directly from SynthForce.
+          </p>
+          <p className="text-sm font-semibold text-[#00B2FF] mb-5">
+            This feature launches in Phase 2 — September 2026.
+          </p>
+          <p className="text-sm text-gray-600">
+            For now, connect an existing agent from your AI provider account.
+          </p>
+          <button
+            onClick={onBack}
+            className={`mt-8 ${btnPrimary}`}
+          >
+            Connect an Existing Agent
+          </button>
         </div>
-        <h2 className="text-xl font-bold text-gray-900 mb-3">Deploy a New Agent</h2>
-        <p className="text-sm text-gray-700 leading-relaxed mb-4">
-          We&rsquo;re building the ability to create and deploy new AI agents directly from SynthForce.
-        </p>
-        <p className="text-sm font-semibold text-[#00B2FF] mb-5">
-          This feature launches in Phase 2 — September 2026.
-        </p>
-        <p className="text-sm text-gray-600">
-          For now, connect an existing agent from your AI provider account.
-        </p>
-        <button
-          onClick={onBack}
-          className="mt-8 px-6 py-2.5 bg-[#00B2FF] text-white rounded-lg text-sm font-medium hover:bg-[#00B2FF]/90 transition"
-        >
-          Connect an Existing Agent
-        </button>
       </div>
     </div>
   );

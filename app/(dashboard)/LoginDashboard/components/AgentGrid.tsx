@@ -19,7 +19,7 @@ export type AgentCardData = {
 
 const STATUS_DOT: Record<string, string> = {
   active:      "bg-green-500",
-  paused:      "bg-yellow-500",
+  paused:      "bg-yellow-400",
   flagged:     "bg-red-500",
   deactivated: "bg-gray-400",
   training:    "bg-blue-500",
@@ -38,6 +38,21 @@ function fmtCostPerTask(spendCents: number, tasks: number): string {
   return `$${((spendCents / 100) / tasks).toFixed(2)}`;
 }
 
+// ── Status dot with ping for active agents ──────────────────────────────────
+
+function StatusDot({ status }: { status: string }) {
+  const color = STATUS_DOT[status] ?? "bg-gray-400";
+  if (status === "active") {
+    return (
+      <span className="relative flex h-3 w-3 shrink-0">
+        <span className={`animate-ping absolute inline-flex h-full w-full rounded-full ${color} opacity-60`} />
+        <span className={`relative inline-flex rounded-full h-3 w-3 ${color}`} />
+      </span>
+    );
+  }
+  return <span className={`w-3 h-3 rounded-full shrink-0 ${color}`} />;
+}
+
 // ── Agent Detail Modal ──────────────────────────────────────────────────────
 
 function AgentModal({
@@ -47,7 +62,6 @@ function AgentModal({
   agent: AgentCardData;
   onClose: () => void;
 }) {
-  const dot  = STATUS_DOT[agent.status]  ?? "bg-gray-400";
   const pill = STATUS_PILL[agent.status] ?? "bg-gray-100 text-gray-600";
 
   return (
@@ -67,7 +81,7 @@ function AgentModal({
       >
         <div className="flex items-start justify-between mb-5">
           <div className="flex items-center gap-3">
-            <div className={`w-3 h-3 rounded-full shrink-0 ${dot}`} />
+            <StatusDot status={agent.status} />
             <h2 className="text-lg font-bold text-gray-900">{agent.name}</h2>
           </div>
           <button
@@ -151,18 +165,17 @@ export function AgentGrid({ agents }: { agents: AgentCardData[] }) {
     <>
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {agents.map((agent) => {
-          const dot  = STATUS_DOT[agent.status]  ?? "bg-gray-400";
           const pill = STATUS_PILL[agent.status] ?? "bg-gray-100 text-gray-600";
           return (
             <button
               key={agent.id}
               onClick={() => setSelected(agent)}
-              className="bg-white border border-gray-200 rounded-xl p-6 text-left cursor-pointer hover:-translate-y-0.5 hover:shadow-md transition-all focus:outline-none focus:ring-2 focus:ring-[#00B2FF]"
+              className="group bg-white border border-gray-200 rounded-xl p-6 text-left cursor-pointer hover:-translate-y-1.5 hover:shadow-lg hover:border-[#00B2FF]/25 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-[#00B2FF]"
             >
               <div className="flex items-center justify-between mb-4">
                 <div className="flex items-center gap-3 min-w-0">
-                  <div className={`w-3 h-3 rounded-full shrink-0 ${dot}`} />
-                  <span className="font-bold text-gray-900 truncate">{agent.name}</span>
+                  <StatusDot status={agent.status} />
+                  <span className="font-bold text-gray-900 truncate group-hover:text-[#00B2FF] transition-colors duration-200">{agent.name}</span>
                 </div>
                 <span className={`px-3 py-1 rounded-full text-xs font-medium capitalize shrink-0 ml-2 ${pill}`}>
                   {agent.status}
