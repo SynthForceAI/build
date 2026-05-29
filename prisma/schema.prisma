@@ -39,6 +39,8 @@ model Company {
   usageLogs       UsageLog[]
   audits          Audit[]
   connectedAgents ConnectedAgent[]
+  connectedAgentUsage ConnectedAgentUsageLog[]
+  providerAdminKeys   ProviderAdminKey[]
 
   @@map("companies")
 }
@@ -123,10 +125,13 @@ model Provider {
   isActive    Boolean  @default(true) @map("is_active")
   createdAt   DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
 
-  models    ProviderModel[]
-  agents    Agent[]
-  usageLogs UsageLog[]
-  apiKeys   ApiKey[]
+  models               ProviderModel[]
+  agents               Agent[]
+  usageLogs            UsageLog[]
+  apiKeys              ApiKey[]
+  connectedAgents      ConnectedAgent[]
+  connectedAgentUsage  ConnectedAgentUsageLog[]
+  adminKeys            ProviderAdminKey[]
 
   @@map("providers")
 }
@@ -542,21 +547,44 @@ model ConnectedAgent {
   id             String               @id @default(uuid()) @db.Uuid
   companyId      String               @map("company_id") @db.Uuid
   apiKeyId       String               @map("api_key_id") @db.Uuid
+  providerId     String?              @map("provider_id") @db.Uuid
   departmentId   String?              @map("department_id") @db.Uuid
   name           String               @db.VarChar(255)
   providerName   String               @map("provider_name") @db.VarChar(100)
   modelUsed      String               @default("") @map("model_used") @db.VarChar(255)
   status         ConnectedAgentStatus @default(pending)
   tasksMonitored Int                  @default(0) @map("tasks_monitored")
-  connectedAt    DateTime             @default(now()) @map("connected_at") @db.Timestamptz(6)
-  deletedAt      DateTime?            @map("deleted_at") @db.Timestamptz(6)
 
-  company    Company     @relation(fields: [companyId], references: [id], onDelete: Cascade)
-  apiKey     ApiKey      @relation(fields: [apiKeyId], references: [id], onDelete: Cascade)
-  department Department? @relation(fields: [departmentId], references: [id], onDelete: SetNull)
+  // SHA-256 hex of the per-agent self-report token (the raw token is shown to
+  // the customer exactly once at connect time and never stored in the clear).
+  reportTokenHash String? @map("report_token_hash") @db.VarChar(64)
+
+  // Rolling spend/usage counters, kept in sync by the self-report endpoint and
+  // the provider polling job. BigInt cents — serialize via lib/serialize.ts.
+  totalCostCents    BigInt @default(0) @map("total_cost_cents")
+  monthlySpendCents BigInt @default(0) @map("monthly_spend_cents")
+  totalTokensIn     BigInt @default(0) @map("total_tokens_in")
+  totalTokensOut    BigInt @default(0) @map("total_tokens_out")
+
+  // Provider-specific identifiers used to attribute polled usage buckets back
+  // to this agent (e.g. { "openaiProjectId": "proj_..." }).
+  metadata Json @default("{}")
+
+  connectedAt         DateTime  @default(now()) @map("connected_at") @db.Timestamptz(6)
+  lastUsageReportedAt DateTime? @map("last_usage_reported_at") @db.Timestamptz(6)
+  lastSyncedAt        DateTime? @map("last_synced_at") @db.Timestamptz(6)
+  lastActiveAt        DateTime? @map("last_active_at") @db.Timestamptz(6)
+  deletedAt           DateTime? @map("deleted_at") @db.Timestamptz(6)
+
+  company    Company                  @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  apiKey     ApiKey                   @relation(fields: [apiKeyId], references: [id], onDelete: Cascade)
+  provider   Provider?                @relation(fields: [providerId], references: [id])
+  department Department?              @relation(fields: [departmentId], references: [id], onDelete: SetNull)
+  usageLogs  ConnectedAgentUsageLog[]
 
   @@index([companyId])
   @@index([apiKeyId])
+  @@index([providerId])
   @@map("connected_agents")
 }
 
@@ -566,4 +594,71 @@ enum ConnectedAgentStatus {
   inactive
 
   @@map("connected_agent_status")
+}
+
+// Where a usage record came from: an agent self-reporting, or our backend
+// polling a provider's admin usage API.
+enum UsageSource {
+  self_report
+  provider_sync
+
+  @@map("usage_source")
+}
+
+// Per-event usage for ConnectedAgents (onboard flow). Kept separate from
+// UsageLog (which FKs the managed `Agent`) to avoid bloating that hot table
+// and to sidestep its required agent_id FK.
+model ConnectedAgentUsageLog {
+  id               String      @id @default(uuid()) @db.Uuid
+  companyId        String      @map("company_id") @db.Uuid
+  connectedAgentId String      @map("connected_agent_id") @db.Uuid
+  providerId       String?     @map("provider_id") @db.Uuid
+  source           UsageSource @default(self_report)
+
+  tokensIn  Int     @default(0) @map("tokens_in")
+  tokensOut Int     @default(0) @map("tokens_out")
+  costCents Decimal @default(0) @map("cost_cents") @db.Decimal(20, 6)
+  model     String? @db.VarChar(255)
+
+  // Provider-side identity of this record (bucket id / request id). Used to
+  // dedupe repeated polls. NULL for self-reports (Postgres treats NULLs as
+  // distinct, so self-reports never collide on the unique index).
+  providerApiId String? @map("provider_api_id") @db.VarChar(255)
+
+  durationMs Int?    @map("duration_ms")
+  endpoint   String? @db.VarChar(255)
+  statusCode Int?    @map("status_code")
+  metadata   Json    @default("{}")
+  createdAt  DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+
+  company        Company        @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  connectedAgent ConnectedAgent @relation(fields: [connectedAgentId], references: [id], onDelete: Cascade)
+  provider       Provider?      @relation(fields: [providerId], references: [id])
+
+  @@unique([connectedAgentId, providerApiId])
+  @@index([companyId])
+  @@index([connectedAgentId])
+  @@index([createdAt(sort: Desc)])
+  @@map("connected_agent_usage_logs")
+}
+
+// Org/admin-level key per provider per company, used by the polling job to
+// query provider usage APIs. Encrypted at rest with the same AES-256-GCM
+// scheme as ApiKey.encryptedKey (see lib/crypto.ts).
+model ProviderAdminKey {
+  id           String    @id @default(uuid()) @db.Uuid
+  companyId    String    @map("company_id") @db.Uuid
+  providerId   String    @map("provider_id") @db.Uuid
+  encryptedKey String    @map("encrypted_key")
+  metadata     Json      @default("{}")
+  lastSyncedAt DateTime? @map("last_synced_at") @db.Timestamptz(6)
+  createdAt    DateTime  @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt    DateTime  @updatedAt @map("updated_at") @db.Timestamptz(6)
+
+  company  Company  @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  provider Provider @relation(fields: [providerId], references: [id])
+
+  @@unique([companyId, providerId])
+  @@index([companyId])
+  @@map("provider_admin_keys")
 }

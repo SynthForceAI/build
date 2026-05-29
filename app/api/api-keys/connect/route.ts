@@ -3,6 +3,7 @@ import { prisma } from "@/lib/db";
 import { ProviderConnectSchema } from "@/lib/validators";
 import { encryptApiKey, keyIdentifierFrom } from "@/lib/crypto";
 import { verifyProviderKey } from "@/lib/providers";
+import { generateReportToken, hashReportToken } from "@/lib/report-token";
 import { requireUser } from "@/lib/auth";
 import { handleApiError, ApiError } from "@/lib/api-errors";
 
@@ -62,15 +63,22 @@ export async function POST(req: NextRequest) {
       },
     });
 
+    // One-time self-report token for this agent. We store only its hash; the
+    // raw value is returned below exactly once so the agent can be configured
+    // to POST usage to /api/connected-agents/{id}/report-usage.
+    const reportToken = generateReportToken();
+
     const connectedAgent = await prisma.connectedAgent.create({
       data: {
-        companyId:    user.companyId,
-        apiKeyId:     apiKey.id,
-        departmentId: parsed.departmentId ?? null,
-        name:         parsed.agentName,
-        providerName: provider.name,
-        modelUsed:    availableModels[0] ?? "",
-        status:       "pending",
+        companyId:       user.companyId,
+        apiKeyId:        apiKey.id,
+        providerId:      provider.id,
+        departmentId:    parsed.departmentId ?? null,
+        name:            parsed.agentName,
+        providerName:    provider.name,
+        modelUsed:       availableModels[0] ?? "",
+        status:          "pending",
+        reportTokenHash: hashReportToken(reportToken),
       },
     });
 
@@ -82,6 +90,8 @@ export async function POST(req: NextRequest) {
         status:          connectedAgent.status,
         availableModels,
         connectedAt:     connectedAgent.connectedAt,
+        // Shown once. Persist client-side; it cannot be retrieved again.
+        reportToken,
       },
       { status: 201 },
     );

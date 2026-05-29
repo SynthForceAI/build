@@ -191,3 +191,34 @@ export const AuditCreateSchema = z.object({
   // How many days back to audit (default 30)
   periodDays: z.number().int().positive().max(90).optional(),
 }).strict();
+
+// ---------------------------------------------------------------------------
+// Agent usage self-report (POST /api/connected-agents/[id]/report-usage)
+// ---------------------------------------------------------------------------
+
+export const UsageReportSchema = z.object({
+  tokensIn:   z.number().int().nonnegative(),
+  tokensOut:  z.number().int().nonnegative(),
+  // Cost in cents (may be fractional). Omit to have the server estimate it
+  // from token counts via lib/providers/pricing.ts.
+  cost:       z.number().nonnegative().optional(),
+  model:      NonEmptyString.max(255).optional(),
+  endpoint:   NonEmptyString.max(255).optional(),
+  statusCode: z.number().int().min(100).max(599).optional(),
+  durationMs: z.number().int().nonnegative().optional(),
+  metadata:   z.record(z.unknown()).optional(),
+}).strict().refine(
+  (v) => v.tokensIn > 0 || v.tokensOut > 0,
+  { message: "Report must include at least one of tokensIn / tokensOut." },
+);
+
+// ---------------------------------------------------------------------------
+// Provider admin key (POST /api/providers/[providerId]/admin-key)
+// ---------------------------------------------------------------------------
+
+export const ProviderAdminKeyCreateSchema = z.object({
+  // Raw org/admin key (e.g. sk-admin-…, sk-ant-admin-…). Encrypted at rest.
+  adminKey: NonEmptyString.max(2000),
+  // Provider-specific identifiers (org_id, project_id, workspace_ids, …).
+  metadata: z.record(z.unknown()).optional(),
+}).strict();

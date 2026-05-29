@@ -2,6 +2,7 @@ import { redirect } from "next/navigation";
 import { requireUser } from "@/lib/auth";
 import { prisma } from "@/lib/db";
 import { ApiError } from "@/lib/api-errors";
+import { bigintToJson } from "@/lib/serialize";
 import { OnboardClient } from "./components/OnboardClient";
 
 export default async function OnboardPage() {
@@ -31,14 +32,16 @@ export default async function OnboardPage() {
   ]);
 
   const initialAgents = rawAgents.map((a) => ({
-    id:             a.id,
-    name:           a.name,
-    providerName:   a.providerName,
-    modelUsed:      a.modelUsed,
-    status:         a.status as "pending" | "active" | "inactive",
-    tasksMonitored: a.tasksMonitored,
-    connectedAt:    a.connectedAt.toISOString(),
-    department:     a.department?.name ?? null,
+    id:                  a.id,
+    name:                a.name,
+    providerName:        a.providerName,
+    modelUsed:           a.modelUsed,
+    status:              a.status as "pending" | "active" | "inactive",
+    tasksMonitored:      a.tasksMonitored,
+    totalCostCents:      bigintToJson(a.totalCostCents),
+    connectedAt:         a.connectedAt.toISOString(),
+    lastUsageReportedAt: a.lastUsageReportedAt?.toISOString() ?? null,
+    department:          a.department?.name ?? null,
   }));
 
   return (
