@@ -143,12 +143,23 @@ export function DashboardSidebar({ userName, userEmail, userRole, isOpen, onClos
           </nav>
 
           {/* ── User info ─────────────────────────────────────── */}
-          <div className="px-4 py-4 border-t border-gray-100 shrink-0">
-            <p className="text-sm font-medium text-gray-900 truncate">{userName}</p>
-            <p className="text-xs text-gray-400 truncate mt-0.5">{userEmail}</p>
-            <span className="inline-block mt-2 text-xs px-2 py-0.5 rounded-full bg-gray-100 text-gray-500 capitalize">
-              {userRole}
-            </span>
+          <div className="p-2 border-t border-gray-100 shrink-0">
+            <Link
+              href="/LoginDashboard/profile"
+              onClick={() => {
+                if (typeof window !== "undefined" && window.innerWidth < 1024) {
+                  onClose();
+                }
+              }}
+              className="block px-2 py-2 rounded-lg hover:bg-gray-50 transition-colors"
+              aria-label="Open profile"
+            >
+              <p className="text-sm font-medium text-gray-900 truncate">{userName}</p>
+              <p className="text-xs text-gray-400 truncate mt-0.5">{userEmail}</p>
+              <span className="inline-block mt-2 text-xs px-2 py-0.5 rounded-full bg-gray-100 text-gray-500 capitalize">
+                {userRole}
+              </span>
+            </Link>
           </div>
 
         </div>

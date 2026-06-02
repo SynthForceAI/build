@@ -222,3 +222,23 @@ export const ProviderAdminKeyCreateSchema = z.object({
   // Provider-specific identifiers (org_id, project_id, workspace_ids, …).
   metadata: z.record(z.unknown()).optional(),
 }).strict();
+
+// ---------------------------------------------------------------------------
+// User profile (PATCH /api/users/me)
+// ---------------------------------------------------------------------------
+
+export const ProfileUpdateSchema = atLeastOneKey({
+  name: NonEmptyString.min(2).max(50).optional(),
+});
+
+// ---------------------------------------------------------------------------
+// User preferences (PATCH /api/users/me/preferences)
+// ---------------------------------------------------------------------------
+
+export const EmailDigestEnum = z.enum(["daily", "weekly", "never"]);
+
+export const PreferencesUpdateSchema = atLeastOneKey({
+  emailDigest: EmailDigestEnum.optional(),
+  // Locked to USD for the free tier. Validated server-side too.
+  currency:    z.literal("USD").optional(),
+});
