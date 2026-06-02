@@ -151,14 +151,22 @@ export function DashboardSidebar({ userName, userEmail, userRole, isOpen, onClos
                   onClose();
                 }
               }}
-              className="block px-2 py-2 rounded-lg hover:bg-gray-50 transition-colors"
-              aria-label="Open profile"
+              className="group block p-3 rounded-lg border border-gray-200 bg-white hover:border-[#00B2FF] hover:shadow-sm transition-all"
+              aria-label="View profile"
             >
               <p className="text-sm font-medium text-gray-900 truncate">{userName}</p>
               <p className="text-xs text-gray-400 truncate mt-0.5">{userEmail}</p>
-              <span className="inline-block mt-2 text-xs px-2 py-0.5 rounded-full bg-gray-100 text-gray-500 capitalize">
-                {userRole}
-              </span>
+              <div className="mt-2 flex items-center justify-between gap-2">
+                <span className="text-xs px-2 py-0.5 rounded-full bg-gray-100 text-gray-500 capitalize">
+                  {userRole}
+                </span>
+                <span className="text-xs font-medium text-[#00B2FF] flex items-center gap-0.5 group-hover:gap-1.5 transition-all">
+                  View Profile
+                  <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                  </svg>
+                </span>
+              </div>
             </Link>
           </div>
 
