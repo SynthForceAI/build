@@ -77,8 +77,21 @@ export async function POST(req: NextRequest) {
         name:            parsed.agentName,
         providerName:    provider.name,
         modelUsed:       availableModels[0] ?? "",
-        status:          "pending",
+        status:          "active",
         reportTokenHash: hashReportToken(reportToken),
+      },
+    });
+
+    // Create the Agent record so the agent appears in the dashboard, performance,
+    // and agents pages — which all read from the Agent table, not ConnectedAgent.
+    await prisma.agent.create({
+      data: {
+        companyId:    user.companyId,
+        name:         parsed.agentName,
+        departmentId: parsed.departmentId ?? null,
+        providerId:   provider.id,
+        apiKeyId:     apiKey.id,
+        status:       "active",
       },
     });
 

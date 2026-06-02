@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 
 export type AgentOption = {
   id: string;
@@ -8,21 +9,55 @@ export type AgentOption = {
   department: string | null;
 };
 
-export function ErrorDeepDive({ agents }: { agents: AgentOption[] }) {
+export type DepartmentOption = {
+  id: string;
+  name: string;
+};
+
+export function ErrorDeepDive({
+  agents,
+  departments,
+}: {
+  agents: AgentOption[];
+  departments: DepartmentOption[];
+}) {
   const [transferAgent, setTransferAgent] = useState(agents[0]?.id ?? "");
-  const [targetDept, setTargetDept]       = useState("Marketing");
+  const [targetDept, setTargetDept]       = useState(departments[0]?.id ?? "");
   const [reason, setReason]               = useState("");
+  const [saving, setSaving]               = useState(false);
+  const [feedback, setFeedback]           = useState<{ ok: boolean; msg: string } | null>(null);
+  const router = useRouter();
+
+  async function handleTransfer() {
+    if (!transferAgent || !targetDept) return;
+    setSaving(true);
+    setFeedback(null);
+    try {
+      const res = await fetch(`/api/agents/${transferAgent}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ departmentId: targetDept }),
+      });
+      if (!res.ok) throw new Error("Transfer failed");
+      setFeedback({ ok: true, msg: "Agent transferred successfully." });
+      router.refresh();
+    } catch {
+      setFeedback({ ok: false, msg: "Something went wrong. Please try again." });
+    } finally {
+      setSaving(false);
+    }
+  }
 
   const inputClass =
     "w-full px-4 py-3 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#00B2FF] focus:border-transparent";
 
   return (
-    <div>
-      <h2 className="text-base font-semibold text-gray-900 mb-3">Error Deep Dive</h2>
+    <div className="border-t border-gray-200 pt-8">
+      <h2 className="text-base font-semibold text-gray-900 mb-4">Error Deep Dive</h2>
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
 
         {/* Recent errors — empty state until usageLogs are wired */}
-        <div className="bg-gray-50 p-6 rounded-xl">
+        <div className="bg-white border border-gray-200 shadow-sm p-6 rounded-xl">
           <h3 className="text-base font-semibold text-gray-900 mb-4">Recent Errors</h3>
           <p className="text-sm text-gray-500">No errors recorded yet.</p>
           <p className="text-xs text-gray-400 mt-1">
@@ -31,7 +66,7 @@ export function ErrorDeepDive({ agents }: { agents: AgentOption[] }) {
         </div>
 
         {/* Transfer agent form */}
-        <div className="bg-gray-50 p-6 rounded-xl">
+        <div className="bg-white border border-gray-200 shadow-sm p-6 rounded-xl">
           <h3 className="text-base font-semibold text-gray-900 mb-4">Transfer Agent</h3>
           <div className="space-y-4">
             <div>
@@ -59,9 +94,13 @@ export function ErrorDeepDive({ agents }: { agents: AgentOption[] }) {
                 onChange={(e) => setTargetDept(e.target.value)}
                 className={inputClass}
               >
-                {["Marketing", "Sales", "Support", "Finance", "Operations"].map((d) => (
-                  <option key={d} value={d}>{d}</option>
-                ))}
+                {departments.length === 0 ? (
+                  <option value="">No departments created</option>
+                ) : (
+                  departments.map((d) => (
+                    <option key={d.id} value={d.id}>{d.name}</option>
+                  ))
+                )}
               </select>
             </div>
             <div>
@@ -74,11 +113,17 @@ export function ErrorDeepDive({ agents }: { agents: AgentOption[] }) {
                 placeholder="e.g., Marketing needs lead data for campaign analysis"
               />
             </div>
+            {feedback && (
+              <p className={`text-xs ${feedback.ok ? "text-green-600" : "text-red-500"}`}>
+                {feedback.msg}
+              </p>
+            )}
             <button
-              onClick={() => alert("Transfer initiated — wire to PUT /api/agents/:id")}
-              className="w-full py-3 bg-[#00B2FF] text-white border border-[#00B2FF] rounded-lg hover:bg-transparent hover:text-[#00B2FF] transition text-sm font-medium"
+              onClick={handleTransfer}
+              disabled={saving || !transferAgent || !targetDept}
+              className="w-full py-3 bg-[#00B2FF] text-white border border-[#00B2FF] rounded-lg hover:bg-transparent hover:text-[#00B2FF] transition text-sm font-medium disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              Initiate Transfer
+              {saving ? "Transferring…" : "Initiate Transfer"}
             </button>
           </div>
         </div>

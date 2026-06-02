@@ -293,7 +293,7 @@ export default async function DashboardPage() {
 // Kept here rather than in components/ui/ because it's only used on this page.
 function Stat({ value, label, tone }: { value: string; label: string; tone: string }) {
   return (
-    <div className={`${tone} p-6 rounded-xl`}>
+    <div className={`${tone} p-6 rounded-xl shadow-sm hover:shadow-md hover:-translate-y-0.5 transition-all duration-200`}>
       <div className="text-3xl font-bold text-gray-900">{value}</div>
       <div className="text-sm text-gray-600 mt-1">{label}</div>
     </div>

@@ -16,7 +16,7 @@ async function fetchAgents(companyId: string): Promise<AgentRow[]> {
     where: { companyId },
     orderBy: { createdAt: "desc" },
     include: {
-      department: { select: { name: true } },
+      department: { select: { id:true, name: true } },
       provider:   { select: { displayName: true } },
       model:      { select: { displayName: true } },
     },
@@ -24,6 +24,7 @@ async function fetchAgents(companyId: string): Promise<AgentRow[]> {
 
   return rows.map((a) => ({
     id:           a.id,
+    departmentId: a.department?.id ?? null,
     name:         a.name,
     description:  a.description,
     status:       a.status as string,
