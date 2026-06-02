@@ -68,8 +68,9 @@ model User {
   createdAt   DateTime  @default(now()) @map("created_at") @db.Timestamptz(6)
   updatedAt   DateTime  @updatedAt @map("updated_at") @db.Timestamptz(6)
 
-  company            Company       @relation(fields: [companyId], references: [id], onDelete: Cascade)
-  managedAgents      Agent[]       @relation("AgentManager")
+  company            Company        @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  preferences        UserPreferences?
+  managedAgents      Agent[]        @relation("AgentManager")
   createdPolicies    Policy[]      @relation("PolicyCreator")
   acknowledgedAlerts BudgetAlert[] @relation("AlertAcknowledger")
   initiatedAudits    Audit[]       @relation("AuditInitiator")
@@ -661,4 +662,26 @@ model ProviderAdminKey {
   @@unique([companyId, providerId])
   @@index([companyId])
   @@map("provider_admin_keys")
+}
+
+// Per-user UI/notification preferences. Free-tier scope:
+// emailDigest controls how often we email usage/policy summaries; currency
+// is locked to USD for now (placeholder for future multi-currency).
+model UserPreferences {
+  id          String       @id @default(uuid()) @db.Uuid
+  userId      String       @unique @map("user_id") @db.Uuid
+  emailDigest EmailDigest  @default(never) @map("email_digest")
+  currency    String       @default("USD") @db.VarChar(8)
+  createdAt   DateTime     @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt   DateTime     @updatedAt @map("updated_at") @db.Timestamptz(6)
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("user_preferences")
+}
+
+enum EmailDigest {
+  daily
+  weekly
+  never
 }
