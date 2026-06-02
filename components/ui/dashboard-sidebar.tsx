@@ -19,7 +19,9 @@ import { usePathname } from "next/navigation";
 import { cn } from "@/lib/utils";
 import type { UserRole } from "@prisma/client";
 
-const NAV_ITEMS = [
+type NavItem = { href: string; label: string; sub: string };
+
+const NAV_ITEMS: NavItem[] = [
   { href: "/LoginDashboard",              label: "Dashboard",    sub: "Active agents & overview"    },
   { href: "/LoginDashboard/onboard",      label: "Onboard",      sub: "Add a new AI agent"           },
   { href: "/LoginDashboard/performance",  label: "Performance",  sub: "Tasks, errors, satisfaction"  },
@@ -29,7 +31,7 @@ const NAV_ITEMS = [
   { href: "/LoginDashboard/agents",       label: "Agents",       sub: "Manage your fleet"            },
   { href: "/LoginDashboard/departments",  label: "Departments",  sub: "Teams & budgets"              },
   { href: "/LoginDashboard/settings",     label: "Settings",     sub: "Account & preferences"        },
-];
+] as const;
 
 type Props = {
   userName:  string;

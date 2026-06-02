@@ -1,12 +1,14 @@
 "use client";
 
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 import type { ActiveAgentOption } from "../page";
 
 const inputClass =
   "w-full px-4 py-3 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#00B2FF] focus:border-transparent";
 
 export function OffboardingClient({ activeAgents }: { activeAgents: ActiveAgentOption[] }) {
+  const router = useRouter();
   const [selectedId, setSelectedId] = useState(activeAgents[0]?.id ?? "");
   const [reason, setReason]         = useState("");
   const [finalDate, setFinalDate]   = useState("");
@@ -27,7 +29,8 @@ export function OffboardingClient({ activeAgents }: { activeAgents: ActiveAgentO
       if(!response.ok){
         setError("Failed to offboard agent. Please try again.");
       }
-      else{
+      else {
+        router.refresh();
         setSubmitted(true);
       }
     } catch {
@@ -132,7 +135,7 @@ export function OffboardingClient({ activeAgents }: { activeAgents: ActiveAgentO
             onClick={() => handleOffBoard()}
             className="w-full py-3 bg-red-500 text-white rounded-lg hover:bg-red-600 transition text-sm font-medium disabled:opacity-40 disabled:cursor-not-allowed"
           >
-            {loading ?  "Processing..." : "Offboarding Complete"}
+            {loading ? "Processing..." : "Complete Offboarding"}
           </button>
           {error && <p className="text-sm text-red-500 mt-2">{error}</p>}
         </div>

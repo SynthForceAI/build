@@ -60,23 +60,28 @@ export function AgentsClient({
   const [showModal, setShowModal] = useState(false);
   const [editingAgentId, setEditingAgentId] = useState<string | null>(null);
   const [savingAgentId, setSavingAgentId] = useState<string | null>(null);
+  const [deptUpdateError, setDeptUpdateError] = useState<string | null>(null);
 
   const activeCount = agents.filter((a) => a.status === "active").length;
   const pausedCount = agents.filter((a) => a.status === "paused").length;
 
   async function updateDepartments(agentId: string, departmentId: string | null) {
-  
     setSavingAgentId(agentId);
-    try{
+    setDeptUpdateError(null);
+    try {
       const response = await fetch(`/api/agents/${agentId}`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ departmentId }),
       });
-      if (response.ok){
+      if (response.ok) {
         router.refresh();
+      } else {
+        setDeptUpdateError("Failed to update department. Please try again.");
       }
-    } catch {} finally {
+    } catch {
+      setDeptUpdateError("Something went wrong. Please try again.");
+    } finally {
       setSavingAgentId(null);
       setEditingAgentId(null);
     }
@@ -99,6 +104,10 @@ export function AgentsClient({
           + Add Agent
         </button>
       </div>
+
+      {deptUpdateError && (
+        <p className="mb-4 text-sm text-red-500">{deptUpdateError}</p>
+      )}
 
       {/* ── Agent table ─────────────────────────────────── */}
       <div className="bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden">
