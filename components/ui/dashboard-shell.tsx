@@ -1,8 +1,32 @@
 "use client";
 
 import { useState } from "react";
+import { usePathname } from "next/navigation";
 import { DashboardSidebar } from "./dashboard-sidebar";
 import type { UserRole } from "@prisma/client";
+
+const PAGE_LABELS: Record<string, string> = {
+  "/U":              "Dashboard",
+  "/U/onboard":      "Onboard",
+  "/U/performance":  "Performance",
+  "/U/compensation": "Compensation",
+  "/U/policies":     "Policies",
+  "/U/offboarding":  "Offboarding",
+  "/U/agents":       "Agents",
+  "/U/departments":  "Departments",
+  "/U/settings":     "Settings",
+  "/U/profile":      "Profile",
+};
+
+function usePageLabel(): string {
+  const pathname = usePathname();
+  // Exact match first, then longest prefix
+  if (PAGE_LABELS[pathname]) return PAGE_LABELS[pathname];
+  const match = Object.keys(PAGE_LABELS)
+    .filter((k) => k !== "/U" && pathname.startsWith(k))
+    .sort((a, b) => b.length - a.length)[0];
+  return match ? PAGE_LABELS[match] : "SynthForce";
+}
 
 type Props = {
   userName:  string;
@@ -13,6 +37,7 @@ type Props = {
 
 export function DashboardShell({ userName, userEmail, userRole, children }: Props) {
   const [sidebarOpen, setSidebarOpen] = useState(true);
+  const pageLabel = usePageLabel();
 
   return (
     <div className="flex h-screen overflow-hidden bg-gray-50">
@@ -55,7 +80,7 @@ export function DashboardShell({ userName, userEmail, userRole, children }: Prop
                 <rect y="14" width="18" height="2" rx="1" />
               </svg>
             </button>
-            <span className="text-sm font-semibold text-gray-900">SynthForce</span>
+            <span className="text-sm font-semibold text-gray-900" aria-live="polite">{pageLabel}</span>
           </div>
         </header>
 

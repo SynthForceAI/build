@@ -47,15 +47,24 @@ export function AgentStatusToggle({ agentId, status }: Props) {
     }
   }
 
+  const spinner = (
+    <svg className="animate-spin w-3 h-3" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z" />
+    </svg>
+  );
+
   // Active agent → offer Pause
   if (status === "active") {
     return (
       <button
         onClick={() => transition("pause")}
         disabled={loading}
-        className="text-xs px-3 py-1.5 rounded-md border border-gray-300 text-gray-600 hover:border-gray-400 hover:text-gray-900 transition-colors disabled:opacity-40"
+        className="inline-flex items-center gap-1.5 text-xs px-3 py-1.5 rounded-md border border-gray-300 text-gray-600 hover:border-gray-400 hover:text-gray-900 transition-colors disabled:opacity-40"
+        aria-label={loading ? "Pausing agent…" : "Pause agent"}
       >
-        {loading ? "…" : "Pause"}
+        {loading ? spinner : null}
+        {loading ? "Pausing…" : "Pause"}
       </button>
     );
   }
@@ -66,9 +75,11 @@ export function AgentStatusToggle({ agentId, status }: Props) {
       <button
         onClick={() => transition("activate")}
         disabled={loading}
-        className="text-xs px-3 py-1.5 rounded-md border border-accent text-accent hover:bg-accent hover:text-white transition-colors disabled:opacity-40"
+        className="inline-flex items-center gap-1.5 text-xs px-3 py-1.5 rounded-md border border-accent text-accent hover:bg-accent hover:text-white transition-colors disabled:opacity-40"
+        aria-label={loading ? "Activating agent…" : "Activate agent"}
       >
-        {loading ? "…" : "Activate"}
+        {loading ? spinner : null}
+        {loading ? "Activating…" : "Activate"}
       </button>
     );
   }
