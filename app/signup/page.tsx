@@ -3,12 +3,14 @@ import { requireUser } from "@/lib/auth";
 import { SignupForm } from "@/components/auth/SignupForm";
 
 export default async function SignupPage() {
+  let authed = false;
   try {
     await requireUser();
-    redirect("/U");
+    authed = true;
   } catch {
-    // Not authenticated — render signup form
+    // Not authenticated — fall through to render the signup form
   }
+  if (authed) redirect("/U");
   return (
     <div className="min-h-screen bg-[#0A0A0A] flex">
       {/* Left side — branding + value props */}
