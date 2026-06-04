@@ -113,7 +113,7 @@ function AgentModal({
             Close
           </button>
           <a
-            href={`/LoginDashboard/agents`}
+            href={`/U/agents`}
             className="flex-1 px-4 py-2.5 text-sm text-center bg-[#00B2FF] text-white border border-[#00B2FF] rounded-lg hover:bg-transparent hover:text-[#00B2FF] transition"
           >
             Edit Agent
@@ -152,7 +152,7 @@ export function AgentGrid({ agents }: { agents: AgentCardData[] }) {
         <p className="text-sm text-gray-500">No agents yet.</p>
         <p className="text-xs text-gray-400 mt-1">
           Go to{" "}
-          <a href="/LoginDashboard/onboard" className="text-[#00B2FF] underline">
+          <a href="/U/onboard" className="text-[#00B2FF] underline">
             Onboard
           </a>{" "}
           to add your first agent.

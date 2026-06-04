@@ -270,7 +270,7 @@ export function ProfileClient({ data }: { data: ProfileData }) {
                     </div>
                   </div>
                   <Link
-                    href="/LoginDashboard/onboard"
+                    href="/U/onboard"
                     className={`text-xs ${theme.font.classMedium} text-[#00B2FF] hover:underline`}
                   >
                     {p.connected ? "Manage Keys" : "Connect"}

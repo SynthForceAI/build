@@ -22,15 +22,15 @@ import type { UserRole } from "@prisma/client";
 type NavItem = { href: string; label: string; sub: string };
 
 const NAV_ITEMS: NavItem[] = [
-  { href: "/LoginDashboard",              label: "Dashboard",    sub: "Active agents & overview"    },
-  { href: "/LoginDashboard/onboard",      label: "Onboard",      sub: "Add a new AI agent"           },
-  { href: "/LoginDashboard/performance",  label: "Performance",  sub: "Tasks, errors, satisfaction"  },
-  { href: "/LoginDashboard/compensation", label: "Compensation", sub: "API spend & ROI"              },
-  { href: "/LoginDashboard/policies",     label: "Policies",     sub: "Guardrails & compliance"      },
-  { href: "/LoginDashboard/offboarding",  label: "Offboarding",  sub: "Archive & audit"              },
-  { href: "/LoginDashboard/agents",       label: "Agents",       sub: "Manage your fleet"            },
-  { href: "/LoginDashboard/departments",  label: "Departments",  sub: "Teams & budgets"              },
-  { href: "/LoginDashboard/settings",     label: "Settings",     sub: "Account & preferences"        },
+  { href: "/U",              label: "Dashboard",    sub: "Active agents & overview"    },
+  { href: "/U/onboard",      label: "Onboard",      sub: "Add a new AI agent"           },
+  { href: "/U/performance",  label: "Performance",  sub: "Tasks, errors, satisfaction"  },
+  { href: "/U/compensation", label: "Compensation", sub: "API spend & ROI"              },
+  { href: "/U/policies",     label: "Policies",     sub: "Guardrails & compliance"      },
+  { href: "/U/offboarding",  label: "Offboarding",  sub: "Archive & audit"              },
+  { href: "/U/agents",       label: "Agents",       sub: "Manage your fleet"            },
+  { href: "/U/departments",  label: "Departments",  sub: "Teams & budgets"              },
+  { href: "/U/settings",     label: "Settings",     sub: "Account & preferences"        },
 ] as const;
 
 type Props = {
@@ -88,7 +88,7 @@ export function DashboardSidebar({ userName, userEmail, userRole, isOpen, onClos
 
           {/* ── Logo ─────────────────────────────────────────── */}
           <div className="h-16 shrink-0 flex items-center justify-center px-5 border-b border-gray-100">
-            <Link href="/LoginDashboard" aria-label="Go to dashboard home">
+            <Link href="/U" aria-label="Go to dashboard home">
               <img
                 src="/assets/logo_hero.png"
                 alt="SynthForce"
@@ -101,8 +101,8 @@ export function DashboardSidebar({ userName, userEmail, userRole, isOpen, onClos
           <nav className="flex-1 px-3 py-4 flex flex-col gap-1 overflow-y-auto" aria-label="Main navigation">
             {NAV_ITEMS.map(({ href, label, sub }) => {
               const isActive =
-                href === "/LoginDashboard"
-                  ? pathname === "/LoginDashboard"
+                href === "/U"
+                  ? pathname === "/U"
                   : pathname.startsWith(href);
 
               return (
@@ -145,7 +145,7 @@ export function DashboardSidebar({ userName, userEmail, userRole, isOpen, onClos
           {/* ── User info ─────────────────────────────────────── */}
           <div className="p-2 border-t border-gray-100 shrink-0">
             <Link
-              href="/LoginDashboard/profile"
+              href="/U/profile"
               onClick={() => {
                 if (typeof window !== "undefined" && window.innerWidth < 1024) {
                   onClose();

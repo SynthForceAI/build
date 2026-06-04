@@ -189,7 +189,7 @@ export default async function DashboardPage() {
           <p className="text-sm text-gray-500 mt-1">{month} · Month-to-date</p>
         </div>
         <Link
-          href="/LoginDashboard/onboard"
+          href="/U/onboard"
           className="inline-flex items-center px-5 py-2.5 text-sm font-medium bg-[#00B2FF] text-white border border-[#00B2FF] rounded-lg hover:bg-transparent hover:text-[#00B2FF] transition whitespace-nowrap"
         >
           + Onboard New Agent
