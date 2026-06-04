@@ -147,7 +147,7 @@ export function DashboardSidebar({ userName, userEmail, userRole, isOpen, onClos
                     {label}
                   </span>
                   <span className={cn(
-                    "text-[11px] mt-0.5 transition-colors duration-200",
+                    "text-xs mt-0.5 transition-colors duration-200",
                     isActive
                       ? "text-[#00B2FF]/60"
                       : "text-gray-400 group-hover:text-gray-500"
@@ -187,7 +187,7 @@ export function DashboardSidebar({ userName, userEmail, userRole, isOpen, onClos
             </Link>
             <button
               onClick={handleLogout}
-              className="w-full flex items-center gap-2 px-3 py-2 rounded-lg text-xs font-medium text-gray-500 hover:bg-gray-50 hover:text-gray-700 transition-colors"
+              className="w-full flex items-center gap-2 px-3 py-2 min-h-[44px] rounded-lg text-xs font-medium text-gray-500 hover:bg-gray-50 hover:text-gray-700 transition-colors"
               aria-label="Sign out"
             >
               <svg className="w-3.5 h-3.5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">

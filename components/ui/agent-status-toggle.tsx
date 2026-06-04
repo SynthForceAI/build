@@ -60,7 +60,7 @@ export function AgentStatusToggle({ agentId, status }: Props) {
       <button
         onClick={() => transition("pause")}
         disabled={loading}
-        className="inline-flex items-center gap-1.5 text-xs px-3 py-1.5 rounded-md border border-gray-300 text-gray-600 hover:border-gray-400 hover:text-gray-900 transition-colors disabled:opacity-40"
+        className="inline-flex items-center gap-1.5 text-xs px-3 py-1.5 min-h-[36px] rounded-md border border-gray-300 text-gray-600 hover:border-gray-400 hover:text-gray-900 transition-colors disabled:opacity-40"
         aria-label={loading ? "Pausing agent…" : "Pause agent"}
       >
         {loading ? spinner : null}
@@ -75,7 +75,7 @@ export function AgentStatusToggle({ agentId, status }: Props) {
       <button
         onClick={() => transition("activate")}
         disabled={loading}
-        className="inline-flex items-center gap-1.5 text-xs px-3 py-1.5 rounded-md border border-accent text-accent hover:bg-accent hover:text-white transition-colors disabled:opacity-40"
+        className="inline-flex items-center gap-1.5 text-xs px-3 py-1.5 min-h-[36px] rounded-md border border-accent text-accent hover:bg-accent hover:text-white transition-colors disabled:opacity-40"
         aria-label={loading ? "Activating agent…" : "Activate agent"}
       >
         {loading ? spinner : null}
