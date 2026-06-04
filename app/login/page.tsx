@@ -3,12 +3,16 @@ import { requireUser } from "@/lib/auth";
 import { LoginForm } from "@/components/auth/LoginForm";
 
 export default async function LoginPage() {
+  // redirect() throws a special Next.js internal error that must NOT be caught.
+  // We separate the auth check from the redirect so the throw propagates freely.
+  let authed = false;
   try {
     await requireUser();
-    redirect("/U");
+    authed = true;
   } catch {
-    // Not authenticated — render login form
+    // Not authenticated — fall through to render the login form
   }
+  if (authed) redirect("/U");
   return (
     <div className="min-h-screen bg-[#0A0A0A] flex">
       {/* Left side — branding + value props */}
