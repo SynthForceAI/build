@@ -22,6 +22,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { toast } from "sonner";
 
 type Props = {
   agentId: string;
@@ -35,10 +36,12 @@ export function AgentStatusToggle({ agentId, status }: Props) {
   async function transition(action: "activate" | "pause") {
     setLoading(true);
     try {
-      await fetch(`/api/agents/${agentId}/${action}`, { method: "POST" });
-      // Re-run the parent Server Component's Prisma query so the table
-      // reflects the new status from the DB rather than stale props.
+      const res = await fetch(`/api/agents/${agentId}/${action}`, { method: "POST" });
+      if (!res.ok) throw new Error();
+      toast.success(action === "activate" ? "Agent activated" : "Agent paused");
       router.refresh();
+    } catch {
+      toast.error(`Failed to ${action} agent — please try again`);
     } finally {
       setLoading(false);
     }

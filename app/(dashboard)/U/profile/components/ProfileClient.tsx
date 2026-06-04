@@ -3,7 +3,8 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { Copy, Check } from "lucide-react";
+import { Copy, Check, LogOut } from "lucide-react";
+import { toast } from "sonner";
 import { theme } from "@/theme";
 import { getSupabaseBrowserClient } from "@/lib/supabase/client";
 import type { UserRole } from "@prisma/client";
@@ -120,6 +121,20 @@ export function ProfileClient({ data }: { data: ProfileData }) {
       setPrefsMsg({ ok: false, text: "Couldn't save preference. Please try again." });
     } finally {
       setSavingPrefs(false);
+    }
+  }
+
+  // ── Logout ───────────────────────────────────────────────
+  const [loggingOut, setLoggingOut] = useState(false);
+  async function handleLogout() {
+    setLoggingOut(true);
+    try {
+      await fetch("/api/auth/logout", { method: "POST" });
+      toast.success("Signed out successfully");
+      router.push("/login");
+    } catch {
+      toast.error("Logout failed — please try again");
+      setLoggingOut(false);
     }
   }
 
@@ -270,7 +285,7 @@ export function ProfileClient({ data }: { data: ProfileData }) {
                     </div>
                   </div>
                   <Link
-                    href="/LoginDashboard/onboard"
+                    href="/U/onboard"
                     className={`text-xs ${theme.font.classMedium} text-[#00B2FF] hover:underline`}
                   >
                     {p.connected ? "Manage Keys" : "Connect"}
@@ -333,6 +348,22 @@ export function ProfileClient({ data }: { data: ProfileData }) {
             className={`px-4 py-2 border border-red-300 text-red-700 rounded-lg text-sm font-medium hover:bg-red-50 transition`}
           >
             Update Password
+          </button>
+        </section>
+
+        {/* ── Sign out ─────────────────────────────────── */}
+        <section className={card}>
+          <h2 className={`${sectionTitle} mb-1`}>Sign Out</h2>
+          <p className={`${theme.fontSize.xs} ${theme.color.textSubtle} mb-5`}>
+            End your current session on this device.
+          </p>
+          <button
+            onClick={handleLogout}
+            disabled={loggingOut}
+            className="flex items-center gap-2 px-4 py-2 border border-gray-300 text-gray-700 rounded-lg text-sm font-medium hover:bg-gray-50 transition disabled:opacity-40"
+          >
+            <LogOut className="w-4 h-4" aria-hidden="true" />
+            {loggingOut ? "Signing out…" : "Sign out"}
           </button>
         </section>
       </div>

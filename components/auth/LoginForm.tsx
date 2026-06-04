@@ -45,7 +45,7 @@ export function LoginForm() {
       if (data.isOwner) {
         router.push("/owner/users");
       } else {
-        router.push("/LoginDashboard");
+        router.push("/U");
       }
     } catch (err) {
       setError(err instanceof Error ? err.message : "An error occurred");

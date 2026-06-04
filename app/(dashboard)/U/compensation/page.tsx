@@ -101,7 +101,7 @@ export default async function CompensationPage() {
               <p className="text-sm text-gray-500">No connected agents yet.</p>
               <p className="text-xs text-gray-400 mt-1">
                 Start by{" "}
-                <a href="/LoginDashboard/onboard" className="text-[#00B2FF] underline">
+                <a href="/U/onboard" className="text-[#00B2FF] underline">
                   connecting an existing agent
                 </a>{" "}
                 above — spend data will appear automatically.

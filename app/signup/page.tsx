@@ -1,6 +1,14 @@
+import { redirect } from "next/navigation";
+import { requireUser } from "@/lib/auth";
 import { SignupForm } from "@/components/auth/SignupForm";
 
-export default function SignupPage() {
+export default async function SignupPage() {
+  try {
+    await requireUser();
+    redirect("/U");
+  } catch {
+    // Not authenticated — render signup form
+  }
   return (
     <div className="min-h-screen bg-[#0A0A0A] flex">
       {/* Left side — branding + value props */}

@@ -23,6 +23,7 @@ import { requireUser } from "@/lib/auth";
 import { ApiError } from "@/lib/api-errors";
 import { prisma } from "@/lib/db";
 import { AgentGrid, type AgentCardData } from "./components/AgentGrid";
+import { TopAgentsTable } from "./components/TopAgentsTable";
 
 // ── Types ──────────────────────────────────────────────────────────────────
 
@@ -147,16 +148,6 @@ function fmtNumber(n: number): string {
   return n.toLocaleString("en-US");
 }
 
-// ── Status → pill style ────────────────────────────────────────────────────
-// Colours match the status pills used in app/(marketing)/demo/page.tsx
-
-const STATUS_PILL: Record<string, string> = {
-  active:      "bg-green-100 text-green-800",
-  paused:      "bg-yellow-100 text-yellow-800",
-  flagged:     "bg-red-100 text-red-800",
-  deactivated: "bg-gray-100 text-gray-600",
-};
-
 // ── Page ───────────────────────────────────────────────────────────────────
 
 export default async function DashboardPage() {
@@ -189,100 +180,69 @@ export default async function DashboardPage() {
           <p className="text-sm text-gray-500 mt-1">{month} · Month-to-date</p>
         </div>
         <Link
-          href="/LoginDashboard/onboard"
+          href="/U/onboard"
           className="inline-flex items-center px-5 py-2.5 text-sm font-medium bg-[#00B2FF] text-white border border-[#00B2FF] rounded-lg hover:bg-transparent hover:text-[#00B2FF] transition whitespace-nowrap"
         >
           + Onboard New Agent
         </Link>
       </div>
 
-      {/* ── Stat cards ──────────────────────────────────── */}
-      {/*
-       * Same visual pattern as app/(marketing)/demo/page.tsx:
-       *   <Stat value="6" label="Active Agents" tone="bg-blue-50" />
-       * Coloured background tile, large bold number, small label underneath.
-       */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-10">
-        <Stat value={fmtDollars(data.spendCents)} label="MTD API Spend"  tone="bg-purple-50" />
-        <Stat value={String(data.agents.active)}  label="Active Agents"  tone="bg-blue-50"   />
-        <Stat value={fmtNumber(data.requests)}    label="API Requests"   tone="bg-green-50"  />
-        <Stat value={fmtNumber(data.tokens)}      label="Total Tokens"   tone="bg-yellow-50" />
-      </div>
-
-      {/* ── Top agents by spend ─────────────────────────── */}
-      <div className="bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden">
-        <div className="px-6 py-5 border-b border-gray-100">
-          <h2 className="text-base font-semibold text-gray-900">Top Agents by Spend</h2>
-          <p className="text-xs text-gray-500 mt-0.5">Month-to-date · top 5</p>
+      {data.agents.total === 0 ? (
+        /* ── First-run empty state ──────────────────────── */
+        <div className="bg-white rounded-2xl border border-gray-200 shadow-sm px-8 py-16 flex flex-col items-center text-center max-w-lg mx-auto">
+          <div className="w-16 h-16 rounded-full bg-blue-50 flex items-center justify-center mb-5">
+            <svg className="w-8 h-8 text-[#00B2FF]" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
+            </svg>
+          </div>
+          <h2 className="text-lg font-semibold text-gray-900 mb-2">Your AI workforce starts here</h2>
+          <p className="text-sm text-gray-500 leading-relaxed mb-6">
+            Onboard your first AI agent to start tracking spend, setting budgets, and measuring ROI — all in one place.
+          </p>
+          <div className="flex flex-col sm:flex-row gap-3">
+            <Link
+              href="/U/onboard"
+              className="px-5 py-2.5 bg-[#00B2FF] text-white text-sm font-medium rounded-lg hover:bg-[#00B2FF]/90 transition"
+            >
+              + Onboard your first agent
+            </Link>
+            <Link
+              href="/U/agents"
+              className="px-5 py-2.5 border border-gray-300 text-gray-700 text-sm font-medium rounded-lg hover:bg-gray-50 transition"
+            >
+              Browse agents
+            </Link>
+          </div>
+          <p className="text-xs text-gray-400 mt-6">
+            Supports OpenAI, Anthropic, and more. No code changes needed.
+          </p>
         </div>
-
-        {data.topAgents.length === 0 ? (
-          /* Empty state — shown before any agents have been created */
-          <div className="px-6 py-12 text-center">
-            <p className="text-sm text-gray-500">No agents yet.</p>
-            <p className="text-xs text-gray-400 mt-1">
-              Create your first agent to see spend data here.
-            </p>
+      ) : (
+        <>
+          {/* ── Stat cards ──────────────────────────────────── */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-10">
+            <Stat value={fmtDollars(data.spendCents)} label="MTD API Spend"  tone="bg-purple-50" />
+            <Stat value={String(data.agents.active)}  label="Active Agents"  tone="bg-blue-50"   />
+            <Stat value={fmtNumber(data.requests)}    label="API Requests"   tone="bg-green-50"  />
+            <Stat value={fmtNumber(data.tokens)}      label="Total Tokens"   tone="bg-yellow-50" />
           </div>
-        ) : (
-          <div className="overflow-x-auto">
-          <table className="w-full text-sm min-w-[480px]">
-            <thead>
-              <tr className="text-left text-xs text-gray-500 border-b border-gray-100">
-                <th className="px-6 py-3 font-medium">Agent</th>
-                <th className="px-6 py-3 font-medium">Status</th>
-                <th className="px-6 py-3 font-medium text-right">MTD Spend</th>
-                <th className="px-6 py-3 font-medium text-right">Budget</th>
-              </tr>
-            </thead>
-            <tbody>
-              {data.topAgents.map((agent) => {
-                // Budget % — null when the agent has no budget cap set ($0)
-                const pct =
-                  agent.budgetCents > 0
-                    ? Math.round((agent.spendCents / agent.budgetCents) * 100)
-                    : null;
 
-                const pill = STATUS_PILL[agent.status] ?? "bg-gray-100 text-gray-600";
-
-                return (
-                  <tr
-                    key={agent.id}
-                    className="border-b border-gray-50 last:border-b-0 hover:bg-gray-50 transition-colors"
-                  >
-                    <td className="px-6 py-4 font-medium text-gray-900">{agent.name}</td>
-                    <td className="px-6 py-4">
-                      <span className={`px-2.5 py-1 rounded-full text-xs font-mono capitalize ${pill}`}>
-                        {agent.status}
-                      </span>
-                    </td>
-                    <td className="px-6 py-4 text-right font-mono text-gray-900">
-                      {fmtDollars(agent.spendCents)}
-                    </td>
-                    <td className="px-6 py-4 text-right text-gray-500">
-                      {pct !== null ? (
-                        /* Red when the agent is at or above 90% of its monthly budget */
-                        <span className={pct >= 90 ? "text-red-600 font-medium" : ""}>
-                          {pct}% of {fmtDollars(agent.budgetCents)}
-                        </span>
-                      ) : (
-                        <span className="text-gray-400">—</span>
-                      )}
-                    </td>
-                  </tr>
-                );
-              })}
-            </tbody>
-          </table>
+          {/* ── Top agents by spend ─────────────────────────── */}
+          <div className="bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden">
+            <div className="px-6 py-5 border-b border-gray-100">
+              <h2 className="text-base font-semibold text-gray-900">Top Agents by Spend</h2>
+              <p className="text-xs text-gray-500 mt-0.5">Month-to-date · top 5 · click column headers to sort</p>
+            </div>
+            <TopAgentsTable agents={data.topAgents} />
           </div>
-        )}
-      </div>
 
-      {/* ── Agent directory grid ────────────────────────── */}
-      <div className="mt-10">
-        <h2 className="text-base font-semibold text-gray-900 mb-4">Your Agent Directory</h2>
-        <AgentGrid agents={data.gridAgents} />
-      </div>
+          {/* ── Agent directory grid ────────────────────────── */}
+          <div className="mt-10">
+            <h2 className="text-base font-semibold text-gray-900 mb-4">Your Agent Directory</h2>
+            <AgentGrid agents={data.gridAgents} />
+          </div>
+        </>
+      )}
 
     </div>
   );
