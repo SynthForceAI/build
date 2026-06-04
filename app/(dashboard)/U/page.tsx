@@ -24,6 +24,7 @@ import { ApiError } from "@/lib/api-errors";
 import { prisma } from "@/lib/db";
 import { AgentGrid, type AgentCardData } from "./components/AgentGrid";
 import { TopAgentsTable } from "./components/TopAgentsTable";
+import { SpendTrendChart } from "./components/SpendTrendChart";
 
 // ── Types ──────────────────────────────────────────────────────────────────
 
@@ -41,6 +42,8 @@ type AgentRow = {
   budgetCents: number; // BigInt from DB, converted to Number for display
 };
 
+type DailySpend = { date: string; cents: number }; // date = "MM/DD"
+
 type Summary = {
   spendCents: number; // Prisma Decimal from UsageLog aggregate, converted
   requests: number;
@@ -49,6 +52,7 @@ type Summary = {
   topAgents: AgentRow[];
   gridAgents: AgentCardData[];
   checklist: ChecklistState;
+  spendByDay: DailySpend[]; // last 7 days, oldest first
 };
 
 // Zero-value fallback — used when the DB call fails or returns nothing
@@ -60,6 +64,7 @@ const EMPTY: Summary = {
   topAgents: [],
   gridAgents: [],
   checklist: { hasApiKey: false, hasAgent: false, hasUsage: false },
+  spendByDay: [],
 };
 
 // ── Data fetching ──────────────────────────────────────────────────────────
@@ -101,8 +106,34 @@ async function fetchSummary(companyId: string): Promise<Summary> {
     }),
   ]);
 
-  // Checklist: has the user connected a provider key yet?
-  const apiKeyCount = await prisma.apiKey.count({ where: { companyId } });
+  // Last 7 days spend trend — one row per UsageLog, grouped in JS for simplicity
+  const sevenDaysAgo = new Date();
+  sevenDaysAgo.setUTCDate(sevenDaysAgo.getUTCDate() - 6);
+  sevenDaysAgo.setUTCHours(0, 0, 0, 0);
+
+  const [recentLogs, apiKeyCount] = await Promise.all([
+    prisma.usageLog.findMany({
+      where: { companyId, createdAt: { gte: sevenDaysAgo } },
+      select: { createdAt: true, costCents: true },
+    }),
+    // Checklist: has the user connected a provider key yet?
+    prisma.apiKey.count({ where: { companyId } }),
+  ]);
+
+  // Bucket logs into calendar days (UTC), fill missing days with 0
+  const dayMap = new Map<string, number>();
+  for (let i = 6; i >= 0; i--) {
+    const d = new Date();
+    d.setUTCDate(d.getUTCDate() - i);
+    dayMap.set(d.toLocaleDateString("en-US", { month: "numeric", day: "numeric", timeZone: "UTC" }), 0);
+  }
+  for (const log of recentLogs) {
+    const key = log.createdAt.toLocaleDateString("en-US", { month: "numeric", day: "numeric", timeZone: "UTC" });
+    if (dayMap.has(key)) {
+      dayMap.set(key, (dayMap.get(key) ?? 0) + (log.costCents?.toNumber() ?? 0));
+    }
+  }
+  const spendByDay: DailySpend[] = Array.from(dayMap.entries()).map(([date, cents]) => ({ date, cents }));
 
   // All agents for the directory grid (fetched separately so top-5 logic stays intact)
   const allAgents = await prisma.agent.findMany({
@@ -149,6 +180,7 @@ async function fetchSummary(companyId: string): Promise<Summary> {
       hasAgent:  allAgents.length > 0,
       hasUsage:  (mtd._count._all ?? 0) > 0,
     },
+    spendByDay,
   };
 }
 
@@ -266,12 +298,21 @@ export default async function DashboardPage() {
       ) : (
         <>
           {/* ── Stat cards ──────────────────────────────────── */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-10">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-6">
             <Stat value={fmtDollars(data.spendCents)} label="MTD API Spend"  tone="bg-purple-50" />
             <Stat value={String(data.agents.active)}  label="Active Agents"  tone="bg-blue-50"   />
             <Stat value={fmtNumber(data.requests)}    label="API Requests"   tone="bg-green-50"  />
             <Stat value={fmtNumber(data.tokens)}      label="Total Tokens"   tone="bg-yellow-50" />
           </div>
+
+          {/* ── Spend trend chart ────────────────────────────── */}
+          {data.spendByDay.length > 0 && (
+            <div className="bg-white rounded-2xl border border-gray-200 shadow-sm px-6 py-5 mb-10">
+              <h2 className="text-sm font-semibold text-gray-900 mb-1">Spend — last 7 days</h2>
+              <p className="text-xs text-gray-400 mb-4">Daily API cost in USD</p>
+              <SpendTrendChart data={data.spendByDay} />
+            </div>
+          )}
 
           {/* ── Top agents by spend ─────────────────────────── */}
           <div className="bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden">
