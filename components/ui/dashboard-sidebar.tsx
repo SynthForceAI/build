@@ -20,19 +20,21 @@ import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import type { UserRole } from "@prisma/client";
 
-type NavItem = { href: string; label: string; sub: string };
+type NavItem = { href: string; label: string; sub: string; roles?: UserRole[] };
 
+// roles omitted = visible to all; otherwise only shown to listed roles.
+// owner/admin → full access  |  member → team-level  |  viewer → read-only
 const NAV_ITEMS: NavItem[] = [
-  { href: "/U",              label: "Dashboard",    sub: "Active agents & overview"    },
-  { href: "/U/onboard",      label: "Onboard",      sub: "Add a new AI agent"           },
-  { href: "/U/performance",  label: "Performance",  sub: "Tasks, errors, satisfaction"  },
-  { href: "/U/compensation", label: "Compensation", sub: "API spend & ROI"              },
-  { href: "/U/policies",     label: "Policies",     sub: "Guardrails & compliance"      },
-  { href: "/U/offboarding",  label: "Offboarding",  sub: "Archive & audit"              },
-  { href: "/U/agents",       label: "Agents",       sub: "Manage your fleet"            },
-  { href: "/U/departments",  label: "Departments",  sub: "Teams & budgets"              },
-  { href: "/U/settings",     label: "Settings",     sub: "Account & preferences"        },
-] as const;
+  { href: "/U",              label: "Dashboard",    sub: "Active agents & overview"   },
+  { href: "/U/onboard",      label: "Onboard",      sub: "Add a new AI agent",         roles: ["owner", "admin"] },
+  { href: "/U/performance",  label: "Performance",  sub: "Tasks, errors, satisfaction" },
+  { href: "/U/compensation", label: "Compensation", sub: "API spend & ROI"             },
+  { href: "/U/policies",     label: "Policies",     sub: "Guardrails & compliance",    roles: ["owner", "admin", "member"] },
+  { href: "/U/offboarding",  label: "Offboarding",  sub: "Archive & audit",            roles: ["owner", "admin"] },
+  { href: "/U/agents",       label: "Agents",       sub: "Manage your fleet",          roles: ["owner", "admin", "member"] },
+  { href: "/U/departments",  label: "Departments",  sub: "Teams & budgets",            roles: ["owner", "admin", "member"] },
+  { href: "/U/settings",     label: "Settings",     sub: "Account & preferences",      roles: ["owner", "admin"] },
+];
 
 type Props = {
   userName:  string;
@@ -113,7 +115,7 @@ export function DashboardSidebar({ userName, userEmail, userRole, isOpen, onClos
 
           {/* ── Nav links ─────────────────────────────────────── */}
           <nav className="flex-1 px-3 py-4 flex flex-col gap-1 overflow-y-auto" aria-label="Main navigation">
-            {NAV_ITEMS.map(({ href, label, sub }) => {
+            {NAV_ITEMS.filter(({ roles }) => !roles || roles.includes(userRole)).map(({ href, label, sub }) => {
               const isActive =
                 href === "/U"
                   ? pathname === "/U"
@@ -145,7 +147,7 @@ export function DashboardSidebar({ userName, userEmail, userRole, isOpen, onClos
                     {label}
                   </span>
                   <span className={cn(
-                    "text-[11px] mt-0.5 transition-colors duration-200",
+                    "text-xs mt-0.5 transition-colors duration-200",
                     isActive
                       ? "text-[#00B2FF]/60"
                       : "text-gray-400 group-hover:text-gray-500"
@@ -185,7 +187,7 @@ export function DashboardSidebar({ userName, userEmail, userRole, isOpen, onClos
             </Link>
             <button
               onClick={handleLogout}
-              className="w-full flex items-center gap-2 px-3 py-2 rounded-lg text-xs font-medium text-gray-500 hover:bg-gray-50 hover:text-gray-700 transition-colors"
+              className="w-full flex items-center gap-2 px-3 py-2 min-h-[44px] rounded-lg text-xs font-medium text-gray-500 hover:bg-gray-50 hover:text-gray-700 transition-colors"
               aria-label="Sign out"
             >
               <svg className="w-3.5 h-3.5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">

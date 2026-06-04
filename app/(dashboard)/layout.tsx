@@ -30,6 +30,7 @@ import { requireUser } from "@/lib/auth";
 import { ApiError } from "@/lib/api-errors";
 import { DashboardShell } from "@/components/ui/dashboard-shell";
 import { Toaster } from "@/components/ui/sonner";
+import { OfflineBanner } from "@/components/ui/offline-banner";
 import type { User } from "@prisma/client";
 
 export default async function DashboardLayout({
@@ -61,6 +62,7 @@ export default async function DashboardLayout({
   // server-side requireUser() DB cost is paid exactly once.
   return (
     <>
+      <OfflineBanner />
       <DashboardShell
         userName={user.name ?? ""}
         userEmail={user.email}

@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import Link from "next/link";
 import { AgentStatusToggle } from "./agent-status-toggle";
 import { AddAgentForm } from "./add-agent-form";
 import { useRouter } from "next/navigation";
@@ -62,9 +63,18 @@ export function AgentsClient({
   const [editingAgentId, setEditingAgentId] = useState<string | null>(null);
   const [savingAgentId, setSavingAgentId] = useState<string | null>(null);
   const [deptUpdateError, setDeptUpdateError] = useState<string | null>(null);
+  const [search, setSearch] = useState("");
 
   const activeCount = agents.filter((a) => a.status === "active").length;
   const pausedCount = agents.filter((a) => a.status === "paused").length;
+
+  const filtered = search.trim()
+    ? agents.filter((a) =>
+        a.name.toLowerCase().includes(search.toLowerCase()) ||
+        (a.department ?? "").toLowerCase().includes(search.toLowerCase()) ||
+        (a.status ?? "").toLowerCase().includes(search.toLowerCase())
+      )
+    : agents;
 
   async function updateDepartments(agentId: string, departmentId: string | null) {
     setSavingAgentId(agentId);
@@ -98,35 +108,62 @@ export function AgentsClient({
         <div>
           <h1 className="text-2xl font-bold text-gray-900">Agents</h1>
           <p className="text-sm text-gray-500 mt-1">
-            {agents.length} total · {activeCount} active · {pausedCount} paused
+            {agents.length > 0
+              ? `${agents.length} total · ${activeCount} active · ${pausedCount} paused`
+              : "Connect your first agent to get started"}
           </p>
         </div>
-        <button
-          onClick={() => setShowModal(true)}
-          className="px-4 py-2 bg-[#00B2FF] text-white rounded-lg text-sm font-medium hover:bg-transparent hover:text-[#00B2FF] border border-[#00B2FF] transition"
-        >
-          + Add Agent
-        </button>
+        {agents.length > 0 && (
+          <button
+            onClick={() => setShowModal(true)}
+            className="px-4 py-2 bg-[#00B2FF] text-white rounded-lg text-sm font-medium hover:bg-transparent hover:text-[#00B2FF] border border-[#00B2FF] transition"
+          >
+            + Add Agent
+          </button>
+        )}
       </div>
 
       {deptUpdateError && (
         <p className="mb-4 text-sm text-red-500">{deptUpdateError}</p>
       )}
 
+      {/* ── Search ──────────────────────────────────────── */}
+      {agents.length > 0 && (
+        <div className="mb-4">
+          <input
+            type="search"
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            placeholder="Search agents by name, department, or status…"
+            className="w-full sm:w-72 px-3 py-2 text-sm border border-gray-200 rounded-lg placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[#00B2FF]/40 focus:border-[#00B2FF]"
+          />
+        </div>
+      )}
+
       {/* ── Agent table ─────────────────────────────────── */}
       <div className="bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden">
         {agents.length === 0 ? (
-          <div className="px-6 py-16 text-center">
-            <p className="text-sm text-gray-500">No agents yet.</p>
-            <p className="text-xs text-gray-400 mt-1 mb-6">
-              Onboard your first AI agent to start tracking spend and status.
+          <div className="px-6 py-16 flex flex-col items-center text-center">
+            <div className="w-14 h-14 rounded-full bg-blue-50 flex items-center justify-center mb-4">
+              <svg className="w-7 h-7 text-[#00B2FF]" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+              </svg>
+            </div>
+            <p className="text-sm font-medium text-gray-900 mb-1">No agents connected yet</p>
+            <p className="text-xs text-gray-400 mb-6 max-w-xs">
+              Connect an API provider first — your agents will appear here automatically once linked.
             </p>
-            <button
-              onClick={() => setShowModal(true)}
-              className="px-4 py-2 bg-[#00B2FF] text-white rounded-lg text-sm font-medium hover:bg-transparent hover:text-[#00B2FF] border border-[#00B2FF] transition"
+            <Link
+              href="/U/onboard"
+              className="px-4 py-2 bg-[#00B2FF] text-white rounded-lg text-sm font-medium hover:bg-[#00B2FF]/90 transition"
             >
-              + Add Agent
-            </button>
+              Connect your first agent
+            </Link>
+          </div>
+        ) : filtered.length === 0 ? (
+          <div className="px-6 py-10 text-center">
+            <p className="text-sm text-gray-500">No agents match <span className="font-medium">&ldquo;{search}&rdquo;</span>.</p>
+            <button onClick={() => setSearch("")} className="mt-2 text-xs text-[#00B2FF] hover:underline">Clear search</button>
           </div>
         ) : (
           <div className="overflow-x-auto">
@@ -144,7 +181,7 @@ export function AgentsClient({
                 </tr>
               </thead>
               <tbody>
-                {agents.map((agent) => {
+                {filtered.map((agent) => {
                   const pct =
                     agent.budgetCents > 0
                       ? Math.round((agent.spendCents / agent.budgetCents) * 100)

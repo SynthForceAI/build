@@ -27,7 +27,7 @@ function fmtDollars(cents: number) {
 
 function SortIcon({ active, dir }: { active: boolean; dir: SortDir }) {
   return (
-    <span className={`ml-1 inline-block text-[10px] ${active ? "text-[#00B2FF]" : "text-gray-300"}`} aria-hidden="true">
+    <span className={`ml-1 inline-block text-xs leading-none ${active ? "text-[#00B2FF]" : "text-gray-300"}`} aria-hidden="true">
       {active ? (dir === "asc" ? "▲" : "▼") : "▲▼"}
     </span>
   );

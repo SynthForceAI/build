@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { FieldHelp } from "@/components/ui/field-help";
 
 type Provider = { id: string; name: string; displayName: string };
 type Department = { id: string; name: string };
@@ -110,8 +111,9 @@ export function ProviderForm({ providers, departments, onSuccess }: Props) {
       <form onSubmit={handleSubmit} className="space-y-5">
         {/* Provider */}
         <div>
-          <label htmlFor="providerId" className={labelClass}>
-            Provider <span className="text-red-500">*</span>
+          <label htmlFor="providerId" className={`${labelClass} flex items-center`}>
+            Provider <span className="text-red-500 ml-0.5">*</span>
+            <FieldHelp text="The AI platform that runs your agent — e.g. OpenAI, Anthropic, or Google. SynthForce connects to their API using your key." />
           </label>
           <select
             id="providerId"
@@ -130,8 +132,17 @@ export function ProviderForm({ providers, departments, onSuccess }: Props) {
 
         {/* API Key */}
         <div>
-          <label htmlFor="apiKey" className={labelClass}>
-            API Key <span className="text-red-500">*</span>
+          <label htmlFor="apiKey" className={`${labelClass} flex items-center`}>
+            API Key <span className="text-red-500 ml-0.5">*</span>
+            <FieldHelp
+              text={
+                selectedProvider?.name === "openai"
+                  ? "Find your key at platform.openai.com → API keys. It starts with 'sk-'."
+                  : selectedProvider?.name === "anthropic"
+                  ? "Find your key at console.anthropic.com → API keys. It starts with 'sk-ant-'."
+                  : "Your provider's secret API key. Keep it private — SynthForce encrypts it immediately."
+              }
+            />
           </label>
           <input
             id="apiKey"
@@ -153,8 +164,9 @@ export function ProviderForm({ providers, departments, onSuccess }: Props) {
 
         {/* Agent Name */}
         <div>
-          <label htmlFor="agentName" className={labelClass}>
-            Agent Name <span className="text-red-500">*</span>
+          <label htmlFor="agentName" className={`${labelClass} flex items-center`}>
+            Agent Name <span className="text-red-500 ml-0.5">*</span>
+            <FieldHelp text="A human-readable name for this agent within SynthForce — e.g. 'lead-gen-v2' or 'support-bot'. You can rename it later." />
           </label>
           <input
             id="agentName"
