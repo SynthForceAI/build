@@ -15,7 +15,8 @@
  */
 
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
+import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import type { UserRole } from "@prisma/client";
 
@@ -43,6 +44,17 @@ type Props = {
 
 export function DashboardSidebar({ userName, userEmail, userRole, isOpen, onClose }: Props) {
   const pathname = usePathname();
+  const router = useRouter();
+
+  async function handleLogout() {
+    try {
+      await fetch("/api/auth/logout", { method: "POST" });
+      toast.success("Signed out successfully");
+      router.push("/login");
+    } catch {
+      toast.error("Logout failed — please try again");
+    }
+  }
 
   return (
     <>
@@ -66,6 +78,8 @@ export function DashboardSidebar({ userName, userEmail, userRole, isOpen, onClos
        * lg:overflow-hidden clips inner content when width reaches 0.
        */}
       <aside
+        id="dashboard-sidebar"
+        aria-label="Main navigation sidebar"
         className={cn(
           "z-50 bg-white flex flex-col border-r border-gray-200",
           "shadow-[2px_0_12px_rgba(0,0,0,0.04)]",
@@ -116,6 +130,7 @@ export function DashboardSidebar({ userName, userEmail, userRole, isOpen, onClos
                   }}
                   className={cn(
                     "group flex flex-col px-3 py-2.5 rounded-xl transition-all duration-200 border-l-[3px]",
+                    "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#00B2FF] focus-visible:ring-offset-1",
                     isActive
                       ? "border-l-[#00B2FF] bg-blue-50 shadow-sm"
                       : "border-l-transparent hover:bg-gray-50 hover:border-l-gray-200"
@@ -142,8 +157,8 @@ export function DashboardSidebar({ userName, userEmail, userRole, isOpen, onClos
             })}
           </nav>
 
-          {/* ── User info ─────────────────────────────────────── */}
-          <div className="p-2 border-t border-gray-100 shrink-0">
+          {/* ── User info + logout ────────────────────────────── */}
+          <div className="p-2 border-t border-gray-100 shrink-0 space-y-1.5">
             <Link
               href="/U/profile"
               onClick={() => {
@@ -168,6 +183,16 @@ export function DashboardSidebar({ userName, userEmail, userRole, isOpen, onClos
                 </span>
               </div>
             </Link>
+            <button
+              onClick={handleLogout}
+              className="w-full flex items-center gap-2 px-3 py-2 rounded-lg text-xs font-medium text-gray-500 hover:bg-gray-50 hover:text-gray-700 transition-colors"
+              aria-label="Sign out"
+            >
+              <svg className="w-3.5 h-3.5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+              </svg>
+              Sign out
+            </button>
           </div>
 
         </div>

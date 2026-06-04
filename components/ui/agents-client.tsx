@@ -4,6 +4,7 @@ import { useState } from "react";
 import { AgentStatusToggle } from "./agent-status-toggle";
 import { AddAgentForm } from "./add-agent-form";
 import { useRouter } from "next/navigation";
+import { toast } from "sonner";
 import { DepartmentsClient } from "./departments-client";
 
 export type AgentRow = {
@@ -75,12 +76,15 @@ export function AgentsClient({
         body: JSON.stringify({ departmentId }),
       });
       if (response.ok) {
+        toast.success("Department updated");
         router.refresh();
       } else {
-        setDeptUpdateError("Failed to update department. Please try again.");
+        toast.error("Couldn't update department — please try again");
+        setDeptUpdateError("Couldn't update department — please try again.");
       }
     } catch {
-      setDeptUpdateError("Something went wrong. Please try again.");
+      toast.error("Something went wrong — please check your connection");
+      setDeptUpdateError("Something went wrong — please check your connection.");
     } finally {
       setSavingAgentId(null);
       setEditingAgentId(null);

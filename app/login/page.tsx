@@ -1,6 +1,14 @@
+import { redirect } from "next/navigation";
+import { requireUser } from "@/lib/auth";
 import { LoginForm } from "@/components/auth/LoginForm";
 
-export default function LoginPage() {
+export default async function LoginPage() {
+  try {
+    await requireUser();
+    redirect("/U");
+  } catch {
+    // Not authenticated — render login form
+  }
   return (
     <div className="min-h-screen bg-[#0A0A0A] flex">
       {/* Left side — branding + value props */}

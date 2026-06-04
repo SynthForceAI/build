@@ -29,6 +29,7 @@ import { redirect } from "next/navigation";
 import { requireUser } from "@/lib/auth";
 import { ApiError } from "@/lib/api-errors";
 import { DashboardShell } from "@/components/ui/dashboard-shell";
+import { Toaster } from "@/components/ui/sonner";
 import type { User } from "@prisma/client";
 
 export default async function DashboardLayout({
@@ -59,12 +60,15 @@ export default async function DashboardLayout({
   // and renders the hamburger button. We pass user data as plain props so the
   // server-side requireUser() DB cost is paid exactly once.
   return (
-    <DashboardShell
-      userName={user.name ?? ""}
-      userEmail={user.email}
-      userRole={user.role}
-    >
-      {children}
-    </DashboardShell>
+    <>
+      <DashboardShell
+        userName={user.name ?? ""}
+        userEmail={user.email}
+        userRole={user.role}
+      >
+        {children}
+      </DashboardShell>
+      <Toaster position="bottom-right" richColors />
+    </>
   );
 }
