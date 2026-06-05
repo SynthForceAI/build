@@ -1,3 +1,5 @@
+console.log("[ROUTE-LOAD] sync-provider-usage module loaded");
+
 /**
  * POST /api/jobs/sync-provider-usage
  *
@@ -14,6 +16,7 @@ export const dynamic = "force-dynamic";
 export const maxDuration = 300;
 
 export async function POST(request: Request) {
+  console.log("[SYNC-TEST] Endpoint called");
   const secret = process.env.SYNC_JOB_SECRET;
   const auth = request.headers.get("authorization");
 
