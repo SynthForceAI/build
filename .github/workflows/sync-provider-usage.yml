@@ -1,5 +1,4 @@
 name: Sync Provider Usage
-
 # Hits POST /api/jobs/sync-provider-usage to poll each configured provider
 # admin key (OpenAI/Anthropic etc.) and ingest recent usage buckets.
 #
@@ -11,16 +10,22 @@ name: Sync Provider Usage
 # Required GitHub repo secrets:
 #   SYNTHFORCE_API_URL   – e.g. https://synthforceai.com (no trailing slash)
 #   SYNC_JOB_SECRET      – must match SYNC_JOB_SECRET in the Vercel env
-
 on:
   schedule:
     - cron: '*/5 * * * *'
   workflow_dispatch: {}
-
 jobs:
   sync:
     runs-on: ubuntu-latest
     steps:
+      - name: Debug secrets
+        run: |
+          echo "URL: ${{ secrets.SYNTHFORCE_API_URL }}"
+          echo "Secret length: ${#SYNC_JOB_SECRET}"
+          echo "Secret first 10 chars: ${SYNC_JOB_SECRET:0:10}"
+        env:
+          SYNC_JOB_SECRET: ${{ secrets.SYNC_JOB_SECRET }}
+      
       - name: Trigger sync endpoint
         run: |
           curl --fail --silent --show-error -L \
