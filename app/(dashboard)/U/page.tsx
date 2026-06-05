@@ -75,8 +75,10 @@ async function fetchSummary(companyId: string): Promise<Summary> {
   start.setUTCDate(1);
   start.setUTCHours(0, 0, 0, 0);
 
-  // Three queries in parallel — same logic as GET /api/usage/summary
-  const [agentGroups, mtd, topAgents] = await Promise.all([
+  // Three queries in parallel. Spend data comes from ConnectedAgent/ConnectedAgentUsageLog
+  // (written by the provider sync job). Agent counts still come from the Agent table
+  // since that's where status management lives.
+  const [agentGroups, mtd, topConnectedAgents] = await Promise.all([
     // How many agents in each status bucket?
     prisma.agent.groupBy({
       by: ["status"],
@@ -84,40 +86,45 @@ async function fetchSummary(companyId: string): Promise<Summary> {
       _count: { status: true },
     }),
 
-    // Month-to-date cost + token totals across all usage logs
-    prisma.usageLog.aggregate({
+    // Month-to-date cost + token totals from the sync-written usage log
+    prisma.connectedAgentUsageLog.aggregate({
       where: { companyId, createdAt: { gte: start } },
       _sum: { costCents: true, tokensIn: true, tokensOut: true },
       _count: { _all: true },
     }),
 
-    // Top 5 agents ordered by currentMonthSpendCents for the table below
-    prisma.agent.findMany({
-      where: { companyId, OR: [{ apiKeyId: null }, { apiKey: { deletedAt: null } }] },
-      orderBy: { currentMonthSpendCents: "desc" },
+    // Top 5 connected agents ordered by monthlySpendCents
+    prisma.connectedAgent.findMany({
+      where: { companyId, deletedAt: null },
+      orderBy: { monthlySpendCents: "desc" },
       take: 5,
       select: {
         id: true,
         name: true,
         status: true,
-        currentMonthSpendCents: true, // BigInt in DB
-        monthlyBudgetCents: true,     // BigInt in DB
+        monthlySpendCents: true,
       },
     }),
   ]);
 
-  // Last 7 days spend trend — one row per UsageLog, grouped in JS for simplicity
+  // Last 7 days spend trend from the sync-written usage log
   const sevenDaysAgo = new Date();
   sevenDaysAgo.setUTCDate(sevenDaysAgo.getUTCDate() - 6);
   sevenDaysAgo.setUTCHours(0, 0, 0, 0);
 
-  const [recentLogs, apiKeyCount] = await Promise.all([
-    prisma.usageLog.findMany({
+  const [recentLogs, apiKeyCount, allConnectedAgents] = await Promise.all([
+    prisma.connectedAgentUsageLog.findMany({
       where: { companyId, createdAt: { gte: sevenDaysAgo } },
       select: { createdAt: true, costCents: true },
     }),
     // Checklist: has the user connected a provider key yet?
     prisma.apiKey.count({ where: { companyId } }),
+    // All connected agents for the directory grid
+    prisma.connectedAgent.findMany({
+      where: { companyId, deletedAt: null },
+      orderBy: { name: "asc" },
+      include: { department: { select: { name: true } } },
+    }),
   ]);
 
   // Bucket logs into calendar days (UTC), fill missing days with 0
@@ -135,20 +142,12 @@ async function fetchSummary(companyId: string): Promise<Summary> {
   }
   const spendByDay: DailySpend[] = Array.from(dayMap.entries()).map(([date, cents]) => ({ date, cents }));
 
-  // All agents for the directory grid (fetched separately so top-5 logic stays intact)
-  const allAgents = await prisma.agent.findMany({
-    where: { companyId, OR: [{ apiKeyId: null }, { apiKey: { deletedAt: null } }] },
-    orderBy: { name: "asc" },
-    include: { department: { select: { name: true } } },
-  });
-
   // Convert [{ status, _count }] array → plain object for easy key lookup
   const byStatus = Object.fromEntries(
     agentGroups.map((g) => [g.status, g._count.status])
   );
 
   return {
-    // costCents is Prisma's Decimal type; .toNumber() is safe for realistic spend values
     spendCents: mtd._sum.costCents?.toNumber() ?? 0,
     requests: mtd._count._all,
     tokens: (mtd._sum.tokensIn ?? 0) + (mtd._sum.tokensOut ?? 0),
@@ -157,27 +156,25 @@ async function fetchSummary(companyId: string): Promise<Summary> {
       paused: byStatus.paused ?? 0,
       total: Object.values(byStatus).reduce((acc, n) => acc + n, 0),
     },
-    // BigInt → Number is safe up to $90 trillion; well past any realistic budget
-    topAgents: topAgents.map((a) => ({
+    topAgents: topConnectedAgents.map((a) => ({
       id: a.id,
       name: a.name,
       status: a.status as string,
-      spendCents: Number(a.currentMonthSpendCents),
-      budgetCents: Number(a.monthlyBudgetCents),
+      spendCents: Number(a.monthlySpendCents),
+      budgetCents: 0,
     })),
-    // Grid uses all agents — tasksCompleted placeholder until UsageLog counts are wired
-    gridAgents: allAgents.map((a) => ({
+    gridAgents: allConnectedAgents.map((a) => ({
       id:             a.id,
       name:           a.name,
-      role:           a.name,                           // TODO: add a "role" field to Agent model
+      role:           a.name,
       department:     a.department?.name ?? "Unassigned",
       status:         a.status as string,
-      spendCents:     Number(a.currentMonthSpendCents),
-      tasksCompleted: 0,                                // TODO: wire to usageLog count per agent
+      spendCents:     Number(a.monthlySpendCents),
+      tasksCompleted: 0,
     })),
     checklist: {
       hasApiKey: apiKeyCount > 0,
-      hasAgent:  allAgents.length > 0,
+      hasAgent:  allConnectedAgents.length > 0,
       hasUsage:  (mtd._count._all ?? 0) > 0,
     },
     spendByDay,
