@@ -49,12 +49,23 @@ export async function POST(req: NextRequest) {
       });
     }
 
+    // Free any soft-deleted keys that share the same label+provider+company —
+    // they still hold their unique index slot and would cause a P2002 on insert.
+    const label = parsed.label ?? parsed.agentName;
+    const stale = await prisma.apiKey.findMany({
+      where: { companyId: user.companyId, providerId: provider.id, label, deletedAt: { not: null } },
+      select: { id: true },
+    });
+    for (const k of stale) {
+      await prisma.apiKey.update({ where: { id: k.id }, data: { label: `${label}__deleted_${k.id}` } });
+    }
+
     const now = new Date();
     const apiKey = await prisma.apiKey.create({
       data: {
         companyId:       user.companyId,
         providerId:      provider.id,
-        label:           parsed.label ?? parsed.agentName,
+        label,
         encryptedKey:    encrypted,
         keyIdentifier:   fingerprint,
         isActive:        true,
