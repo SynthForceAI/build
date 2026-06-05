@@ -126,7 +126,10 @@ export function ProviderForm({ providers, departments, onSuccess }: Props) {
           <select
             id="providerId"
             value={form.providerId}
-            onChange={(e) => set("providerId", e.target.value)}
+            onChange={(e) => {
+              set("providerId", e.target.value);
+              setKeyType("personal"); // reset when provider changes
+            }}
             disabled={loading}
             className={inputClass}
             required
@@ -138,7 +141,8 @@ export function ProviderForm({ providers, departments, onSuccess }: Props) {
           </select>
         </div>
 
-        {/* Key Type */}
+        {/* Key Type — only OpenAI and Anthropic have org-level usage APIs */}
+        {(selectedProvider?.name === "openai" || selectedProvider?.name === "anthropic") && (
         <div>
           <label className={`${labelClass} flex items-center`}>
             Key Type
@@ -176,6 +180,7 @@ export function ProviderForm({ providers, departments, onSuccess }: Props) {
             ))}
           </div>
         </div>
+        )}
 
         {/* API Key */}
         <div>

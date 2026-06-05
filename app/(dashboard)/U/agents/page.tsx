@@ -13,7 +13,7 @@ import { AgentsClient, type AgentRow } from "@/components/ui/agents-client";
 
 async function fetchAgents(companyId: string): Promise<AgentRow[]> {
   const rows = await prisma.agent.findMany({
-    where: { companyId },
+    where: { companyId, OR: [{ apiKeyId: null }, { apiKey: { deletedAt: null } }] },
     orderBy: { createdAt: "desc" },
     include: {
       department: { select: { id:true, name: true } },

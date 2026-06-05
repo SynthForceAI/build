@@ -52,12 +52,12 @@ export default async function OffboardingPage() {
 
   const [activeRaw, deactivatedRaw] = await Promise.all([
     prisma.agent.findMany({
-      where:   { companyId, status: "active" },
+      where:   { companyId, status: "active", OR: [{ apiKeyId: null }, { apiKey: { deletedAt: null } }] },
       orderBy: { name: "asc" },
       include: { department: { select: { name: true } } },
     }).catch(() => []),
     prisma.agent.findMany({
-      where:   { companyId, status: "deactivated" },
+      where:   { companyId, status: "deactivated", OR: [{ apiKeyId: null }, { apiKey: { deletedAt: null } }] },
       orderBy: { updatedAt: "desc" },
       include: { department: { select: { name: true } } },
     }).catch(() => []),

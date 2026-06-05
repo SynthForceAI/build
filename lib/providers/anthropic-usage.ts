@@ -48,15 +48,19 @@ export async function syncAnthropicUsage(companyId: string, adminKey: ProviderAd
   const key = decryptApiKey(adminKey.encryptedKey);
 
   const now = new Date();
-  const oneHourAgo = new Date(now.getTime() - 60 * 60 * 1000);
+  // First sync: backfill 30 days using daily buckets (30 rows, fits in one page).
+  // Subsequent syncs: last hour at 1-minute granularity (60 rows, fits in one page).
+  const isFirstSync = adminKey.lastSyncedAt === null;
+  const lookbackMs = isFirstSync ? 30 * 24 * 60 * 60 * 1000 : 60 * 60 * 1000;
+  const lookbackStart = new Date(now.getTime() - lookbackMs);
 
   const url = new URL(ANTHROPIC_USAGE_URL);
-  url.searchParams.set("starting_at", oneHourAgo.toISOString());
+  url.searchParams.set("starting_at", lookbackStart.toISOString());
   url.searchParams.set("ending_at", now.toISOString());
-  url.searchParams.set("bucket_width", "1m");
+  url.searchParams.set("bucket_width", isFirstSync ? "1d" : "1m");
   url.searchParams.append("group_by[]", "api_key_id");
   url.searchParams.append("group_by[]", "model");
-  url.searchParams.set("limit", "60");
+  url.searchParams.set("limit", isFirstSync ? "30" : "60");
 
   const res = await fetch(url.toString(), {
     headers: {

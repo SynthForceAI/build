@@ -40,7 +40,7 @@ type Recommendation = {
 
 async function fetchAgents(companyId: string): Promise<AgentRow[]> {
   const rows = await prisma.agent.findMany({
-    where: { companyId },
+    where: { companyId, OR: [{ apiKeyId: null }, { apiKey: { deletedAt: null } }] },
     orderBy: { currentMonthSpendCents: "desc" },
     include: {
       department: { select: { name: true } },

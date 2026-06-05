@@ -80,7 +80,7 @@ async function fetchSummary(companyId: string): Promise<Summary> {
     // How many agents in each status bucket?
     prisma.agent.groupBy({
       by: ["status"],
-      where: { companyId },
+      where: { companyId, OR: [{ apiKeyId: null }, { apiKey: { deletedAt: null } }] },
       _count: { status: true },
     }),
 
@@ -93,7 +93,7 @@ async function fetchSummary(companyId: string): Promise<Summary> {
 
     // Top 5 agents ordered by currentMonthSpendCents for the table below
     prisma.agent.findMany({
-      where: { companyId },
+      where: { companyId, OR: [{ apiKeyId: null }, { apiKey: { deletedAt: null } }] },
       orderBy: { currentMonthSpendCents: "desc" },
       take: 5,
       select: {
@@ -137,7 +137,7 @@ async function fetchSummary(companyId: string): Promise<Summary> {
 
   // All agents for the directory grid (fetched separately so top-5 logic stays intact)
   const allAgents = await prisma.agent.findMany({
-    where: { companyId },
+    where: { companyId, OR: [{ apiKeyId: null }, { apiKey: { deletedAt: null } }] },
     orderBy: { name: "asc" },
     include: { department: { select: { name: true } } },
   });
