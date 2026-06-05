@@ -17,6 +17,7 @@ type FormState = {
   apiKey:       string;
   agentName:    string;
   departmentId: string;
+  keyType:      "personal" | "admin";
 };
 
 type Banner =
@@ -30,6 +31,7 @@ export function ProviderForm({ providers, departments, onSuccess }: Props) {
     apiKey:       "",
     agentName:    "",
     departmentId: "",
+    keyType:      "personal",
   });
   const [loading, setLoading] = useState(false);
   const [banner, setBanner] = useState<Banner>(null);
@@ -38,6 +40,11 @@ export function ProviderForm({ providers, departments, onSuccess }: Props) {
 
   function set(field: keyof FormState, value: string) {
     setForm((prev) => ({ ...prev, [field]: value }));
+    setBanner(null);
+  }
+
+  function setKeyType(value: "personal" | "admin") {
+    setForm((prev) => ({ ...prev, keyType: value }));
     setBanner(null);
   }
 
@@ -55,6 +62,7 @@ export function ProviderForm({ providers, departments, onSuccess }: Props) {
         providerId: form.providerId,
         apiKey:     form.apiKey,
         agentName:  form.agentName.trim(),
+        keyType:    form.keyType,
       };
       if (form.departmentId) body.departmentId = form.departmentId;
 
@@ -76,7 +84,7 @@ export function ProviderForm({ providers, departments, onSuccess }: Props) {
         type:    "success",
         message: `Connected! ${data.name} (${selectedProvider?.displayName ?? form.providerId}) is now active.`,
       });
-      setForm({ providerId: "", apiKey: "", agentName: "", departmentId: "" });
+      setForm({ providerId: "", apiKey: "", agentName: "", departmentId: "", keyType: "personal" });
       onSuccess();
     } catch {
       setBanner({ type: "error", message: "Network error. Check your connection and try again." });
@@ -130,17 +138,62 @@ export function ProviderForm({ providers, departments, onSuccess }: Props) {
           </select>
         </div>
 
+        {/* Key Type */}
+        <div>
+          <label className={`${labelClass} flex items-center`}>
+            Key Type
+            <FieldHelp text="Personal keys (sk-…) work for agent activity tracking. Organization Admin keys (sk-admin-… or sk-org-…) also enable automatic billing sync — SynthForce will poll your provider's usage API hourly to keep spend data current." />
+          </label>
+          <div className="grid grid-cols-2 gap-3">
+            {(["personal", "admin"] as const).map((type) => (
+              <button
+                key={type}
+                type="button"
+                onClick={() => setKeyType(type)}
+                disabled={loading}
+                className={`px-4 py-3 rounded-lg border text-sm font-medium text-left transition-colors ${
+                  form.keyType === type
+                    ? "border-[#00B2FF] bg-blue-50 text-[#00B2FF]"
+                    : "border-gray-200 text-gray-700 hover:border-gray-300 hover:bg-gray-50"
+                } disabled:opacity-50`}
+              >
+                {type === "personal" ? (
+                  <>
+                    <span className="block font-semibold">Personal API Key</span>
+                    <span className="text-xs mt-0.5 block font-normal opacity-70">
+                      sk-… · agent activity only
+                    </span>
+                  </>
+                ) : (
+                  <>
+                    <span className="block font-semibold">Organization Admin Key</span>
+                    <span className="text-xs mt-0.5 block font-normal opacity-70">
+                      sk-admin-… · enables billing sync
+                    </span>
+                  </>
+                )}
+              </button>
+            ))}
+          </div>
+        </div>
+
         {/* API Key */}
         <div>
           <label htmlFor="apiKey" className={`${labelClass} flex items-center`}>
             API Key <span className="text-red-500 ml-0.5">*</span>
             <FieldHelp
               text={
-                selectedProvider?.name === "openai"
-                  ? "Find your key at platform.openai.com → API keys. It starts with 'sk-'."
-                  : selectedProvider?.name === "anthropic"
-                  ? "Find your key at console.anthropic.com → API keys. It starts with 'sk-ant-'."
-                  : "Your provider's secret API key. Keep it private — SynthForce encrypts it immediately."
+                form.keyType === "admin"
+                  ? selectedProvider?.name === "openai"
+                    ? "Admin key: platform.openai.com → API keys → create with 'Read usage data' scope. Starts with 'sk-admin-'."
+                    : selectedProvider?.name === "anthropic"
+                    ? "Admin key: console.anthropic.com → API keys. Starts with 'sk-ant-admin-'."
+                    : "Your provider's organization admin key for billing/usage access."
+                  : selectedProvider?.name === "openai"
+                    ? "Personal key: platform.openai.com → API keys. Starts with 'sk-'."
+                    : selectedProvider?.name === "anthropic"
+                    ? "Personal key: console.anthropic.com → API keys. Starts with 'sk-ant-'."
+                    : "Your provider's secret API key. Keep it private — SynthForce encrypts it immediately."
               }
             />
           </label>
@@ -150,7 +203,11 @@ export function ProviderForm({ providers, departments, onSuccess }: Props) {
             value={form.apiKey}
             onChange={(e) => set("apiKey", e.target.value)}
             disabled={loading}
-            placeholder={selectedProvider ? `Paste your ${selectedProvider.displayName} key` : "Paste your API key"}
+            placeholder={
+              form.keyType === "admin"
+                ? selectedProvider?.name === "openai" ? "sk-admin-…" : selectedProvider?.name === "anthropic" ? "sk-ant-admin-…" : "Paste your admin key"
+                : selectedProvider ? `Paste your ${selectedProvider.displayName} key` : "Paste your API key"
+            }
             className={inputClass}
             autoComplete="off"
             required
