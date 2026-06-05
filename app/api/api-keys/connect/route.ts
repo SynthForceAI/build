@@ -63,6 +63,25 @@ export async function POST(req: NextRequest) {
       },
     });
 
+    // Admin keys (sk-admin-…) double as org-level usage polling keys.
+    // Upsert a ProviderAdminKey so the sync job finds this key automatically
+    // without requiring a separate setup step in Settings.
+    if (parsed.keyType === "admin") {
+      await prisma.providerAdminKey.upsert({
+        where:  { companyId_providerId: { companyId: user.companyId, providerId: provider.id } },
+        create: {
+          companyId:    user.companyId,
+          providerId:   provider.id,
+          encryptedKey: encrypted,
+          metadata:     { keyType: "admin", sourceApiKeyId: apiKey.id },
+        },
+        update: {
+          encryptedKey: encrypted,
+          metadata:     { keyType: "admin", sourceApiKeyId: apiKey.id },
+        },
+      });
+    }
+
     // One-time self-report token for this agent. We store only its hash; the
     // raw value is returned below exactly once so the agent can be configured
     // to POST usage to /api/connected-agents/{id}/report-usage.
