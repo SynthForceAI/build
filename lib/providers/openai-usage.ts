@@ -39,15 +39,19 @@ export async function syncOpenAIUsage(companyId: string, adminKey: ProviderAdmin
   const key = decryptApiKey(adminKey.encryptedKey);
 
   const now = new Date();
-  const oneHourAgo = new Date(now.getTime() - 60 * 60 * 1000);
+  // First sync: backfill 30 days using daily buckets (30 rows, fits in one page).
+  // Subsequent syncs: last hour at 1-minute granularity (60 rows, fits in one page).
+  const isFirstSync = adminKey.lastSyncedAt === null;
+  const lookbackMs = isFirstSync ? 30 * 24 * 60 * 60 * 1000 : 60 * 60 * 1000;
+  const lookbackStart = new Date(now.getTime() - lookbackMs);
 
   const url = new URL(OPENAI_USAGE_URL);
-  url.searchParams.set("start_time", String(Math.floor(oneHourAgo.getTime() / 1000)));
+  url.searchParams.set("start_time", String(Math.floor(lookbackStart.getTime() / 1000)));
   url.searchParams.set("end_time", String(Math.floor(now.getTime() / 1000)));
-  url.searchParams.set("bucket_width", "1m");
+  url.searchParams.set("bucket_width", isFirstSync ? "1d" : "1m");
   url.searchParams.append("group_by", "project_id");
   url.searchParams.append("group_by", "model");
-  url.searchParams.set("limit", "60");
+  url.searchParams.set("limit", isFirstSync ? "30" : "60");
 
   const res = await fetch(url.toString(), {
     headers: { Authorization: `Bearer ${key}`, "Content-Type": "application/json" },
