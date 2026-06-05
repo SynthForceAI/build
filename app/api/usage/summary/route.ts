@@ -17,26 +17,27 @@ export async function GET() {
     const { user } = await requireUser();
     const start = new Date(); start.setUTCDate(1); start.setUTCHours(0, 0, 0, 0);
 
+    // Agent counts still come from the Agent table (status management lives there).
+    // Spend data comes from ConnectedAgent/ConnectedAgentUsageLog, which is what
+    // the provider sync job actually writes to.
     const [agentCounts, mtdAgg, topAgents] = await Promise.all([
       prisma.agent.groupBy({
         by: ["status"],
         where: { companyId: user.companyId, OR: [{ apiKeyId: null }, { apiKey: { deletedAt: null } }] },
         _count: { status: true },
       }),
-      prisma.usageLog.aggregate({
+      prisma.connectedAgentUsageLog.aggregate({
         where: { companyId: user.companyId, createdAt: { gte: start } },
         _sum: { costCents: true, tokensIn: true, tokensOut: true },
         _count: { _all: true },
       }),
-      prisma.agent.findMany({
-        where: { companyId: user.companyId, OR: [{ apiKeyId: null }, { apiKey: { deletedAt: null } }] },
-        orderBy: { currentMonthSpendCents: "desc" },
+      prisma.connectedAgent.findMany({
+        where: { companyId: user.companyId, deletedAt: null },
+        orderBy: { monthlySpendCents: "desc" },
         take: 5,
         select: {
-          id: true, name: true,
-          currentMonthSpendCents: true,
-          monthlyBudgetCents: true,
-          status: true,
+          id: true, name: true, status: true,
+          monthlySpendCents: true,
         },
       }),
     ]);
@@ -62,9 +63,11 @@ export async function GET() {
           (statusMap.deactivated ?? 0) + (statusMap.flagged ?? 0),
       },
       topAgentsBySpend: topAgents.map((a) => ({
-        ...a,
-        currentMonthSpendCents: bigintToJson(a.currentMonthSpendCents),
-        monthlyBudgetCents:     bigintToJson(a.monthlyBudgetCents),
+        id:                     a.id,
+        name:                   a.name,
+        status:                 a.status,
+        currentMonthSpendCents: bigintToJson(a.monthlySpendCents),
+        monthlyBudgetCents:     null,
       })),
     });
   } catch (err) {

@@ -25,7 +25,7 @@ export async function POST(req: NextRequest) {
     // Verify the key works — make a real test call to the provider
     let availableModels: string[];
     try {
-      availableModels = await verifyProviderKey(provider.name, parsed.apiKey);
+      availableModels = await verifyProviderKey(provider.name, parsed.apiKey, parsed.keyType);
     } catch (err) {
       const msg = err instanceof Error ? err.message : "Invalid API key or rate limited";
       throw new ApiError(400, "key_verification_failed", { detail: msg });
