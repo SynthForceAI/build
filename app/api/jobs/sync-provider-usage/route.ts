@@ -16,14 +16,8 @@ export const dynamic = "force-dynamic";
 export const maxDuration = 300;
 
 export async function POST(request: Request) {
-  console.log("[SYNC-TEST] Endpoint called");
   const secret = process.env.SYNC_JOB_SECRET;
   const auth = request.headers.get("authorization");
-
-  // DEBUG
-  console.log("[sync-provider-usage] secret exists:", !!secret);
-  console.log("[sync-provider-usage] secret length:", secret?.length ?? 0);
-  console.log("[sync-provider-usage] auth header:", (auth?.substring(0, 20) ?? "") + "...");
 
   if (!secret || auth !== `Bearer ${secret}`) {
     console.error("[sync-provider-usage] auth failed", { secret: !!secret, auth: !!auth });
@@ -32,6 +26,7 @@ export async function POST(request: Request) {
 
   try {
     const summary = await syncAllProviderUsage();
+    console.log("[sync-provider-usage] job completed:", JSON.stringify(summary));
     return NextResponse.json(summary);
   } catch (error) {
     console.error("[sync-provider-usage] job crashed:", error);
