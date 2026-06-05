@@ -26,11 +26,11 @@ type NavItem = { href: string; label: string; sub: string; roles?: UserRole[] };
 // owner/admin → full access  |  member → team-level  |  viewer → read-only
 const NAV_ITEMS: NavItem[] = [
   { href: "/U",              label: "Dashboard",    sub: "Active agents & overview"   },
-  { href: "/U/onboard",      label: "Onboard",      sub: "Add a new AI agent",         roles: ["owner", "admin"] },
+  { href: "/U/onboard",      label: "Onboard",      sub: "Add a new AI agent"          },
   { href: "/U/performance",  label: "Performance",  sub: "Tasks, errors, satisfaction" },
   { href: "/U/compensation", label: "Compensation", sub: "API spend & ROI"             },
   { href: "/U/policies",     label: "Policies",     sub: "Guardrails & compliance",    roles: ["owner", "admin", "member"] },
-  { href: "/U/offboarding",  label: "Offboarding",  sub: "Archive & audit",            roles: ["owner", "admin"] },
+  { href: "/U/offboarding",  label: "Offboarding",  sub: "Archive & audit"             },
   { href: "/U/agents",       label: "Agents",       sub: "Manage your fleet",          roles: ["owner", "admin", "member"] },
   { href: "/U/departments",  label: "Departments",  sub: "Teams & budgets",            roles: ["owner", "admin", "member"] },
   { href: "/U/settings",     label: "Settings",     sub: "Account & preferences",      roles: ["owner", "admin"] },

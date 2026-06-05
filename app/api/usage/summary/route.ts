@@ -20,7 +20,7 @@ export async function GET() {
     const [agentCounts, mtdAgg, topAgents] = await Promise.all([
       prisma.agent.groupBy({
         by: ["status"],
-        where: { companyId: user.companyId },
+        where: { companyId: user.companyId, OR: [{ apiKeyId: null }, { apiKey: { deletedAt: null } }] },
         _count: { status: true },
       }),
       prisma.usageLog.aggregate({
@@ -29,7 +29,7 @@ export async function GET() {
         _count: { _all: true },
       }),
       prisma.agent.findMany({
-        where: { companyId: user.companyId },
+        where: { companyId: user.companyId, OR: [{ apiKeyId: null }, { apiKey: { deletedAt: null } }] },
         orderBy: { currentMonthSpendCents: "desc" },
         take: 5,
         select: {

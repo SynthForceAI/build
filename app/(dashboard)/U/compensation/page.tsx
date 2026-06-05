@@ -52,7 +52,7 @@ export default async function CompensationPage() {
   }
 
   const rawAgents = await prisma.agent.findMany({
-    where:   { companyId },
+    where:   { companyId, OR: [{ apiKeyId: null }, { apiKey: { deletedAt: null } }] },
     orderBy: { currentMonthSpendCents: "desc" },
     include: { department: { select: { name: true } } },
   }).catch(() => []);

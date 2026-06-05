@@ -42,7 +42,10 @@ export async function GET(request: Request) {
     const limit       = Math.min(Math.max(parseInt(url.searchParams.get("limit") ?? "50", 10), 1), 200);
     const cursor      = url.searchParams.get("cursor") ?? undefined;
 
-    const where: Record<string, unknown> = { companyId: user.companyId };
+    const where: Record<string, unknown> = {
+      companyId: user.companyId,
+      OR: [{ apiKeyId: null }, { apiKey: { deletedAt: null } }],
+    };
     if (statusParam) where.status = AgentStatusEnum.parse(statusParam);
     if (deptParam)   where.departmentId = Uuid.parse(deptParam);
 
