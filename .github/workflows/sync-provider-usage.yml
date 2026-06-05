@@ -23,7 +23,7 @@ jobs:
     steps:
       - name: Trigger sync endpoint
         run: |
-          curl --fail --silent --show-error \
+          curl --fail --silent --show-error -L \
             -X POST "${{ secrets.SYNTHFORCE_API_URL }}/api/jobs/sync-provider-usage" \
             -H "Authorization: Bearer ${{ secrets.SYNC_JOB_SECRET }}" \
             -H "Content-Type: application/json"
