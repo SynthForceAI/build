@@ -142,7 +142,7 @@ export async function syncOpenAIUsage(companyId: string, adminKey: ProviderAdmin
 
   if (isFirstSync) {
     lookbackStart = new Date(now.getTime() - 30 * ONE_DAY_MS);
-    bucketWidth = "1day"; // trying "1day" — "1d" returned 400
+    bucketWidth = "1d";
     limit = 90;
   } else {
     // Anchor to last successful sync minus a safety buffer so that any gap
@@ -255,4 +255,39 @@ export async function syncOpenAIUsage(companyId: string, adminKey: ProviderAdmin
   const result = await persistBuckets(companyId, adminKey.providerId, "openai", buckets);
   await prisma.providerAdminKey.update({ where: { id: adminKey.id }, data: { lastSyncedAt: now } });
   return result;
+}
+
+// ---------------------------------------------------------------------------
+// One-shot diagnostic — not called in production
+// ---------------------------------------------------------------------------
+
+export async function testOpenAIKeyRequest(): Promise<void> {
+  const adminKey = await prisma.providerAdminKey.findFirst({
+    orderBy: { createdAt: "asc" },
+  });
+  if (!adminKey) {
+    console.log("[test] No ProviderAdminKey rows found in the database.");
+    return;
+  }
+
+  const key = decryptApiKey(adminKey.encryptedKey);
+  console.log(`[test] Using key id=${adminKey.id} prefix=${key.slice(0, 12)}...`);
+
+  const url = "https://api.openai.com/v1/organization/usage/completions?bucket_width=1d&start_time=1700000000&end_time=1700086400";
+  console.log("[test] GET", url);
+
+  const res = await fetch(url, {
+    headers: { Authorization: `Bearer ${key}`, "Content-Type": "application/json" },
+    signal: AbortSignal.timeout(15_000),
+  });
+
+  const body = await res.text();
+  console.log(`[test] status=${res.status}`);
+  try {
+    console.log("[test] body:", JSON.stringify(JSON.parse(body), null, 2));
+  } catch {
+    console.log("[test] body (raw):", body);
+  }
+
+  await prisma.$disconnect();
 }
