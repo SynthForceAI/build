@@ -142,7 +142,7 @@ export async function syncOpenAIUsage(companyId: string, adminKey: ProviderAdmin
 
   if (isFirstSync) {
     lookbackStart = new Date(now.getTime() - 30 * ONE_DAY_MS);
-    bucketWidth = "1d";
+    bucketWidth = "1day"; // trying "1day" — "1d" returned 400
     limit = 90;
   } else {
     // Anchor to last successful sync minus a safety buffer so that any gap
@@ -169,16 +169,20 @@ export async function syncOpenAIUsage(companyId: string, adminKey: ProviderAdmin
   usageUrl.searchParams.set("bucket_width", bucketWidth);
   usageUrl.searchParams.append("group_by", "project_id");
   usageUrl.searchParams.append("group_by", "model");
-  usageUrl.searchParams.set("limit", String(limit));
+  // limit omitted — testing whether it causes 400s
 
   console.log('[sync-debug] Fetching usage with URL:', usageUrl.toString());
   const res = await fetch(usageUrl.toString(), {
     headers: { Authorization: `Bearer ${key}`, "Content-Type": "application/json" },
     signal: AbortSignal.timeout(25_000),
   });
-  if (res.status === 401) throw new Error("OpenAI rejected the admin key (401). Use an sk-admin- key with usage read access.");
-  if (res.status === 429) throw new Error("OpenAI rate-limited the usage request (429).");
-  if (!res.ok) throw new Error(`OpenAI usage endpoint returned ${res.status}.`);
+  if (!res.ok) {
+    const errBody = await res.text().catch(() => "(unreadable)");
+    console.error(`[sync-debug] OpenAI usage endpoint error: status=${res.status} body=${errBody}`);
+    if (res.status === 401) throw new Error("OpenAI rejected the admin key (401). Use an sk-admin- key with usage read access.");
+    if (res.status === 429) throw new Error("OpenAI rate-limited the usage request (429).");
+    throw new Error(`OpenAI usage endpoint returned ${res.status}: ${errBody}`);
+  }
 
   const json = (await res.json()) as OpenAIUsageResponse;
 
