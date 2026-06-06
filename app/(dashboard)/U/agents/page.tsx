@@ -66,7 +66,7 @@ export default async function AgentsPage() {
     const { user } = await requireUser();
     companyId = user.companyId;
   } catch (err) {
-    if (err instanceof ApiError && err.status === 401) redirect("/");
+    if (err instanceof ApiError && err.status === 401) redirect("/login");
     throw err;
   }
 

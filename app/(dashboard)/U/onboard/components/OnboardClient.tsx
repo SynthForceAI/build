@@ -185,6 +185,49 @@ function ConnectView({
   );
 }
 
+// ── Progress breadcrumb ────────────────────────────────────────────────────
+
+const STEPS: { id: View; label: string }[] = [
+  { id: "choice",  label: "Choose method" },
+  { id: "deploy",  label: "Deploy agent"  },
+  { id: "connect", label: "Connect agent" },
+];
+
+function StepBreadcrumb({ current }: { current: View }) {
+  const activeIndex = STEPS.findIndex((s) => s.id === current);
+  // Reduce to just [choice, current] for a two-step breadcrumb
+  const visible = current === "choice"
+    ? [STEPS[0]]
+    : [STEPS[0], STEPS.find((s) => s.id === current)!];
+
+  return (
+    <nav aria-label="Onboarding progress" className="flex items-center gap-2 mb-6">
+      {visible.map((step, i) => (
+        <span key={step.id} className="flex items-center gap-2">
+          {i > 0 && (
+            <svg className="w-3 h-3 text-gray-400 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+            </svg>
+          )}
+          <span
+            className={`text-sm font-medium ${
+              step.id === current
+                ? "text-[#00B2FF]"
+                : "text-gray-400"
+            }`}
+            aria-current={step.id === current ? "step" : undefined}
+          >
+            {step.label}
+          </span>
+        </span>
+      ))}
+      <span className="ml-auto text-xs text-gray-400 hidden sm:block">
+        Step {activeIndex + 1} of 2
+      </span>
+    </nav>
+  );
+}
+
 // ── Page root ──────────────────────────────────────────────────────────────
 
 export function OnboardClient({ providers, departments, initialAgents }: Props) {
@@ -200,6 +243,7 @@ export function OnboardClient({ providers, departments, initialAgents }: Props) 
       </div>
 
       <div className="bg-white rounded-2xl border border-gray-200 shadow-sm p-8">
+        <StepBreadcrumb current={view} />
         {view === "choice" && (
           <ChoiceView onSelect={(v) => setView(v)} />
         )}

@@ -56,8 +56,19 @@ function fmtLastUsed(iso: string | null): string {
   })}`;
 }
 
+type Tab = "account" | "workspace" | "providers" | "preferences" | "security";
+
+const TABS: { id: Tab; label: string }[] = [
+  { id: "account",     label: "Account"     },
+  { id: "workspace",   label: "Workspace"   },
+  { id: "providers",   label: "Providers"   },
+  { id: "preferences", label: "Preferences" },
+  { id: "security",    label: "Security"    },
+];
+
 export function ProfileClient({ data }: { data: ProfileData }) {
   const router = useRouter();
+  const [activeTab, setActiveTab] = useState<Tab>("account");
 
   // ── Account ──────────────────────────────────────────────
   const [name, setName] = useState(data.user.name);
@@ -125,7 +136,9 @@ export function ProfileClient({ data }: { data: ProfileData }) {
   }
 
   // ── Logout ───────────────────────────────────────────────
-  const [loggingOut, setLoggingOut] = useState(false);
+  const [loggingOut, setLoggingOut]       = useState(false);
+  const [loggingOutAll, setLoggingOutAll] = useState(false);
+
   async function handleLogout() {
     setLoggingOut(true);
     try {
@@ -135,6 +148,20 @@ export function ProfileClient({ data }: { data: ProfileData }) {
     } catch {
       toast.error("Logout failed — please try again");
       setLoggingOut(false);
+    }
+  }
+
+  async function handleLogoutAll() {
+    setLoggingOutAll(true);
+    try {
+      const supabase = getSupabaseBrowserClient();
+      await supabase.auth.signOut({ scope: "global" });
+      await fetch("/api/auth/logout", { method: "POST" });
+      toast.success("Signed out of all sessions");
+      router.push("/login");
+    } catch {
+      toast.error("Couldn't sign out all sessions — please try again");
+      setLoggingOutAll(false);
     }
   }
 
@@ -148,224 +175,270 @@ export function ProfileClient({ data }: { data: ProfileData }) {
   return (
     <div>
       {/* ── Page header ─────────────────────────────────── */}
-      <div className="mb-8">
+      <div className="mb-6">
         <h1 className={`${theme.fontSize["2xl"]} font-bold ${theme.color.textPrimary}`}>Profile</h1>
         <p className={`${theme.fontSize.sm} ${theme.color.textSubtle} mt-1`}>
           Account, workspace, and personal preferences.
         </p>
       </div>
 
-      <div className="space-y-6 max-w-3xl">
+      {/* ── Tab bar ─────────────────────────────────────── */}
+      <div className="flex gap-1 border-b border-gray-200 mb-6 overflow-x-auto" role="tablist" aria-label="Profile sections">
+        {TABS.map(({ id, label }) => (
+          <button
+            key={id}
+            role="tab"
+            aria-selected={activeTab === id}
+            aria-controls={`tabpanel-${id}`}
+            onClick={() => setActiveTab(id)}
+            className={[
+              "px-4 py-2.5 text-sm font-medium whitespace-nowrap border-b-2 -mb-px transition-colors",
+              activeTab === id
+                ? "border-[#00B2FF] text-[#00B2FF]"
+                : "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300",
+            ].join(" ")}
+          >
+            {label}
+          </button>
+        ))}
+      </div>
 
-        {/* ── Account ─────────────────────────────────── */}
-        <section className={card}>
-          <h2 className={`${sectionTitle} mb-1`}>Account</h2>
-          <p className={`${theme.fontSize.xs} ${theme.color.textSubtle} mb-5`}>
-            Identifying information for your SynthForce login.
-          </p>
+      {/* ── Tab panels ──────────────────────────────────── */}
+      <div className="max-w-3xl">
 
-          <div className="space-y-4">
-            <div>
-              <label className={`${sectionLabel} block mb-1`}>Display name</label>
-              <div className="flex items-center gap-2">
-                <input
-                  type="text"
-                  value={name}
-                  onChange={(e) => setName(e.target.value)}
-                  maxLength={50}
-                  className={`flex-1 px-4 py-2 border ${theme.color.borderInput} rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#00B2FF] focus:border-transparent`}
-                />
-                <button
-                  onClick={saveName}
-                  disabled={!canSaveName}
-                  className={`px-4 py-2 ${theme.component.buttonPrimary} text-sm font-medium disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:bg-[#00B2FF] disabled:hover:text-white`}
-                >
-                  {savingName ? "Saving…" : "Save"}
-                </button>
-              </div>
-              {nameDirty && !nameValid && (
-                <p className="text-xs text-red-500 mt-1">Name must be 2–50 characters.</p>
-              )}
-              {nameMsg && (
-                <p className={`text-xs mt-1 ${nameMsg.ok ? "text-green-600" : "text-red-500"}`}>
-                  {nameMsg.text}
-                </p>
-              )}
-            </div>
-
-            <div>
-              <label className={`${sectionLabel} block mb-1`}>
-                Email <span className={`${theme.color.textDisabled} font-normal`}>(cannot change)</span>
-              </label>
-              <p className={`${theme.fontSize.sm} ${theme.color.textMuted} px-4 py-2 bg-gray-50 rounded-lg border ${theme.color.border}`}>
-                {data.user.email}
-              </p>
-            </div>
-
-            <div>
-              <label className={`${sectionLabel} block mb-1`}>Account created</label>
-              <p className={`${theme.fontSize.sm} ${theme.color.textSubtle}`}>
-                Joined {fmtJoined(data.user.createdAt)}
-              </p>
-            </div>
-          </div>
-        </section>
-
-        {/* ── Workspace ───────────────────────────────── */}
-        <section className={card}>
-          <h2 className={`${sectionTitle} mb-1`}>Workspace</h2>
-          <p className={`${theme.fontSize.xs} ${theme.color.textSubtle} mb-5`}>
-            The company and role tied to your account.
-          </p>
-
-          <div className="space-y-4">
-            <div>
-              <label className={`${sectionLabel} block mb-1`}>Company</label>
-              <p className={`${theme.fontSize.sm} ${theme.color.textPrimary}`}>
-                {data.company.name || <span className={theme.color.textDisabled}>—</span>}
-              </p>
-            </div>
-
-            <div>
-              <label className={`${sectionLabel} block mb-1`}>Workspace ID</label>
-              <div className="flex items-center gap-2">
-                <code className={`flex-1 px-3 py-2 ${theme.font.classMono} text-xs ${theme.color.textMuted} bg-gray-50 rounded-lg border ${theme.color.border} truncate`}>
-                  {data.company.id}
-                </code>
-                <button
-                  onClick={copyWorkspaceId}
-                  className={`px-3 py-2 border ${theme.color.borderInput} rounded-lg text-xs ${theme.color.textBody} hover:bg-gray-50 transition flex items-center gap-1.5`}
-                  aria-label="Copy workspace ID"
-                >
-                  {copied ? <Check className="w-3.5 h-3.5" /> : <Copy className="w-3.5 h-3.5" />}
-                  {copied ? "Copied" : "Copy"}
-                </button>
-              </div>
-            </div>
-
-            <div>
-              <label className={`${sectionLabel} block mb-1`}>Role</label>
-              <span className={`inline-block px-2.5 py-1 rounded-full text-xs font-medium capitalize ${ROLE_PILL[data.user.role]}`}>
-                {data.user.role}
-              </span>
-            </div>
-          </div>
-        </section>
-
-        {/* ── Connected Providers ─────────────────────── */}
-        <section className={card}>
-          <h2 className={`${sectionTitle} mb-1`}>API Providers</h2>
-          <p className={`${theme.fontSize.xs} ${theme.color.textSubtle} mb-5`}>
-            Manage your connected agent providers.
-          </p>
-
-          {data.providers.length === 0 ? (
-            <p className={`${theme.fontSize.sm} ${theme.color.textSubtle}`}>
-              No providers configured yet.
+        {/* Account */}
+        {activeTab === "account" && (
+          <section id="tabpanel-account" role="tabpanel" aria-labelledby="tab-account" className={`${card} animate-fade-in`}>
+            <h2 className={`${sectionTitle} mb-1`}>Account</h2>
+            <p className={`${theme.fontSize.xs} ${theme.color.textSubtle} mb-5`}>
+              Identifying information for your SynthForce login.
             </p>
-          ) : (
-            <ul className="divide-y divide-gray-100">
-              {data.providers.map((p) => (
-                <li key={p.id} className="flex items-center justify-between py-3">
-                  <div className="flex items-center gap-3">
-                    <span
-                      className={`w-2.5 h-2.5 rounded-full shrink-0 ${
-                        p.connected ? theme.status.active.dot : "bg-gray-300"
-                      }`}
-                    />
-                    <div>
-                      <p className={`${theme.fontSize.sm} ${theme.font.classMedium} ${theme.color.textPrimary}`}>
-                        {p.displayName}
-                      </p>
-                      <p className={`${theme.fontSize.xs} ${theme.color.textSubtle}`}>
-                        {p.connected
-                          ? `Connected · ${fmtLastUsed(p.lastUsedAt)}`
-                          : "Not connected"}
-                      </p>
-                    </div>
-                  </div>
-                  <Link
-                    href="/U/onboard"
-                    className={`text-xs ${theme.font.classMedium} text-[#00B2FF] hover:underline`}
+
+            <div className="space-y-4">
+              <div>
+                <label className={`${sectionLabel} block mb-1`}>Display name</label>
+                <div className="flex items-center gap-2">
+                  <input
+                    type="text"
+                    value={name}
+                    onChange={(e) => { setName(e.target.value); setNameMsg(null); }}
+                    maxLength={50}
+                    className={`flex-1 px-4 py-2 border ${theme.color.borderInput} rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#00B2FF] focus:border-transparent`}
+                    aria-describedby={nameMsg ? "name-msg" : undefined}
+                  />
+                  <button
+                    onClick={saveName}
+                    disabled={!canSaveName}
+                    className={`px-4 py-2 ${theme.component.buttonPrimary} text-sm font-medium disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:bg-[#00B2FF] disabled:hover:text-white`}
                   >
-                    {p.connected ? "Manage Keys" : "Connect"}
-                  </Link>
-                </li>
-              ))}
-            </ul>
-          )}
-        </section>
+                    {savingName ? "Saving…" : "Save"}
+                  </button>
+                </div>
+                {nameDirty && !nameValid && (
+                  <p id="name-msg" className="text-xs text-red-500 mt-1">Name must be 2–50 characters.</p>
+                )}
+                {nameMsg && (
+                  <p id="name-msg" className={`text-xs mt-1 ${nameMsg.ok ? "text-green-600" : "text-red-500"}`}>
+                    {nameMsg.text}
+                  </p>
+                )}
+              </div>
 
-        {/* ── Preferences ─────────────────────────────── */}
-        <section className={card}>
-          <h2 className={`${sectionTitle} mb-1`}>Preferences</h2>
-          <p className={`${theme.fontSize.xs} ${theme.color.textSubtle} mb-5`}>
-            Personal display and notification settings.
-          </p>
-
-          <div className="space-y-4">
-            <div>
-              <label className={`${sectionLabel} block mb-1`}>Currency</label>
-              <select
-                value="USD"
-                disabled
-                className={`w-full px-4 py-2 border ${theme.color.borderInput} rounded-lg text-sm bg-gray-50 ${theme.color.textSubtle} cursor-not-allowed`}
-              >
-                <option>USD (Coming soon: EUR, GBP)</option>
-              </select>
-            </div>
-
-            <div>
-              <label className={`${sectionLabel} block mb-1`}>Email digest</label>
-              <select
-                value={emailDigest}
-                onChange={(e) => saveEmailDigest(e.target.value as "daily" | "weekly" | "never")}
-                disabled={savingPrefs}
-                className={`w-full px-4 py-2 border ${theme.color.borderInput} rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#00B2FF] focus:border-transparent disabled:opacity-60`}
-              >
-                <option value="daily">Daily</option>
-                <option value="weekly">Weekly</option>
-                <option value="never">Never</option>
-              </select>
-              {prefsMsg && (
-                <p className={`text-xs mt-1 ${prefsMsg.ok ? "text-green-600" : "text-red-500"}`}>
-                  {prefsMsg.text}
+              <div>
+                <label className={`${sectionLabel} block mb-1`}>
+                  Email <span className={`${theme.color.textDisabled} font-normal`}>(cannot change)</span>
+                </label>
+                <p className={`${theme.fontSize.sm} ${theme.color.textMuted} px-4 py-2 bg-gray-50 rounded-lg border ${theme.color.border}`}>
+                  {data.user.email}
                 </p>
-              )}
+              </div>
+
+              <div>
+                <label className={`${sectionLabel} block mb-1`}>Account created</label>
+                <p className={`${theme.fontSize.sm} ${theme.color.textSubtle}`}>
+                  Joined {fmtJoined(data.user.createdAt)}
+                </p>
+              </div>
             </div>
+          </section>
+        )}
+
+        {/* Workspace */}
+        {activeTab === "workspace" && (
+          <section id="tabpanel-workspace" role="tabpanel" aria-labelledby="tab-workspace" className={`${card} animate-fade-in`}>
+            <h2 className={`${sectionTitle} mb-1`}>Workspace</h2>
+            <p className={`${theme.fontSize.xs} ${theme.color.textSubtle} mb-5`}>
+              The company and role tied to your account.
+            </p>
+
+            <div className="space-y-4">
+              <div>
+                <label className={`${sectionLabel} block mb-1`}>Company</label>
+                <p className={`${theme.fontSize.sm} ${theme.color.textPrimary}`}>
+                  {data.company.name || <span className={theme.color.textDisabled}>—</span>}
+                </p>
+              </div>
+
+              <div>
+                <label className={`${sectionLabel} block mb-1`}>Workspace ID</label>
+                <div className="flex items-center gap-2">
+                  <code className={`flex-1 px-3 py-2 ${theme.font.classMono} text-xs ${theme.color.textMuted} bg-gray-50 rounded-lg border ${theme.color.border} truncate`}>
+                    {data.company.id}
+                  </code>
+                  <button
+                    onClick={copyWorkspaceId}
+                    className={`px-3 py-2 border ${theme.color.borderInput} rounded-lg text-xs ${theme.color.textBody} hover:bg-gray-50 transition flex items-center gap-1.5`}
+                    aria-label="Copy workspace ID"
+                  >
+                    {copied ? <Check className="w-3.5 h-3.5" /> : <Copy className="w-3.5 h-3.5" />}
+                    {copied ? "Copied" : "Copy"}
+                  </button>
+                </div>
+              </div>
+
+              <div>
+                <label className={`${sectionLabel} block mb-1`}>Role</label>
+                <span className={`inline-block px-2.5 py-1 rounded-full text-xs font-medium capitalize ${ROLE_PILL[data.user.role]}`}>
+                  {data.user.role}
+                </span>
+              </div>
+            </div>
+          </section>
+        )}
+
+        {/* Providers */}
+        {activeTab === "providers" && (
+          <section id="tabpanel-providers" role="tabpanel" aria-labelledby="tab-providers" className={`${card} animate-fade-in`}>
+            <h2 className={`${sectionTitle} mb-1`}>API Providers</h2>
+            <p className={`${theme.fontSize.xs} ${theme.color.textSubtle} mb-5`}>
+              Manage your connected agent providers.
+            </p>
+
+            {data.providers.length === 0 ? (
+              <p className={`${theme.fontSize.sm} ${theme.color.textSubtle}`}>
+                No providers configured yet.
+              </p>
+            ) : (
+              <ul className="divide-y divide-gray-100">
+                {data.providers.map((p) => (
+                  <li key={p.id} className="flex items-center justify-between py-3">
+                    <div className="flex items-center gap-3">
+                      <span
+                        className={`w-2.5 h-2.5 rounded-full shrink-0 ${
+                          p.connected ? theme.status.active.dot : "bg-gray-300"
+                        }`}
+                      />
+                      <div>
+                        <p className={`${theme.fontSize.sm} ${theme.font.classMedium} ${theme.color.textPrimary}`}>
+                          {p.displayName}
+                        </p>
+                        <p className={`${theme.fontSize.xs} ${theme.color.textSubtle}`}>
+                          {p.connected
+                            ? `Connected · ${fmtLastUsed(p.lastUsedAt)}`
+                            : "Not connected"}
+                        </p>
+                      </div>
+                    </div>
+                    <Link
+                      href="/U/onboard"
+                      className={`text-xs ${theme.font.classMedium} text-[#00B2FF] hover:underline`}
+                    >
+                      {p.connected ? "Manage Keys" : "Connect"}
+                    </Link>
+                  </li>
+                ))}
+              </ul>
+            )}
+          </section>
+        )}
+
+        {/* Preferences */}
+        {activeTab === "preferences" && (
+          <section id="tabpanel-preferences" role="tabpanel" aria-labelledby="tab-preferences" className={`${card} animate-fade-in`}>
+            <h2 className={`${sectionTitle} mb-1`}>Preferences</h2>
+            <p className={`${theme.fontSize.xs} ${theme.color.textSubtle} mb-5`}>
+              Personal display and notification settings.
+            </p>
+
+            <div className="space-y-4">
+              <div>
+                <label className={`${sectionLabel} block mb-1`}>Currency</label>
+                <select
+                  value="USD"
+                  disabled
+                  className={`w-full px-4 py-2 border ${theme.color.borderInput} rounded-lg text-sm bg-gray-50 ${theme.color.textSubtle} cursor-not-allowed`}
+                >
+                  <option>USD (Coming soon: EUR, GBP)</option>
+                </select>
+              </div>
+
+              <div>
+                <label className={`${sectionLabel} block mb-1`}>Email digest</label>
+                <select
+                  value={emailDigest}
+                  onChange={(e) => saveEmailDigest(e.target.value as "daily" | "weekly" | "never")}
+                  disabled={savingPrefs}
+                  className={`w-full px-4 py-2 border ${theme.color.borderInput} rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#00B2FF] focus:border-transparent disabled:opacity-60`}
+                >
+                  <option value="daily">Daily</option>
+                  <option value="weekly">Weekly</option>
+                  <option value="never">Never</option>
+                </select>
+                {prefsMsg && (
+                  <p className={`text-xs mt-1 ${prefsMsg.ok ? "text-green-600" : "text-red-500"}`}>
+                    {prefsMsg.text}
+                  </p>
+                )}
+              </div>
+            </div>
+          </section>
+        )}
+
+        {/* Security */}
+        {activeTab === "security" && (
+          <div className="space-y-4 animate-fade-in">
+            <section id="tabpanel-security" role="tabpanel" aria-labelledby="tab-security" className={card}>
+              <h2 className={`${sectionTitle} mb-1`}>Password</h2>
+              <p className={`${theme.fontSize.xs} ${theme.color.textSubtle} mb-5`}>
+                Update the password used to sign in to SynthForce.
+              </p>
+
+              <button
+                onClick={() => setPasswordOpen(true)}
+                className="px-4 py-2 border border-gray-300 text-gray-700 rounded-lg text-sm font-medium hover:bg-gray-50 transition"
+              >
+                Update Password
+              </button>
+            </section>
+
+            <section className={card}>
+              <h2 className={`${sectionTitle} mb-1`}>Sessions</h2>
+              <p className={`${theme.fontSize.xs} ${theme.color.textSubtle} mb-5`}>
+                Manage where you&rsquo;re signed in.
+              </p>
+
+              <div className="flex flex-col sm:flex-row gap-3">
+                <button
+                  onClick={handleLogout}
+                  disabled={loggingOut}
+                  className="flex items-center gap-2 px-4 py-2 border border-gray-300 text-gray-700 rounded-lg text-sm font-medium hover:bg-gray-50 transition disabled:opacity-40"
+                >
+                  <LogOut className="w-4 h-4" aria-hidden="true" />
+                  {loggingOut ? "Signing out…" : "Sign out this device"}
+                </button>
+
+                <button
+                  onClick={handleLogoutAll}
+                  disabled={loggingOutAll}
+                  className="flex items-center gap-2 px-4 py-2 border border-red-300 text-red-700 rounded-lg text-sm font-medium hover:bg-red-50 transition disabled:opacity-40"
+                >
+                  <LogOut className="w-4 h-4" aria-hidden="true" />
+                  {loggingOutAll ? "Signing out everywhere…" : "Sign out of all sessions"}
+                </button>
+              </div>
+            </section>
           </div>
-        </section>
-
-        {/* ── Security ────────────────────────────────── */}
-        <section className={card}>
-          <h2 className={`${sectionTitle} mb-1`}>Security</h2>
-          <p className={`${theme.fontSize.xs} ${theme.color.textSubtle} mb-5`}>
-            Update the password used to sign in to SynthForce.
-          </p>
-
-          <button
-            onClick={() => setPasswordOpen(true)}
-            className={`px-4 py-2 border border-red-300 text-red-700 rounded-lg text-sm font-medium hover:bg-red-50 transition`}
-          >
-            Update Password
-          </button>
-        </section>
-
-        {/* ── Sign out ─────────────────────────────────── */}
-        <section className={card}>
-          <h2 className={`${sectionTitle} mb-1`}>Sign Out</h2>
-          <p className={`${theme.fontSize.xs} ${theme.color.textSubtle} mb-5`}>
-            End your current session on this device.
-          </p>
-          <button
-            onClick={handleLogout}
-            disabled={loggingOut}
-            className="flex items-center gap-2 px-4 py-2 border border-gray-300 text-gray-700 rounded-lg text-sm font-medium hover:bg-gray-50 transition disabled:opacity-40"
-          >
-            <LogOut className="w-4 h-4" aria-hidden="true" />
-            {loggingOut ? "Signing out…" : "Sign out"}
-          </button>
-        </section>
+        )}
       </div>
 
       {passwordOpen && (
@@ -483,7 +556,12 @@ function PasswordModal({ email, onClose }: { email: string; onClose: () => void 
                 onChange={(e) => setNewPwd(e.target.value)}
                 className={inputClass}
               />
-              <p className="text-xs text-gray-400 mt-1">At least 8 characters.</p>
+              {newPwd.length > 0 && !newPwdValid && (
+                <p className="text-xs text-red-500 mt-1">At least 8 characters required.</p>
+              )}
+              {newPwd.length > 0 && newPwdValid && !distinct && (
+                <p className="text-xs text-red-500 mt-1">New password must differ from current.</p>
+              )}
             </div>
 
             <div>
@@ -497,9 +575,6 @@ function PasswordModal({ email, onClose }: { email: string; onClose: () => void 
               />
               {confirmPwd.length > 0 && !matches && (
                 <p className="text-xs text-red-500 mt-1">Passwords do not match.</p>
-              )}
-              {newPwd.length > 0 && !distinct && (
-                <p className="text-xs text-red-500 mt-1">New password must differ from current.</p>
               )}
             </div>
 

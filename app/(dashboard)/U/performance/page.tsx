@@ -156,7 +156,7 @@ export default async function PerformancePage() {
     const { user } = await requireUser();
     companyId = user.companyId;
   } catch (err) {
-    if (err instanceof ApiError && err.status === 401) redirect("/");
+    if (err instanceof ApiError && err.status === 401) redirect("/login");
     throw err;
   }
 
@@ -197,10 +197,10 @@ export default async function PerformancePage() {
 
       {/* ── Stat cards ──────────────────────────────────── */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-        <Stat value={fmtDollars(totalSpend)}                            label="Total MTD Spend"        tone="bg-purple-50" />
-        <Stat value={String(activeCount)}                               label="Active Agents"          tone="bg-blue-50"   />
-        <Stat value={String(overBudget)}                                label="Agents Over Budget"     tone={overBudget > 0 ? "bg-red-50" : "bg-green-50"} />
-        <Stat value={avgUtil !== null ? `${avgUtil}%` : "—"}            label="Avg. Budget Utilization" tone="bg-yellow-50" />
+        <Stat value={fmtDollars(totalSpend)}                   label="Total MTD Spend"         tone="bg-purple-50" tooltip="Sum of all API costs billed to your account this calendar month." />
+        <Stat value={String(activeCount)}                      label="Active Agents"            tone="bg-blue-50"   tooltip="Agents currently set to active status and able to make API calls." />
+        <Stat value={String(overBudget)}                       label="Agents Over Budget"       tone={overBudget > 0 ? "bg-red-50" : "bg-green-50"} tooltip="Agents whose month-to-date spend has exceeded their monthly budget cap." />
+        <Stat value={avgUtil !== null ? `${avgUtil}%` : "—"}  label="Avg. Budget Utilization"  tone="bg-yellow-50" tooltip="Average percentage of monthly budget used across agents that have a budget set." />
       </div>
 
       {/* ── Recommended Actions ──────────────────────────── */}
@@ -329,11 +329,24 @@ export default async function PerformancePage() {
 
 // ── Stat card ──────────────────────────────────────────────────────────────
 
-function Stat({ value, label, tone }: { value: string; label: string; tone: string }) {
+function Stat({ value, label, tone, tooltip }: { value: string; label: string; tone: string; tooltip?: string }) {
   return (
-    <div className={`${tone} p-6 rounded-xl shadow-sm hover:shadow-md hover:-translate-y-0.5 transition-all duration-200`}>
+    <div
+      className={`${tone} p-6 rounded-xl shadow-sm hover:shadow-md hover:-translate-y-0.5 transition-all duration-200`}
+      title={tooltip}
+    >
       <div className="text-3xl font-bold text-gray-900">{value}</div>
-      <div className="text-sm text-gray-600 mt-1">{label}</div>
+      <div className="text-sm text-gray-600 mt-1 flex items-center gap-1">
+        {label}
+        {tooltip && (
+          <span
+            aria-label={tooltip}
+            className="w-3.5 h-3.5 rounded-full bg-white/70 text-gray-400 text-[9px] font-bold leading-none inline-flex items-center justify-center cursor-help"
+          >
+            ?
+          </span>
+        )}
+      </div>
     </div>
   );
 }

@@ -85,7 +85,9 @@ export function DashboardShell({ userName, userEmail, userRole, children }: Prop
         </header>
 
         <main id="main-content" className="flex-1 overflow-y-auto p-4 sm:p-6" tabIndex={-1}>
-          {children}
+          <div className="animate-fade-in">
+            {children}
+          </div>
         </main>
 
       </div>

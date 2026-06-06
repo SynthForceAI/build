@@ -20,23 +20,89 @@ type FormState = {
   keyType:      "personal" | "admin";
 };
 
+type FieldErrors = Partial<Record<keyof FormState, string>>;
+
 type Banner =
   | { type: "success"; message: string }
   | { type: "error";   message: string }
   | null;
 
+function validateField(
+  field: keyof FormState,
+  value: string,
+  providerName?: string,
+  keyType?: "personal" | "admin",
+): string | null {
+  switch (field) {
+    case "providerId":
+      return value ? null : "Please select a provider.";
+    case "apiKey":
+      if (value.length === 0) return null;
+      if (value.length < 10) return "API key must be at least 10 characters.";
+      if (keyType === "admin") {
+        if (providerName === "openai" && !value.startsWith("sk-admin-"))
+          return "OpenAI admin keys start with 'sk-admin-'. Check you copied it in full.";
+        if (providerName === "anthropic" && !value.startsWith("sk-ant-admin-"))
+          return "Anthropic admin keys start with 'sk-ant-admin-'. Check you copied it in full.";
+      } else {
+        if (providerName === "openai" && !value.startsWith("sk-"))
+          return "OpenAI keys start with 'sk-'. Check you copied it in full.";
+      }
+      return null;
+    case "agentName":
+      if (value.length === 0) return null;
+      if (value.trim().length < 3) return "Agent name must be at least 3 characters.";
+      if (value.trim().length > 255) return "Agent name must be under 255 characters.";
+      return null;
+    default:
+      return null;
+  }
+}
+
+function providerPortalUrl(providerName: string | undefined): string | null {
+  if (providerName === "openai")    return "https://platform.openai.com/api-keys";
+  if (providerName === "anthropic") return "https://console.anthropic.com/account/keys";
+  return null;
+}
+
+function actionableApiError(detail: string, providerName: string | undefined): string {
+  if (detail.includes("401") || detail.toLowerCase().includes("invalid") || detail.toLowerCase().includes("incorrect")) {
+    const portal = providerPortalUrl(providerName);
+    return `Invalid API key${portal ? ` — verify it at ${portal}` : ""}. Make sure you copied it fully with no extra spaces.`;
+  }
+  if (detail.includes("429") || detail.toLowerCase().includes("rate")) {
+    return "Rate limit reached — wait a moment and try again.";
+  }
+  if (detail.toLowerCase().includes("permission") || detail.toLowerCase().includes("scope")) {
+    return "This key doesn't have the required permissions. Check your provider's key settings.";
+  }
+  if (detail.toLowerCase().includes("already connected")) {
+    return "This API key is already connected to your account. Try a different key or manage existing ones in Settings.";
+  }
+  return detail || "Connection failed. Check your key and try again.";
+}
+
+const EMPTY_FORM: FormState = {
+  providerId:   "",
+  apiKey:       "",
+  agentName:    "",
+  departmentId: "",
+  keyType:      "personal",
+};
+
 export function ProviderForm({ providers, departments, onSuccess }: Props) {
-  const [form, setForm] = useState<FormState>({
-    providerId:   "",
-    apiKey:       "",
-    agentName:    "",
-    departmentId: "",
-    keyType:      "personal",
-  });
+  const [form, setForm] = useState<FormState>(EMPTY_FORM);
+  const [touched, setTouched] = useState<Partial<Record<keyof FormState, boolean>>>({});
   const [loading, setLoading] = useState(false);
   const [banner, setBanner] = useState<Banner>(null);
 
   const selectedProvider = providers.find((p) => p.id === form.providerId);
+
+  const fieldErrors: FieldErrors = {};
+  for (const field of ["providerId", "apiKey", "agentName"] as const) {
+    const err = validateField(field, form[field], selectedProvider?.name, form.keyType);
+    if (err) fieldErrors[field] = err;
+  }
 
   function set(field: keyof FormState, value: string) {
     setForm((prev) => ({ ...prev, [field]: value }));
@@ -44,17 +110,27 @@ export function ProviderForm({ providers, departments, onSuccess }: Props) {
   }
 
   function setKeyType(value: "personal" | "admin") {
-    setForm((prev) => ({ ...prev, keyType: value }));
+    setForm((prev) => ({ ...prev, keyType: value, apiKey: "" }));
+    setTouched((prev) => ({ ...prev, apiKey: false }));
     setBanner(null);
+  }
+
+  function touch(field: keyof FormState) {
+    setTouched((prev) => ({ ...prev, [field]: true }));
+  }
+
+  function showError(field: keyof FormState): string | undefined {
+    return touched[field] ? fieldErrors[field] : undefined;
   }
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     setBanner(null);
 
-    if (!form.providerId) return setBanner({ type: "error", message: "Please select a provider." });
-    if (form.apiKey.length < 10) return setBanner({ type: "error", message: "API key must be at least 10 characters." });
-    if (form.agentName.trim().length < 3) return setBanner({ type: "error", message: "Agent name must be at least 3 characters." });
+    // Mark all validated fields touched to surface any inline errors
+    setTouched({ providerId: true, apiKey: true, agentName: true });
+
+    if (Object.keys(fieldErrors).length > 0) return;
 
     setLoading(true);
     try {
@@ -75,8 +151,8 @@ export function ProviderForm({ providers, departments, onSuccess }: Props) {
       const data = await res.json();
 
       if (!res.ok) {
-        const msg = data?.error?.detail ?? data?.error?.message ?? "Connection failed. Try again.";
-        setBanner({ type: "error", message: msg });
+        const detail = data?.error?.detail ?? data?.error?.message ?? "Connection failed. Try again.";
+        setBanner({ type: "error", message: actionableApiError(detail, selectedProvider?.name) });
         return;
       }
 
@@ -84,17 +160,24 @@ export function ProviderForm({ providers, departments, onSuccess }: Props) {
         type:    "success",
         message: `Connected! ${data.name} (${selectedProvider?.displayName ?? form.providerId}) is now active.`,
       });
-      setForm({ providerId: "", apiKey: "", agentName: "", departmentId: "", keyType: "personal" });
+      setForm(EMPTY_FORM);
+      setTouched({});
       onSuccess();
     } catch {
-      setBanner({ type: "error", message: "Network error. Check your connection and try again." });
+      setBanner({ type: "error", message: "Network error — check your connection and try again." });
     } finally {
       setLoading(false);
     }
   }
 
-  const inputClass =
-    "w-full px-4 py-3 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#00B2FF] focus:border-transparent disabled:bg-gray-100 disabled:text-gray-400";
+  const inputBase =
+    "w-full px-4 py-3 border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#00B2FF] focus:border-transparent disabled:bg-gray-100 disabled:text-gray-400 transition-colors";
+
+  function inputClass(field: keyof FormState) {
+    const err = showError(field);
+    return `${inputBase} ${err ? "border-red-400 bg-red-50" : "border-gray-300"}`;
+  }
+
   const labelClass = "block text-sm font-medium text-gray-700 mb-1";
 
   return (
@@ -106,6 +189,7 @@ export function ProviderForm({ providers, departments, onSuccess }: Props) {
 
       {banner && (
         <div
+          role="alert"
           className={
             banner.type === "success"
               ? "bg-green-50 border border-green-200 text-green-800 rounded-lg p-4 text-sm mb-5"
@@ -116,7 +200,7 @@ export function ProviderForm({ providers, departments, onSuccess }: Props) {
         </div>
       )}
 
-      <form onSubmit={handleSubmit} className="space-y-5">
+      <form onSubmit={handleSubmit} className="space-y-5" noValidate>
         {/* Provider */}
         <div>
           <label htmlFor="providerId" className={`${labelClass} flex items-center`}>
@@ -128,10 +212,14 @@ export function ProviderForm({ providers, departments, onSuccess }: Props) {
             value={form.providerId}
             onChange={(e) => {
               set("providerId", e.target.value);
-              setKeyType("personal"); // reset when provider changes
+              touch("providerId");
+              setKeyType("personal"); // reset key type when provider changes
             }}
+            onBlur={() => touch("providerId")}
             disabled={loading}
-            className={inputClass}
+            className={inputClass("providerId")}
+            aria-invalid={!!showError("providerId")}
+            aria-describedby={showError("providerId") ? "providerId-error" : undefined}
             required
           >
             <option value="">Select provider…</option>
@@ -139,47 +227,50 @@ export function ProviderForm({ providers, departments, onSuccess }: Props) {
               <option key={p.id} value={p.id}>{p.displayName}</option>
             ))}
           </select>
+          {showError("providerId") && (
+            <p id="providerId-error" className="text-xs text-red-500 mt-1" role="alert">{showError("providerId")}</p>
+          )}
         </div>
 
         {/* Key Type — only OpenAI and Anthropic have org-level usage APIs */}
         {(selectedProvider?.name === "openai" || selectedProvider?.name === "anthropic") && (
-        <div>
-          <label className={`${labelClass} flex items-center`}>
-            Key Type
-            <FieldHelp text="Personal keys (sk-…) work for agent activity tracking. Organization Admin keys (sk-admin-… or sk-org-…) also enable automatic billing sync — SynthForce will poll your provider's usage API hourly to keep spend data current." />
-          </label>
-          <div className="grid grid-cols-2 gap-3">
-            {(["personal", "admin"] as const).map((type) => (
-              <button
-                key={type}
-                type="button"
-                onClick={() => setKeyType(type)}
-                disabled={loading}
-                className={`px-4 py-3 rounded-lg border text-sm font-medium text-left transition-colors ${
-                  form.keyType === type
-                    ? "border-[#00B2FF] bg-blue-50 text-[#00B2FF]"
-                    : "border-gray-200 text-gray-700 hover:border-gray-300 hover:bg-gray-50"
-                } disabled:opacity-50`}
-              >
-                {type === "personal" ? (
-                  <>
-                    <span className="block font-semibold">Personal API Key</span>
-                    <span className="text-xs mt-0.5 block font-normal opacity-70">
-                      sk-… · agent activity only
-                    </span>
-                  </>
-                ) : (
-                  <>
-                    <span className="block font-semibold">Organization Admin Key</span>
-                    <span className="text-xs mt-0.5 block font-normal opacity-70">
-                      sk-admin-… · enables billing sync
-                    </span>
-                  </>
-                )}
-              </button>
-            ))}
+          <div>
+            <label className={`${labelClass} flex items-center`}>
+              Key Type
+              <FieldHelp text="Personal keys (sk-…) work for agent activity tracking. Organization Admin keys (sk-admin-… or sk-org-…) also enable automatic billing sync — SynthForce will poll your provider's usage API hourly to keep spend data current." />
+            </label>
+            <div className="grid grid-cols-2 gap-3">
+              {(["personal", "admin"] as const).map((type) => (
+                <button
+                  key={type}
+                  type="button"
+                  onClick={() => setKeyType(type)}
+                  disabled={loading}
+                  className={`px-4 py-3 rounded-lg border text-sm font-medium text-left transition-colors ${
+                    form.keyType === type
+                      ? "border-[#00B2FF] bg-blue-50 text-[#00B2FF]"
+                      : "border-gray-200 text-gray-700 hover:border-gray-300 hover:bg-gray-50"
+                  } disabled:opacity-50`}
+                >
+                  {type === "personal" ? (
+                    <>
+                      <span className="block font-semibold">Personal API Key</span>
+                      <span className="text-xs mt-0.5 block font-normal opacity-70">
+                        sk-… · agent activity only
+                      </span>
+                    </>
+                  ) : (
+                    <>
+                      <span className="block font-semibold">Organization Admin Key</span>
+                      <span className="text-xs mt-0.5 block font-normal opacity-70">
+                        sk-admin-… · enables billing sync
+                      </span>
+                    </>
+                  )}
+                </button>
+              ))}
+            </div>
           </div>
-        </div>
         )}
 
         {/* API Key */}
@@ -207,21 +298,28 @@ export function ProviderForm({ providers, departments, onSuccess }: Props) {
             type="password"
             value={form.apiKey}
             onChange={(e) => set("apiKey", e.target.value)}
+            onBlur={() => touch("apiKey")}
             disabled={loading}
             placeholder={
               form.keyType === "admin"
                 ? selectedProvider?.name === "openai" ? "sk-admin-…" : selectedProvider?.name === "anthropic" ? "sk-ant-admin-…" : "Paste your admin key"
                 : selectedProvider ? `Paste your ${selectedProvider.displayName} key` : "Paste your API key"
             }
-            className={inputClass}
+            className={inputClass("apiKey")}
             autoComplete="off"
+            aria-invalid={!!showError("apiKey")}
+            aria-describedby={showError("apiKey") ? "apiKey-error" : "apiKey-hint"}
             required
             minLength={10}
             maxLength={500}
           />
-          <p className="text-xs text-gray-500 mt-1">
-            We encrypt it with AES-256-GCM and never store or log the plaintext.
-          </p>
+          {showError("apiKey") ? (
+            <p id="apiKey-error" className="text-xs text-red-500 mt-1" role="alert">{showError("apiKey")}</p>
+          ) : (
+            <p id="apiKey-hint" className="text-xs text-gray-500 mt-1">
+              Encrypted with AES-256-GCM — never stored or logged as plaintext.
+            </p>
+          )}
         </div>
 
         {/* Agent Name */}
@@ -235,16 +333,23 @@ export function ProviderForm({ providers, departments, onSuccess }: Props) {
             type="text"
             value={form.agentName}
             onChange={(e) => set("agentName", e.target.value)}
+            onBlur={() => touch("agentName")}
             disabled={loading}
             placeholder="e.g., lead-gen-v2"
-            className={inputClass}
+            className={inputClass("agentName")}
+            aria-invalid={!!showError("agentName")}
+            aria-describedby={showError("agentName") ? "agentName-error" : "agentName-hint"}
             required
             minLength={3}
             maxLength={255}
           />
-          <p className="text-xs text-gray-500 mt-1">
-            This is what SynthForce will call this connection.
-          </p>
+          {showError("agentName") ? (
+            <p id="agentName-error" className="text-xs text-red-500 mt-1" role="alert">{showError("agentName")}</p>
+          ) : (
+            <p id="agentName-hint" className="text-xs text-gray-500 mt-1">
+              This is what SynthForce will call this connection.
+            </p>
+          )}
         </div>
 
         {/* Department (optional) */}
@@ -257,7 +362,7 @@ export function ProviderForm({ providers, departments, onSuccess }: Props) {
             value={form.departmentId}
             onChange={(e) => set("departmentId", e.target.value)}
             disabled={loading}
-            className={inputClass}
+            className={`${inputBase} border-gray-300`}
           >
             <option value="">No department</option>
             {departments.map((d) => (
@@ -270,11 +375,17 @@ export function ProviderForm({ providers, departments, onSuccess }: Props) {
           type="submit"
           disabled={loading}
           className={
-            "w-full bg-[#00B2FF] text-white border border-[#00B2FF] rounded-lg " +
+            "w-full flex items-center justify-center gap-2 bg-[#00B2FF] text-white border border-[#00B2FF] rounded-lg " +
             "hover:bg-transparent hover:text-[#00B2FF] transition px-5 py-3 text-sm font-medium " +
-            (loading ? "opacity-50 cursor-not-allowed" : "")
+            (loading ? "opacity-60 cursor-not-allowed" : "")
           }
         >
+          {loading && (
+            <svg className="animate-spin w-4 h-4" fill="none" viewBox="0 0 24 24" aria-hidden="true">
+              <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+              <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z" />
+            </svg>
+          )}
           {loading ? "Connecting…" : "Connect Agent"}
         </button>
       </form>
