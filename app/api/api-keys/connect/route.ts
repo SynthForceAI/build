@@ -85,6 +85,7 @@ export async function POST(req: NextRequest) {
           providerId:   provider.id,
           encryptedKey: encrypted,
           metadata:     { keyType: "admin", sourceApiKeyId: apiKey.id },
+          lastSyncedAt: null, // Force 30-day backfill on first sync
         },
         update: {
           encryptedKey: encrypted,
