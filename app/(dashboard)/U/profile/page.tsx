@@ -18,7 +18,7 @@ export default async function ProfilePage() {
     const { user } = await requireUser();
     userId = user.id;
   } catch (err) {
-    if (err instanceof ApiError && err.status === 401) redirect("/");
+    if (err instanceof ApiError && err.status === 401) redirect("/login");
     throw err;
   }
 

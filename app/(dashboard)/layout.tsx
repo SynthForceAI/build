@@ -51,7 +51,7 @@ export default async function DashboardLayout({
     user = _user;
   } catch (err) {
     if (err instanceof ApiError && err.status === 401) {
-      redirect("/");
+      redirect("/login");
     }
     throw err;
   }

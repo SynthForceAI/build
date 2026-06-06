@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { AddPolicyForm } from "./add-policy-form";
+import { FieldHelp } from "./field-help";
 
 type Policy = {
   id: string;
@@ -101,8 +102,18 @@ export function PoliciesClient({
                   <th className="px-6 py-3 font-medium">Name</th>
                   <th className="px-6 py-3 font-medium">Description</th>
                   <th className="px-6 py-3 font-medium">Department</th>
-                  <th className="px-6 py-3 font-medium">Severity</th>
-                  <th className="px-6 py-3 font-medium">Scope</th>
+                  <th className="px-6 py-3 font-medium">
+                    <span className="flex items-center gap-1">
+                      Severity
+                      <FieldHelp text="Block: stops the action outright. Warning: alerts without blocking. Flag: marks for human review. Log: records silently for audit." />
+                    </span>
+                  </th>
+                  <th className="px-6 py-3 font-medium">
+                    <span className="flex items-center gap-1">
+                      Scope
+                      <FieldHelp text="Which agents this policy applies to. 'all' means every agent in the workspace; a named scope targets a specific subset." />
+                    </span>
+                  </th>
                 </tr>
               </thead>
               <tbody>
