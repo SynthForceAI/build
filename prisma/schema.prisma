@@ -616,10 +616,11 @@ model ConnectedAgentUsageLog {
   providerId       String?     @map("provider_id") @db.Uuid
   source           UsageSource @default(self_report)
 
-  tokensIn  Int     @default(0) @map("tokens_in")
-  tokensOut Int     @default(0) @map("tokens_out")
-  costCents Decimal @default(0) @map("cost_cents") @db.Decimal(20, 6)
-  model     String? @db.VarChar(255)
+  tokensIn    Int     @default(0) @map("tokens_in")
+  tokensOut   Int     @default(0) @map("tokens_out")
+  costCents   Decimal @default(0) @map("cost_cents") @db.Decimal(20, 6)
+  numRequests Int     @default(0) @map("num_requests")
+  model       String? @db.VarChar(255)
 
   // Provider-side identity of this record (bucket id / request id). Used to
   // dedupe repeated polls. NULL for self-reports (Postgres treats NULLs as
