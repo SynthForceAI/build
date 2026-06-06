@@ -31,6 +31,8 @@ export type NormalizedBucket = {
   tokensOut: number;
   /** Provider-reported cost in cents; 0/undefined means "estimate from tokens". */
   costCents?: number;
+  /** Provider-reported request count for this bucket. */
+  numRequests?: number;
   model?: string | null;
   /** project_id / api_key_id etc., matched against ConnectedAgent.metadata. */
   attributionKey?: string | null;

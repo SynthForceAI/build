@@ -21,12 +21,15 @@ export type ModelPrice = {
 // We match on the longest prefix so "gpt-4o-mini" wins over "gpt-4o".
 const PRICING: Record<string, Record<string, ModelPrice>> = {
   openai: {
-    "gpt-4o-mini": { inputPerMillion: 0.15, outputPerMillion: 0.6 },
-    "gpt-4o":      { inputPerMillion: 2.5,  outputPerMillion: 10 },
-    "gpt-4.1-mini":{ inputPerMillion: 0.4,  outputPerMillion: 1.6 },
-    "gpt-4.1":     { inputPerMillion: 2,    outputPerMillion: 8 },
-    "o3-mini":     { inputPerMillion: 1.1,  outputPerMillion: 4.4 },
-    "o3":          { inputPerMillion: 2,    outputPerMillion: 8 },
+    "gpt-4o-mini":   { inputPerMillion: 0.15, outputPerMillion: 0.6 },
+    "gpt-4o":        { inputPerMillion: 2.5,  outputPerMillion: 10 },
+    "gpt-4.1-mini":  { inputPerMillion: 0.4,  outputPerMillion: 1.6 },
+    "gpt-4.1":       { inputPerMillion: 2,    outputPerMillion: 8 },
+    "gpt-4-turbo":   { inputPerMillion: 10,   outputPerMillion: 30 },
+    "gpt-3.5-turbo": { inputPerMillion: 0.5,  outputPerMillion: 1.5 },
+    "o4-mini":       { inputPerMillion: 1.1,  outputPerMillion: 4.4 },
+    "o3-mini":       { inputPerMillion: 1.1,  outputPerMillion: 4.4 },
+    "o3":            { inputPerMillion: 2,    outputPerMillion: 8 },
   },
   anthropic: {
     "claude-3-5-haiku":  { inputPerMillion: 0.8, outputPerMillion: 4 },
