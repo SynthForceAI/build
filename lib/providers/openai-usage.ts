@@ -171,6 +171,7 @@ export async function syncOpenAIUsage(companyId: string, adminKey: ProviderAdmin
   usageUrl.searchParams.append("group_by", "model");
   usageUrl.searchParams.set("limit", String(limit));
 
+  console.log('[sync-debug] Fetching usage with URL:', usageUrl.toString());
   const res = await fetch(usageUrl.toString(), {
     headers: { Authorization: `Bearer ${key}`, "Content-Type": "application/json" },
     signal: AbortSignal.timeout(25_000),
