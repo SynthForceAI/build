@@ -32,7 +32,7 @@ export async function POST(request: Request, { params }: Ctx) {
 
     const saved = await prisma.providerAdminKey.upsert({
       where:  { companyId_providerId: { companyId: user.companyId, providerId } },
-      create: { companyId: user.companyId, providerId, encryptedKey, metadata: (metadata ?? {}) as object },
+      create: { companyId: user.companyId, providerId, encryptedKey, metadata: (metadata ?? {}) as object, lastSyncedAt: null /* Force 30-day backfill on first sync */ },
       update: { encryptedKey, metadata: (metadata ?? {}) as object },
     });
 
