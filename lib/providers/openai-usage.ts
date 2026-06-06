@@ -167,9 +167,7 @@ export async function syncOpenAIUsage(companyId: string, adminKey: ProviderAdmin
   usageUrl.searchParams.set("start_time", String(startUnix));
   usageUrl.searchParams.set("end_time", String(nowUnix));
   usageUrl.searchParams.set("bucket_width", bucketWidth);
-  usageUrl.searchParams.append("group_by", "project_id");
-  usageUrl.searchParams.append("group_by", "model");
-  // limit omitted — testing whether it causes 400s
+  // group_by omitted — isolating 400 cause
 
   console.log('[sync-debug] Fetching usage with URL:', usageUrl.toString());
   const res = await fetch(usageUrl.toString(), {
