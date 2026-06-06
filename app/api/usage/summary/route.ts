@@ -28,8 +28,7 @@ export async function GET() {
       }),
       prisma.connectedAgentUsageLog.aggregate({
         where: { companyId: user.companyId, createdAt: { gte: start } },
-        _sum: { costCents: true, tokensIn: true, tokensOut: true },
-        _count: { _all: true },
+        _sum: { costCents: true, tokensIn: true, tokensOut: true, numRequests: true },
       }),
       prisma.connectedAgent.findMany({
         where: { companyId: user.companyId, deletedAt: null },
@@ -49,9 +48,9 @@ export async function GET() {
     return NextResponse.json({
       monthToDate: {
         spendCents: decimalToJson(mtdAgg._sum.costCents ?? null),
-        tokensIn:   mtdAgg._sum.tokensIn  ?? 0,
-        tokensOut:  mtdAgg._sum.tokensOut ?? 0,
-        requests:   mtdAgg._count._all,
+        tokensIn:   mtdAgg._sum.tokensIn     ?? 0,
+        tokensOut:  mtdAgg._sum.tokensOut    ?? 0,
+        requests:   mtdAgg._sum.numRequests  ?? 0,
       },
       agentCounts: {
         active:      statusMap.active      ?? 0,
