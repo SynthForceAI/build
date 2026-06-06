@@ -2,10 +2,11 @@ name: Sync Provider Usage
 # Hits POST /api/jobs/sync-provider-usage to poll each configured provider
 # admin key (OpenAI/Anthropic etc.) and ingest recent usage buckets.
 #
-# Cadence: GitHub Actions' minimum cron interval is 5 minutes, and the
-# scheduler can be delayed under load — so we run every 5 minutes rather
-# than the spec's "60s." Anthropic's documented polling limit is once per
-# minute anyway, so 5m stays well within all provider rate limits.
+# Triggers:
+#   - Every 5 minutes via cron (GitHub fires ~every 60-90 min in practice).
+#   - After every successful "Deploy to Vercel" run, so a fresh deploy always
+#     gets an immediate sync rather than waiting for the next cron window.
+#   - Manual dispatch.
 #
 # Required GitHub repo secrets:
 #   SYNTHFORCE_API_URL   – e.g. https://synthforceai.com (no trailing slash)
@@ -13,9 +14,17 @@ name: Sync Provider Usage
 on:
   schedule:
     - cron: '*/5 * * * *'
+  workflow_run:
+    workflows: ["Deploy to Vercel"]
+    types: [completed]
   workflow_dispatch: {}
+
 jobs:
   sync:
+    # For workflow_run events: only proceed if the deploy succeeded.
+    # For schedule/workflow_dispatch: github.event_name != 'workflow_run' is
+    # true so the condition passes unconditionally.
+    if: github.event_name != 'workflow_run' || github.event.workflow_run.conclusion == 'success'
     runs-on: ubuntu-latest
     steps:
       - name: Debug secrets
@@ -25,7 +34,7 @@ jobs:
           echo "Secret first 10 chars: ${SYNC_JOB_SECRET:0:10}"
         env:
           SYNC_JOB_SECRET: ${{ secrets.SYNC_JOB_SECRET }}
-      
+
       - name: Trigger sync endpoint
         run: |
           curl --fail --silent --show-error\
