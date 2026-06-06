@@ -221,6 +221,13 @@ export async function syncOpenAIUsage(companyId: string, adminKey: ProviderAdmin
   // same-(project, day) buckets by token share.
   const costMap = await fetchCosts(key, startUnix, nowUnix);
 
+  console.log('[sync-debug] OpenAI usage response:', {
+    bucketsCount: json.data?.length ?? 0,
+    startTime: usageUrl.searchParams.get('start_time'),
+    endTime: usageUrl.searchParams.get('end_time'),
+    firstBucket: json.data?.[0],
+  });
+
   // Sum tokens per (project_id, day) for proportional distribution.
   const dayTokenTotals = new Map<string, number>();
   for (const b of scratch) {
