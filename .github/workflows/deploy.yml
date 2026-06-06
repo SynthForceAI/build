@@ -10,25 +10,57 @@ env:
   NEXT_PUBLIC_SUPABASE_URL: ${{ secrets.NEXT_PUBLIC_SUPABASE_URL }}
   NEXT_PUBLIC_SUPABASE_ANON_KEY: ${{ secrets.NEXT_PUBLIC_SUPABASE_ANON_KEY }}
   SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
-  API_KEY_ENCRYPTION_KEY: ${{ secrets.API_KEY_ENCRYPTION_KEY }} 
+  API_KEY_ENCRYPTION_KEY: ${{ secrets.API_KEY_ENCRYPTION_KEY }}
   SYNC_JOB_SECRET: ${{ secrets.SYNC_JOB_SECRET }}
+
 jobs:
   deploy:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      
+
+      # Node 20 + npm registry cache (~/.npm). Speeds up npm ci on all runs.
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      # node_modules cache — skip npm ci entirely when package-lock.json hasn't changed.
+      - name: Cache node_modules
+        id: cache-node-modules
+        uses: actions/cache@v4
+        with:
+          path: node_modules
+          key: node-modules-${{ runner.os }}-${{ hashFiles('package-lock.json') }}
+
+      - name: Install dependencies
+        if: steps.cache-node-modules.outputs.cache-hit != 'true'
+        run: npm ci
+
+      # .next/cache stores SWC/webpack compilation artifacts. Restoring it lets
+      # Next.js skip recompiling unchanged modules — biggest single time save.
+      - name: Cache Next.js build
+        uses: actions/cache@v4
+        with:
+          path: .next/cache
+          key: nextjs-${{ runner.os }}-${{ hashFiles('package-lock.json') }}-${{ hashFiles('**.[jt]s', '**.[jt]sx') }}
+          restore-keys: |
+            nextjs-${{ runner.os }}-${{ hashFiles('package-lock.json') }}-
+            nextjs-${{ runner.os }}-
+
       - name: Install Vercel CLI
         run: npm install --global vercel@latest
-        
+
       - name: Pull Vercel Environment Information
         run: vercel pull --yes --environment=production --token=${{ secrets.AUTH_TOKEN_VERCEL }}
-        
+
       - name: Inject Env Variables for Next.js Build
         run: vercel env pull .env.production.local --environment=production --token=${{ secrets.AUTH_TOKEN_VERCEL }}
-        
+
+      # node_modules is already present so vercel build skips the install step
+      # and goes straight to next build, which hits the .next/cache above.
       - name: Build Project Artifacts
         run: vercel build --prod --token=${{ secrets.AUTH_TOKEN_VERCEL }}
-        
+
       - name: Deploy Project Artifacts to Vercel
         run: vercel deploy --prebuilt --prod --token=${{ secrets.AUTH_TOKEN_VERCEL }}
