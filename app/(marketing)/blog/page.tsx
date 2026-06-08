@@ -144,16 +144,6 @@ export default function BlogPage() {
                   <div className="flex items-center gap-3 mb-4">
                     <span className="text-xs uppercase tracking-wider text-accent font-semibold">Coming Soon</span>
                   </div>
-                  <h3 className="text-2xl font-bold text-gray-900 mb-3">The Cost of Runaway Agents</h3>
-                  <p className="text-gray-600">
-                    An analysis of real-world AI agent cost overruns, why they happen, and how to prevent them.
-                    Why companies with 50+ agents see 15%+ API spend waste from runaway loops and zombie processes.
-                  </p>
-                </div>
-                <div className="border border-gray-200 rounded-2xl p-8 hover:shadow-lg transition">
-                  <div className="flex items-center gap-3 mb-4">
-                    <span className="text-xs uppercase tracking-wider text-accent font-semibold">Coming Soon</span>
-                  </div>
                   <h3 className="text-2xl font-bold text-gray-900 mb-3">Why You Need an Org Chart for Your AI Agents</h3>
                   <p className="text-gray-600">
                     A framework for assigning business owners, departments, and roles to synthetic employees.
