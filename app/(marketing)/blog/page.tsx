@@ -94,7 +94,7 @@ export default function BlogPage() {
                 {posts.map(post => (
                   <a
                     key={post.slug}
-                    href={`/blog#${post.slug}`}
+                    href={`/blog/${post.slug}`}
                     className="block group"
                   >
                     <p className="text-sm font-semibold text-gray-800 group-hover:text-accent transition leading-snug">

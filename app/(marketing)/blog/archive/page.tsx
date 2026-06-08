@@ -74,7 +74,7 @@ export default function BlogArchivePage() {
                     </div>
                   </div>
                   <p className="text-gray-600 mb-4">{post.excerpt}</p>
-                  <a href={`/blog#${post.slug}`} className="text-accent hover:underline font-medium">
+                  <a href={`/blog/${post.slug}`} className="text-accent hover:underline font-medium">
                     Read more &rarr;
                   </a>
                 </div>
