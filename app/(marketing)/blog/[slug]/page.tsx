@@ -2,9 +2,12 @@ import Link from 'next/link';
 import fs from 'fs';
 import path from 'path';
 import matter from 'gray-matter';
+import markdownit from 'markdown-it';
 import { notFound } from 'next/navigation';
 import { SiteNav } from "@/components/ui/site-nav";
 import { WaitlistTrigger } from "@/components/ui/waitlist-trigger";
+
+const md = markdownit({ html: true, breaks: true, linkify: true });
 
 const articleStyles = `
   .article-content h2 { font-size: 1.75rem; font-weight: 700; margin-top: 2.5rem; margin-bottom: 1rem; color: #111827; }
@@ -39,7 +42,7 @@ function getAllPosts() {
         title: data.title || 'Untitled',
         date: data.date || new Date(),
         excerpt: data.excerpt || body.substring(0, 200),
-        body,
+        body: md.render(body),
         author: data.author || 'SynthForce',
       };
     });
