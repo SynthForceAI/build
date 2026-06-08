@@ -63,9 +63,10 @@ export async function generateStaticParams() {
     .map(f => ({ slug: f.replace('.md', '') }));
 }
 
-export default function BlogPostPage({ params }: { params: { slug: string } }) {
+export default async function BlogPostPage({ params }: { params: Promise<{ slug: string }> }) {
+  const { slug } = await params;
   const posts = getAllPosts();
-  const post = posts.find(p => p.slug === params.slug);
+  const post = posts.find(p => p.slug === slug);
   if (!post) notFound();
 
   return (
@@ -97,10 +98,10 @@ export default function BlogPostPage({ params }: { params: { slug: string } }) {
                 <Link
                   key={p.slug}
                   href={`/blog/${p.slug}`}
-                  className={`block group ${p.slug === post.slug ? 'opacity-100' : ''}`}
+                  className={`block group ${p.slug === slug ? 'opacity-100' : ''}`}
                 >
                   <p className={`text-sm font-semibold leading-snug transition ${
-                    p.slug === post.slug
+                    p.slug === slug
                       ? 'text-accent'
                       : 'text-gray-800 group-hover:text-accent'
                   }`}>
