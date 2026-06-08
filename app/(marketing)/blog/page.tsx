@@ -183,6 +183,11 @@ export default function BlogPage() {
             </div>
           </article>
         )}
+        <div className="max-w-3xl mx-auto px-6 py-10">
+          <Link href="/blog/archive" className="text-accent hover:underline">
+            &larr; View all published blogs
+          </Link>
+        </div>
       </main>
 
     </div>
