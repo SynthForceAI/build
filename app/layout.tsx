@@ -32,7 +32,7 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en" className={cn(inter.variable, inter.className)}>
-      <body>
+      <body suppressHydrationWarning>
         {children}
         <Analytics />
         {/* Tally embed — needed by WaitlistTrigger on marketing pages */}
