@@ -334,7 +334,7 @@ export default function Home() {
                       Managing your workforce shouldn&apos;t need tech knowledge
                     </h2>
                     <p className="text-xl text-gray-600 mb-8">
-                      Explore our demo to see how you can onboard, measure, and govern your AI workforce — no code required.
+                      Explore our demo to see how you can onboard, measure, and govern your AI workforce, no code required.
                     </p>
                     <Link href="/demo" className="btn-primary inline-block font-semibold px-8 py-4 shadow-sm">
                       Launch Demo
