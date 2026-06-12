@@ -6,6 +6,7 @@ import { verifyProviderKey } from "@/lib/providers";
 import { generateReportToken, hashReportToken } from "@/lib/report-token";
 import { requireUser } from "@/lib/auth";
 import { handleApiError, ApiError } from "@/lib/api-errors";
+import { runAudit } from "@/lib/audit/run";
 
 export const dynamic = "force-dynamic";
 
@@ -49,15 +50,18 @@ export async function POST(req: NextRequest) {
       });
     }
 
+    const label = parsed.label ?? parsed.agentName;
+
     // Free any soft-deleted keys that share the same label+provider+company —
     // they still hold their unique index slot and would cause a P2002 on insert.
-    const label = parsed.label ?? parsed.agentName;
-    const stale = await prisma.apiKey.findMany({
-      where: { companyId: user.companyId, providerId: provider.id, label, deletedAt: { not: null } },
-      select: { id: true },
-    });
-    for (const k of stale) {
-      await prisma.apiKey.update({ where: { id: k.id }, data: { label: `${label}__deleted_${k.id}` } });
+    if (label) {
+      const stale = await prisma.apiKey.findMany({
+        where: { companyId: user.companyId, providerId: provider.id, label, deletedAt: { not: null } },
+        select: { id: true },
+      });
+      for (const k of stale) {
+        await prisma.apiKey.update({ where: { id: k.id }, data: { label: `${label}__deleted_${k.id}` } });
+      }
     }
 
     const now = new Date();
@@ -65,7 +69,7 @@ export async function POST(req: NextRequest) {
       data: {
         companyId:       user.companyId,
         providerId:      provider.id,
-        label,
+        label:           label ?? null,
         encryptedKey:    encrypted,
         keyIdentifier:   fingerprint,
         isActive:        true,
@@ -75,8 +79,6 @@ export async function POST(req: NextRequest) {
     });
 
     // Admin keys (sk-admin-…) double as org-level usage polling keys.
-    // Upsert a ProviderAdminKey so the sync job finds this key automatically
-    // without requiring a separate setup step in Settings.
     if (parsed.keyType === "admin") {
       await prisma.providerAdminKey.upsert({
         where:  { companyId_providerId: { companyId: user.companyId, providerId: provider.id } },
@@ -85,7 +87,7 @@ export async function POST(req: NextRequest) {
           providerId:   provider.id,
           encryptedKey: encrypted,
           metadata:     { keyType: "admin", sourceApiKeyId: apiKey.id },
-          lastSyncedAt: null, // Force 30-day backfill on first sync
+          lastSyncedAt: null,
         },
         update: {
           encryptedKey: encrypted,
@@ -94,9 +96,29 @@ export async function POST(req: NextRequest) {
       });
     }
 
-    // One-time self-report token for this agent. We store only its hash; the
-    // raw value is returned below exactly once so the agent can be configured
-    // to POST usage to /api/connected-agents/{id}/report-usage.
+    // Admin key with no agent name: run an immediate audit and redirect there.
+    // Skip ConnectedAgent / Agent creation — user hasn't named anything yet.
+    if (parsed.keyType === "admin" && !parsed.agentName) {
+      const audit = await prisma.audit.create({
+        data: {
+          companyId:   user.companyId,
+          initiatedBy: user.id,
+          apiKeyId:    apiKey.id,
+          status:      "pending",
+        },
+      });
+
+      try {
+        await runAudit({ auditId: audit.id, deleteKeyOnDone: false, periodDays: 30 });
+      } catch (err) {
+        // runAudit marks the audit as failed — return the id so the page can show the error.
+        console.error("[connect] inline audit failed:", err);
+      }
+
+      return NextResponse.json({ auditId: audit.id }, { status: 201 });
+    }
+
+    // Personal key (or admin key + explicit agent name): create the agent.
     const reportToken = generateReportToken();
 
     const connectedAgent = await prisma.connectedAgent.create({
@@ -105,7 +127,7 @@ export async function POST(req: NextRequest) {
         apiKeyId:        apiKey.id,
         providerId:      provider.id,
         departmentId:    parsed.departmentId ?? null,
-        name:            parsed.agentName,
+        name:            parsed.agentName!,
         providerName:    provider.name,
         modelUsed:       availableModels[0] ?? "",
         status:          "active",
@@ -113,12 +135,10 @@ export async function POST(req: NextRequest) {
       },
     });
 
-    // Create the Agent record so the agent appears in the dashboard, performance,
-    // and agents pages — which all read from the Agent table, not ConnectedAgent.
     await prisma.agent.create({
       data: {
         companyId:    user.companyId,
-        name:         parsed.agentName,
+        name:         parsed.agentName!,
         departmentId: parsed.departmentId ?? null,
         providerId:   provider.id,
         apiKeyId:     apiKey.id,
@@ -134,7 +154,6 @@ export async function POST(req: NextRequest) {
         status:          connectedAgent.status,
         availableModels,
         connectedAt:     connectedAgent.connectedAt,
-        // Shown once. Persist client-side; it cannot be retrieved again.
         reportToken,
       },
       { status: 201 },

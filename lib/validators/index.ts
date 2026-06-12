@@ -177,7 +177,7 @@ export const ProviderConnectSchema = z.object({
   providerId:   Uuid,
   apiKey:       NonEmptyString.max(2000),
   label:        NonEmptyString.max(255).optional(),
-  agentName:    NonEmptyString.min(3).max(255),
+  agentName:    NonEmptyString.min(3).max(255).optional(),
   departmentId: Uuid.optional(),
   // "admin" keys (sk-admin-…) are also stored as ProviderAdminKey so the
   // sync job can poll org-level usage. "personal" keys are agent-only.
