@@ -167,7 +167,10 @@ export async function syncOpenAIUsage(companyId: string, adminKey: ProviderAdmin
   usageUrl.searchParams.set("start_time", String(startUnix));
   usageUrl.searchParams.set("end_time", String(nowUnix));
   usageUrl.searchParams.set("bucket_width", bucketWidth);
-  // group_by omitted — isolating 400 cause
+  // OpenAI expects bracket notation for array params: group_by[]=model
+  // (using plain "group_by" caused a 400 — that was the 400 from before)
+  usageUrl.searchParams.append("group_by[]", "model");
+  usageUrl.searchParams.append("group_by[]", "project_id");
 
   console.log('[sync-debug] Fetching usage with URL:', usageUrl.toString());
   const res = await fetch(usageUrl.toString(), {
