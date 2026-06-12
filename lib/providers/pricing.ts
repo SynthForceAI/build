@@ -39,6 +39,10 @@ const PRICING: Record<string, Record<string, ModelPrice>> = {
     "claude-haiku":      { inputPerMillion: 0.8, outputPerMillion: 4 },
     "claude-sonnet":     { inputPerMillion: 3,   outputPerMillion: 15 },
     "claude-opus":       { inputPerMillion: 15,  outputPerMillion: 75 },
+    // Claude 4.x — longer prefixes win over the generic entries above
+    "claude-opus-4-":    { inputPerMillion: 5,   outputPerMillion: 25 },
+    "claude-sonnet-4":   { inputPerMillion: 3,   outputPerMillion: 15 },
+    "claude-haiku-4":    { inputPerMillion: 1,   outputPerMillion: 5 },
   },
   "google-gemini": {
     "gemini-1.5-flash": { inputPerMillion: 0.075, outputPerMillion: 0.3 },

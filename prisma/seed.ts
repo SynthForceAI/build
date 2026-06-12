@@ -46,9 +46,9 @@ const PROVIDERS: ProviderSeed[] = [
     displayName: "Anthropic",
     apiBaseUrl: "https://api.anthropic.com/v1",
     models: [
-      { modelId: "claude-3-5-sonnet", displayName: "Claude 3.5 Sonnet", inputPricePerToken: 0.000003,  outputPricePerToken: 0.000015, contextWindow: 200000 },
-      { modelId: "claude-3-5-haiku",  displayName: "Claude 3.5 Haiku",  inputPricePerToken: 0.0000008, outputPricePerToken: 0.000004, contextWindow: 200000 },
-      { modelId: "claude-3-opus",     displayName: "Claude 3 Opus",     inputPricePerToken: 0.000015,  outputPricePerToken: 0.000075, contextWindow: 200000 },
+      { modelId: "claude-opus-4-8",          displayName: "Claude Opus 4.8",   inputPricePerToken: 0.000005,  outputPricePerToken: 0.000025, contextWindow: 200000 },
+      { modelId: "claude-sonnet-4-6",         displayName: "Claude Sonnet 4.6", inputPricePerToken: 0.000003,  outputPricePerToken: 0.000015, contextWindow: 200000 },
+      { modelId: "claude-haiku-4-5-20251001", displayName: "Claude Haiku 4.5",  inputPricePerToken: 0.000001,  outputPricePerToken: 0.000005, contextWindow: 200000 },
     ],
   },
   {
