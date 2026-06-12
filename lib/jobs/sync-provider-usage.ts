@@ -37,6 +37,9 @@ export async function syncAllProviderUsage(): Promise<JobSummary> {
       summary.results.push(result);
       summary.logsCreated += result.logsCreated;
       summary.agentsActivated += result.agentsActivated;
+      if (result.note) {
+        console.warn(`[sync-provider-usage] ${providerName} note: ${result.note}`);
+      }
     } catch (error) {
       const message = error instanceof Error ? error.message : String(error);
       summary.failures.push({ companyId: adminKey.companyId, provider: providerName, error: message });
