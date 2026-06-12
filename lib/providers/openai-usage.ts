@@ -163,29 +163,33 @@ export async function syncOpenAIUsage(companyId: string, adminKey: ProviderAdmin
   const startUnix = Math.floor(lookbackStart.getTime() / 1_000);
 
   // Fetch usage (tokens + request counts).
-  // Build the base URL via URLSearchParams, then append group_by[] as a raw
-  // string — URLSearchParams would encode [] as %5B%5D which OpenAI rejects.
-  const usageBaseUrl = new URL(OPENAI_USAGE_URL);
-  usageBaseUrl.searchParams.set("start_time", String(startUnix));
-  usageBaseUrl.searchParams.set("end_time", String(nowUnix));
-  usageBaseUrl.searchParams.set("bucket_width", bucketWidth);
-  usageBaseUrl.searchParams.set("limit", String(limit));
-  const usageUrlStr = `${usageBaseUrl.toString()}&group_by[]=model&group_by[]=project_id`;
+  // Fully manual URL — no URLSearchParams at all, so [] is never encoded to %5B%5D.
+  const usageUrlStr = `${OPENAI_USAGE_URL}?start_time=${startUnix}&end_time=${nowUnix}&bucket_width=${bucketWidth}&limit=${limit}&group_by[]=model&group_by[]=project_id`;
 
   console.log('[sync-debug] Fetching usage with URL:', usageUrlStr);
   const res = await fetch(usageUrlStr, {
     headers: { Authorization: `Bearer ${key}`, "Content-Type": "application/json" },
     signal: AbortSignal.timeout(25_000),
   });
+
+  // Read body as text first so we can log it regardless of parse outcome.
+  const rawBody = await res.text();
+  console.log('[sync-debug] OpenAI usage HTTP status:', res.status);
+  console.log('[sync-debug] OpenAI usage raw body (first 800 chars):', rawBody.slice(0, 800));
+
   if (!res.ok) {
-    const errBody = await res.text().catch(() => "(unreadable)");
-    console.error(`[sync-debug] OpenAI usage endpoint error: status=${res.status} body=${errBody}`);
+    console.error(`[sync-debug] OpenAI usage endpoint error: status=${res.status} body=${rawBody}`);
     if (res.status === 401) throw new Error("OpenAI rejected the admin key (401). Use an sk-admin- key with usage read access.");
     if (res.status === 429) throw new Error("OpenAI rate-limited the usage request (429).");
-    throw new Error(`OpenAI usage endpoint returned ${res.status}: ${errBody}`);
+    throw new Error(`OpenAI usage endpoint returned ${res.status}: ${rawBody}`);
   }
 
-  const json = (await res.json()) as OpenAIUsageResponse;
+  let json: OpenAIUsageResponse;
+  try {
+    json = JSON.parse(rawBody) as OpenAIUsageResponse;
+  } catch {
+    throw new Error(`OpenAI usage response is not valid JSON: ${rawBody.slice(0, 200)}`);
+  }
 
   // Build buckets without cost first.  We also carry _projectId / _dayStart
   // as scratch fields so we can distribute daily costs below.
@@ -235,6 +239,15 @@ export async function syncOpenAIUsage(companyId: string, adminKey: ProviderAdmin
     endTime: nowUnix,
     firstBucket: json.data?.[0],
   });
+  if (scratchCount > 0) {
+    console.log('[sync-debug] First scratch bucket:', {
+      providerApiId: scratch[0].providerApiId,
+      model: scratch[0].model,
+      attributionKey: scratch[0].attributionKey,
+      tokensIn: scratch[0].tokensIn,
+      tokensOut: scratch[0].tokensOut,
+    });
+  }
 
   // Sum tokens per (project_id, day) for proportional distribution.
   const dayTokenTotals = new Map<string, number>();
