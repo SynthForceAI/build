@@ -163,17 +163,17 @@ export async function syncOpenAIUsage(companyId: string, adminKey: ProviderAdmin
   const startUnix = Math.floor(lookbackStart.getTime() / 1_000);
 
   // Fetch usage (tokens + request counts).
-  const usageUrl = new URL(OPENAI_USAGE_URL);
-  usageUrl.searchParams.set("start_time", String(startUnix));
-  usageUrl.searchParams.set("end_time", String(nowUnix));
-  usageUrl.searchParams.set("bucket_width", bucketWidth);
-  // OpenAI expects bracket notation for array params: group_by[]=model
-  // (using plain "group_by" caused a 400 — that was the 400 from before)
-  usageUrl.searchParams.append("group_by[]", "model");
-  usageUrl.searchParams.append("group_by[]", "project_id");
+  // Build the base URL via URLSearchParams, then append group_by[] as a raw
+  // string — URLSearchParams would encode [] as %5B%5D which OpenAI rejects.
+  const usageBaseUrl = new URL(OPENAI_USAGE_URL);
+  usageBaseUrl.searchParams.set("start_time", String(startUnix));
+  usageBaseUrl.searchParams.set("end_time", String(nowUnix));
+  usageBaseUrl.searchParams.set("bucket_width", bucketWidth);
+  usageBaseUrl.searchParams.set("limit", String(limit));
+  const usageUrlStr = `${usageBaseUrl.toString()}&group_by[]=model&group_by[]=project_id`;
 
-  console.log('[sync-debug] Fetching usage with URL:', usageUrl.toString());
-  const res = await fetch(usageUrl.toString(), {
+  console.log('[sync-debug] Fetching usage with URL:', usageUrlStr);
+  const res = await fetch(usageUrlStr, {
     headers: { Authorization: `Bearer ${key}`, "Content-Type": "application/json" },
     signal: AbortSignal.timeout(25_000),
   });
@@ -227,10 +227,12 @@ export async function syncOpenAIUsage(companyId: string, adminKey: ProviderAdmin
   // same-(project, day) buckets by token share.
   const costMap = await fetchCosts(key, startUnix, nowUnix);
 
+  const scratchCount = scratch.length;
   console.log('[sync-debug] OpenAI usage response:', {
     bucketsCount: json.data?.length ?? 0,
-    startTime: usageUrl.searchParams.get('start_time'),
-    endTime: usageUrl.searchParams.get('end_time'),
+    scratchBuckets: scratchCount,
+    startTime: startUnix,
+    endTime: nowUnix,
     firstBucket: json.data?.[0],
   });
 
@@ -274,7 +276,9 @@ export async function testOpenAIKeyRequest(): Promise<void> {
   const key = decryptApiKey(adminKey.encryptedKey);
   console.log(`[test] Using key id=${adminKey.id} prefix=${key.slice(0, 12)}...`);
 
-  const url = "https://api.openai.com/v1/organization/usage/completions?bucket_width=1d&start_time=1700000000&end_time=1700086400";
+  const nowSec = Math.floor(Date.now() / 1_000);
+  const thirtyDaysAgo = nowSec - 30 * 24 * 60 * 60;
+  const url = `https://api.openai.com/v1/organization/usage/completions?bucket_width=1d&start_time=${thirtyDaysAgo}&end_time=${nowSec}&limit=90&group_by[]=model&group_by[]=project_id`;
   console.log("[test] GET", url);
 
   const res = await fetch(url, {
