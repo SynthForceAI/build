@@ -123,24 +123,35 @@ export function ProviderForm({ providers, departments, onSuccess }: Props) {
     return touched[field] ? fieldErrors[field] : undefined;
   }
 
+  const isAdminAuditFlow = form.keyType === "admin" && (selectedProvider?.name === "openai" || selectedProvider?.name === "anthropic");
+
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     setBanner(null);
 
-    // Mark all validated fields touched to surface any inline errors
-    setTouched({ providerId: true, apiKey: true, agentName: true });
+    // For admin audit flow, agentName is not required
+    const fieldsToValidate: (keyof FormState)[] = isAdminAuditFlow
+      ? ["providerId", "apiKey"]
+      : ["providerId", "apiKey", "agentName"];
 
-    if (Object.keys(fieldErrors).length > 0) return;
+    setTouched(Object.fromEntries(fieldsToValidate.map((f) => [f, true])));
+
+    const hasErrors = fieldsToValidate.some((f) => !!fieldErrors[f]);
+    if (hasErrors) return;
 
     setLoading(true);
     try {
       const body: Record<string, string> = {
         providerId: form.providerId,
         apiKey:     form.apiKey,
-        agentName:  form.agentName.trim(),
         keyType:    form.keyType,
       };
-      if (form.departmentId) body.departmentId = form.departmentId;
+      if (!isAdminAuditFlow && form.agentName.trim()) {
+        body.agentName = form.agentName.trim();
+      }
+      if (!isAdminAuditFlow && form.departmentId) {
+        body.departmentId = form.departmentId;
+      }
 
       const res = await fetch("/api/api-keys/connect", {
         method:  "POST",
@@ -153,6 +164,12 @@ export function ProviderForm({ providers, departments, onSuccess }: Props) {
       if (!res.ok) {
         const detail = data?.error?.detail ?? data?.error?.message ?? "Connection failed. Try again.";
         setBanner({ type: "error", message: actionableApiError(detail, selectedProvider?.name) });
+        return;
+      }
+
+      // Admin audit flow: redirect to audit results page
+      if (data.auditId) {
+        window.location.href = `/audit/free?id=${data.auditId}`;
         return;
       }
 
@@ -322,54 +339,63 @@ export function ProviderForm({ providers, departments, onSuccess }: Props) {
           )}
         </div>
 
-        {/* Agent Name */}
-        <div>
-          <label htmlFor="agentName" className={`${labelClass} flex items-center`}>
-            Agent Name <span className="text-red-500 ml-0.5">*</span>
-            <FieldHelp text="A human-readable name for this agent within SynthForce — e.g. 'lead-gen-v2' or 'support-bot'. You can rename it later." />
-          </label>
-          <input
-            id="agentName"
-            type="text"
-            value={form.agentName}
-            onChange={(e) => set("agentName", e.target.value)}
-            onBlur={() => touch("agentName")}
-            disabled={loading}
-            placeholder="e.g., lead-gen-v2"
-            className={inputClass("agentName")}
-            aria-invalid={!!showError("agentName")}
-            aria-describedby={showError("agentName") ? "agentName-error" : "agentName-hint"}
-            required
-            minLength={3}
-            maxLength={255}
-          />
-          {showError("agentName") ? (
-            <p id="agentName-error" className="text-xs text-red-500 mt-1" role="alert">{showError("agentName")}</p>
-          ) : (
-            <p id="agentName-hint" className="text-xs text-gray-500 mt-1">
-              This is what SynthForce will call this connection.
-            </p>
-          )}
-        </div>
+        {/* Agent Name — hidden for admin audit flow */}
+        {!isAdminAuditFlow && (
+          <div>
+            <label htmlFor="agentName" className={`${labelClass} flex items-center`}>
+              Agent Name <span className="text-red-500 ml-0.5">*</span>
+              <FieldHelp text="A human-readable name for this agent within SynthForce — e.g. 'lead-gen-v2' or 'support-bot'. You can rename it later." />
+            </label>
+            <input
+              id="agentName"
+              type="text"
+              value={form.agentName}
+              onChange={(e) => set("agentName", e.target.value)}
+              onBlur={() => touch("agentName")}
+              disabled={loading}
+              placeholder="e.g., lead-gen-v2"
+              className={inputClass("agentName")}
+              aria-invalid={!!showError("agentName")}
+              aria-describedby={showError("agentName") ? "agentName-error" : "agentName-hint"}
+              minLength={3}
+              maxLength={255}
+            />
+            {showError("agentName") ? (
+              <p id="agentName-error" className="text-xs text-red-500 mt-1" role="alert">{showError("agentName")}</p>
+            ) : (
+              <p id="agentName-hint" className="text-xs text-gray-500 mt-1">
+                This is what SynthForce will call this connection.
+              </p>
+            )}
+          </div>
+        )}
 
-        {/* Department (optional) */}
-        <div>
-          <label htmlFor="departmentId" className={labelClass}>
-            Assign Department <span className="text-gray-400 font-normal">(optional)</span>
-          </label>
-          <select
-            id="departmentId"
-            value={form.departmentId}
-            onChange={(e) => set("departmentId", e.target.value)}
-            disabled={loading}
-            className={`${inputBase} border-gray-300`}
-          >
-            <option value="">No department</option>
-            {departments.map((d) => (
-              <option key={d.id} value={d.id}>{d.name}</option>
-            ))}
-          </select>
-        </div>
+        {/* Department — hidden for admin audit flow */}
+        {!isAdminAuditFlow && (
+          <div>
+            <label htmlFor="departmentId" className={labelClass}>
+              Assign Department <span className="text-gray-400 font-normal">(optional)</span>
+            </label>
+            <select
+              id="departmentId"
+              value={form.departmentId}
+              onChange={(e) => set("departmentId", e.target.value)}
+              disabled={loading}
+              className={`${inputBase} border-gray-300`}
+            >
+              <option value="">No department</option>
+              {departments.map((d) => (
+                <option key={d.id} value={d.id}>{d.name}</option>
+              ))}
+            </select>
+          </div>
+        )}
+
+        {isAdminAuditFlow && (
+          <p className="text-xs text-gray-500 bg-blue-50 border border-blue-100 rounded-lg px-4 py-3">
+            SynthForce will pull your last 30 days of usage and generate a full spend audit — no agent setup needed.
+          </p>
+        )}
 
         <button
           type="submit"
@@ -386,7 +412,9 @@ export function ProviderForm({ providers, departments, onSuccess }: Props) {
               <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z" />
             </svg>
           )}
-          {loading ? "Connecting…" : "Connect Agent"}
+          {loading
+            ? (isAdminAuditFlow ? "Running audit…" : "Connecting…")
+            : (isAdminAuditFlow ? "Run Audit" : "Connect Agent")}
         </button>
       </form>
     </div>

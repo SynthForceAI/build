@@ -44,6 +44,13 @@ type AgentRow = {
 
 type DailySpend = { date: string; cents: number }; // date = "MM/DD"
 
+type LatestAudit = {
+  id: string;
+  efficiencyScore: number | null;
+  totalMonthlySpendCents: number | null;
+  dataPeriodEnd: Date | null;
+} | null;
+
 type Summary = {
   spendCents: number; // Prisma Decimal from UsageLog aggregate, converted
   requests: number;
@@ -53,6 +60,7 @@ type Summary = {
   gridAgents: AgentCardData[];
   checklist: ChecklistState;
   spendByDay: DailySpend[]; // last 7 days, oldest first
+  latestAudit: LatestAudit;
 };
 
 // Zero-value fallback — used when the DB call fails or returns nothing
@@ -65,6 +73,7 @@ const EMPTY: Summary = {
   gridAgents: [],
   checklist: { hasApiKey: false, hasAgent: false, hasUsage: false },
   spendByDay: [],
+  latestAudit: null,
 };
 
 // ── Data fetching ──────────────────────────────────────────────────────────
@@ -112,7 +121,7 @@ async function fetchSummary(companyId: string): Promise<Summary> {
   sevenDaysAgo.setUTCDate(sevenDaysAgo.getUTCDate() - 6);
   sevenDaysAgo.setUTCHours(0, 0, 0, 0);
 
-  const [recentLogs, apiKeyCount, allConnectedAgents] = await Promise.all([
+  const [recentLogs, apiKeyCount, allConnectedAgents, latestAuditRow] = await Promise.all([
     prisma.connectedAgentUsageLog.findMany({
       where: { companyId, createdAt: { gte: sevenDaysAgo } },
       select: { createdAt: true, costCents: true },
@@ -124,6 +133,12 @@ async function fetchSummary(companyId: string): Promise<Summary> {
       where: { companyId, deletedAt: null },
       orderBy: { name: "asc" },
       include: { department: { select: { name: true } } },
+    }),
+    // Most recent completed audit — for "no agents" empty state
+    prisma.audit.findFirst({
+      where: { companyId, status: "completed" },
+      orderBy: { createdAt: "desc" },
+      select: { id: true, efficiencyScore: true, totalMonthlySpendCents: true, dataPeriodEnd: true },
     }),
   ]);
 
@@ -178,6 +193,14 @@ async function fetchSummary(companyId: string): Promise<Summary> {
       hasUsage:  (mtd._count._all ?? 0) > 0,
     },
     spendByDay,
+    latestAudit: latestAuditRow
+      ? {
+          id: latestAuditRow.id,
+          efficiencyScore: latestAuditRow.efficiencyScore ? Math.round(Number(latestAuditRow.efficiencyScore)) : null,
+          totalMonthlySpendCents: latestAuditRow.totalMonthlySpendCents ? Number(latestAuditRow.totalMonthlySpendCents) : null,
+          dataPeriodEnd: latestAuditRow.dataPeriodEnd,
+        }
+      : null,
   };
 }
 
@@ -263,35 +286,78 @@ export default async function DashboardPage() {
       )}
 
       {data.agents.total === 0 ? (
-        /* ── First-run empty state ──────────────────────── */
-        <div className="bg-white rounded-2xl border border-gray-200 shadow-sm px-8 py-16 flex flex-col items-center text-center max-w-lg mx-auto">
-          <div className="w-16 h-16 rounded-full bg-blue-50 flex items-center justify-center mb-5">
-            <svg className="w-8 h-8 text-[#00B2FF]" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
-            </svg>
+        data.latestAudit ? (
+          /* ── Audit-complete state — has audit but no tracked agents ── */
+          <div className="space-y-4 max-w-lg mx-auto">
+            <div className="bg-white rounded-2xl border border-gray-200 shadow-sm px-8 py-10 flex flex-col items-center text-center">
+              <div className="w-14 h-14 rounded-full bg-green-50 flex items-center justify-center mb-4">
+                <svg className="w-7 h-7 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+              </div>
+              <div className="inline-flex items-center gap-1.5 text-xs font-medium text-green-700 bg-green-50 border border-green-200 px-3 py-1 rounded-full mb-3">
+                Audit complete
+              </div>
+              <h2 className="text-lg font-semibold text-gray-900 mb-1">
+                {data.latestAudit.totalMonthlySpendCents != null
+                  ? `You spent ${fmtDollars(data.latestAudit.totalMonthlySpendCents)} last month`
+                  : "Your audit is ready"}
+              </h2>
+              {data.latestAudit.efficiencyScore != null && (
+                <p className="text-sm text-gray-500 mb-5">
+                  Efficiency score: {data.latestAudit.efficiencyScore}/100
+                </p>
+              )}
+              <div className="flex flex-col sm:flex-row gap-3 w-full justify-center">
+                <Link
+                  href={`/audit/free?id=${data.latestAudit.id}`}
+                  className="px-5 py-2.5 bg-[#00B2FF] text-white text-sm font-medium rounded-lg hover:bg-[#00B2FF]/90 transition"
+                >
+                  View full report →
+                </Link>
+                <Link
+                  href="/U/onboard"
+                  className="px-5 py-2.5 border border-gray-300 text-gray-700 text-sm font-medium rounded-lg hover:bg-gray-50 transition"
+                >
+                  Track individual agents
+                </Link>
+              </div>
+            </div>
+            <p className="text-center text-xs text-gray-400">
+              Upgrade to track per-agent spend, set budgets, and get real-time alerts.
+            </p>
           </div>
-          <h2 className="text-lg font-semibold text-gray-900 mb-2">Your AI workforce starts here</h2>
-          <p className="text-sm text-gray-500 leading-relaxed mb-6">
-            Onboard your first AI agent to start tracking spend, setting budgets, and measuring ROI — all in one place.
-          </p>
-          <div className="flex flex-col sm:flex-row gap-3">
-            <Link
-              href="/U/onboard"
-              className="px-5 py-2.5 bg-[#00B2FF] text-white text-sm font-medium rounded-lg hover:bg-[#00B2FF]/90 transition"
-            >
-              + Onboard your first agent
-            </Link>
-            <Link
-              href="/U/agents"
-              className="px-5 py-2.5 border border-gray-300 text-gray-700 text-sm font-medium rounded-lg hover:bg-gray-50 transition"
-            >
-              Browse agents
-            </Link>
+        ) : (
+          /* ── First-run empty state ──────────────────────── */
+          <div className="bg-white rounded-2xl border border-gray-200 shadow-sm px-8 py-16 flex flex-col items-center text-center max-w-lg mx-auto">
+            <div className="w-16 h-16 rounded-full bg-blue-50 flex items-center justify-center mb-5">
+              <svg className="w-8 h-8 text-[#00B2FF]" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
+              </svg>
+            </div>
+            <h2 className="text-lg font-semibold text-gray-900 mb-2">Your AI workforce starts here</h2>
+            <p className="text-sm text-gray-500 leading-relaxed mb-6">
+              Onboard your first AI agent to start tracking spend, setting budgets, and measuring ROI — all in one place.
+            </p>
+            <div className="flex flex-col sm:flex-row gap-3">
+              <Link
+                href="/U/onboard"
+                className="px-5 py-2.5 bg-[#00B2FF] text-white text-sm font-medium rounded-lg hover:bg-[#00B2FF]/90 transition"
+              >
+                + Onboard your first agent
+              </Link>
+              <Link
+                href="/U/agents"
+                className="px-5 py-2.5 border border-gray-300 text-gray-700 text-sm font-medium rounded-lg hover:bg-gray-50 transition"
+              >
+                Browse agents
+              </Link>
+            </div>
+            <p className="text-xs text-gray-400 mt-6">
+              Supports OpenAI, Anthropic, and more. No code changes needed.
+            </p>
           </div>
-          <p className="text-xs text-gray-400 mt-6">
-            Supports OpenAI, Anthropic, and more. No code changes needed.
-          </p>
-        </div>
+        )
       ) : (
         <>
           {/* ── Stat cards ──────────────────────────────────── */}
