@@ -12,6 +12,7 @@ import { prisma } from "../db";
 import { fetchOpenAIUsage, OpenAIPullerError } from "../providers/openai-billing";
 import { analyze } from "./engine";
 import { generateReport } from "./report";
+import { computeBenchmark } from "./benchmarking";
 
 export type RunAuditOptions = {
   auditId:       string;
@@ -68,7 +69,19 @@ export async function runAudit({ auditId, deleteKeyOnDone, periodDays = 30 }: Ru
       analysis,
     });
 
-    // 5. Persist findings + discovered agents + summary in one transaction.
+    // 5. Compute peer benchmarking (non-fatal — empty on insufficient data).
+    let benchmarkData: object | null = null;
+    try {
+      benchmarkData = await computeBenchmark(
+        audit.companyId,
+        analysis.totalMonthlySpendCents,
+        usage.byModel,
+      );
+    } catch (err) {
+      console.warn("[runAudit] benchmarking failed (non-fatal):", err);
+    }
+
+    // 6. Persist findings + discovered agents + summary in one transaction.
     await prisma.$transaction([
       prisma.auditFinding.createMany({
         data: analysis.findings.map((f) => ({
@@ -111,8 +124,9 @@ export async function runAudit({ auditId, deleteKeyOnDone, periodDays = 30 }: Ru
           totalTokensOut:         BigInt(analysis.totalTokensOut),
           reportSummary,
           reportData: {
-            byModel:        usage.byModel,
+            byModel:         usage.byModel,
             dailySpendCents: usage.dailySpendCents,
+            benchmarkData,
           } as object,
         },
       }),

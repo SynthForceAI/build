@@ -23,6 +23,22 @@ type DailySpend = {
   calls: number;
 };
 
+type ModelBenchmark = {
+  model: string;
+  yourSharePct: number;
+  peerMedianSharePct: number | null;
+  percentileRank: number | null;
+  recommendation: string | null;
+};
+
+type BenchmarkData = {
+  cohortLabel: string;
+  cohortSize: number;
+  insufficient: boolean;
+  models: ModelBenchmark[];
+  summary: string | null;
+};
+
 // ---------------------------------------------------------------------------
 // Helpers
 // ---------------------------------------------------------------------------
@@ -165,10 +181,12 @@ export default async function FreeAuditPage({
   const reportData = audit.reportData as {
     byModel?: ModelRow[];
     dailySpendCents?: DailySpend[];
+    benchmarkData?: BenchmarkData | null;
   } | null;
 
   const byModel: ModelRow[] = reportData?.byModel ?? [];
   const totalModelSpend = byModel.reduce((s, m) => s + m.costCents, 0);
+  const benchmark: BenchmarkData | null = reportData?.benchmarkData ?? null;
 
   // Top 3 findings (already sorted by orderHint then severity)
   const topFindings = audit.findings.slice(0, 5);
@@ -297,15 +315,57 @@ export default async function FreeAuditPage({
         </div>
       )}
 
-      {/* ── Benchmarking (placeholder until data moat builds) ────────────── */}
+      {/* ── Peer Benchmarking ────────────────────────────────────────────── */}
       <div className="bg-white rounded-2xl border border-gray-200 shadow-sm p-6">
         <div className="flex items-center justify-between mb-3">
           <h2 className="text-sm font-semibold text-gray-900">Peer Benchmarking</h2>
-          <span className="text-xs text-gray-400 bg-gray-100 px-2.5 py-1 rounded-full">Coming soon</span>
+          {benchmark && !benchmark.insufficient && (
+            <span className="text-xs text-gray-500">{benchmark.cohortLabel} · {benchmark.cohortSize} companies</span>
+          )}
         </div>
-        <p className="text-sm text-gray-500">
-          See how your spend compares to similar-sized companies. Available once we have enough anonymized data to calculate reliable percentiles.
-        </p>
+
+        {!benchmark || benchmark.insufficient ? (
+          <div className="flex items-start gap-3">
+            <span className="text-xs text-gray-400 bg-gray-100 px-2.5 py-1 rounded-full shrink-0 mt-0.5">Coming soon</span>
+            <p className="text-sm text-gray-500">
+              See how your spend compares to similar companies.
+              {benchmark && !benchmark.insufficient
+                ? null
+                : " Available once we have enough anonymized data from the " +
+                  (benchmark?.cohortLabel ?? "your spend tier") +
+                  " cohort" +
+                  (benchmark ? ` (${benchmark.cohortSize} of ${50} needed)` : "") +
+                  "."}
+            </p>
+          </div>
+        ) : (
+          <div className="space-y-4">
+            {benchmark.summary && (
+              <p className="text-sm text-gray-700">{benchmark.summary}</p>
+            )}
+            {benchmark.models.filter((m) => m.peerMedianSharePct !== null).map((m) => (
+              <div key={m.model} className="space-y-1">
+                <div className="flex justify-between text-xs text-gray-600">
+                  <span className="font-medium">{m.model}</span>
+                  <span>
+                    You: {Math.round(m.yourSharePct)}%
+                    {m.peerMedianSharePct !== null && ` · Peer median: ${m.peerMedianSharePct}%`}
+                    {m.percentileRank !== null && (
+                      <span className={m.percentileRank >= 75 ? " text-orange-600 font-medium" : " text-gray-400"}>
+                        {" "}· top {100 - m.percentileRank}%
+                      </span>
+                    )}
+                  </span>
+                </div>
+                {m.recommendation && (
+                  <p className="text-xs text-orange-700 bg-orange-50 border border-orange-100 rounded px-3 py-1.5">
+                    {m.recommendation}
+                  </p>
+                )}
+              </div>
+            ))}
+          </div>
+        )}
       </div>
 
       {/* ── Upgrade CTA ──────────────────────────────────────────────────── */}
