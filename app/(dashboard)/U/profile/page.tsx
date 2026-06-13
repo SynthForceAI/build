@@ -1,5 +1,5 @@
 /**
- * Profile page — account, workspace, connected providers, preferences,
+ * Profile page - account, workspace, connected providers, preferences,
  * and password change. Loads all data server-side, hands off to the
  * client component for interactivity.
  */

@@ -91,13 +91,13 @@ export const theme = {
   },
 
   fontSize: {
-    xs: "text-xs",    // 12px — pill labels, timestamps
-    sm: "text-sm",    // 14px — body / table cells
+    xs: "text-xs",    // 12px - pill labels, timestamps
+    sm: "text-sm",    // 14px - body / table cells
     base: "text-base",// 16px
-    lg: "text-lg",    // 18px — sidebar headers, panel titles
+    lg: "text-lg",    // 18px - sidebar headers, panel titles
     xl: "text-xl",
-    "2xl": "text-2xl",// 24px — section headings
-    "3xl": "text-3xl",// 30px — page titles
+    "2xl": "text-2xl",// 24px - section headings
+    "3xl": "text-3xl",// 30px - page titles
   },
 
   // ── Border radius ───────────────────────────────────────────────────────────
@@ -169,11 +169,11 @@ export const theme = {
     panelInset:
       "bg-gray-50 p-6 rounded-xl",
 
-    // Sidebar nav item — active
+    // Sidebar nav item - active
     navItemActive:
       "bg-blue-50 border-[#00B2FF] text-[#00B2FF]",
 
-    // Sidebar nav item — inactive
+    // Sidebar nav item - inactive
     navItemInactive:
       "border-transparent text-gray-700 hover:bg-gray-50 hover:border-blue-300",
 

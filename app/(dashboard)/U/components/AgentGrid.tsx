@@ -8,11 +8,11 @@ import { useState } from "react";
 export type AgentCardData = {
   id: string;
   name: string;
-  role: string;        // e.g. "Lead Qualifier" — currently agent.name, map to role field later
+  role: string;        // e.g. "Lead Qualifier" - currently agent.name, map to role field later
   department: string;
   status: string;      // "active" | "paused" | "flagged" | "deactivated"
   spendCents: number;  // currentMonthSpendCents converted to number
-  tasksCompleted: number; // placeholder — wire to usageLogs._count or similar
+  tasksCompleted: number; // placeholder - wire to usageLogs._count or similar
 };
 
 // ── Status helpers ──────────────────────────────────────────────────────────
@@ -34,7 +34,7 @@ const STATUS_PILL: Record<string, string> = {
 };
 
 function fmtCostPerTask(spendCents: number, tasks: number): string {
-  if (tasks === 0) return "—";
+  if (tasks === 0) return "-";
   return `$${((spendCents / 100) / tasks).toFixed(2)}`;
 }
 

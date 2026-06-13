@@ -104,7 +104,7 @@ export default async function CompensationPage() {
                 <a href="/U/onboard" className="text-[#00B2FF] underline">
                   connecting an existing agent
                 </a>{" "}
-                above — spend data will appear automatically.
+                above. Spend data will appear automatically.
               </p>
             </div>
           ) : (
@@ -146,7 +146,7 @@ export default async function CompensationPage() {
                         </td>
                         <td className="px-4 py-3 text-right">
                           {pct === null ? (
-                            <span className="text-gray-400">—</span>
+                            <span className="text-gray-400">-</span>
                           ) : (
                             <span className={utilColor}>{pct}%</span>
                           )}
@@ -174,7 +174,7 @@ export default async function CompensationPage() {
             Optimization recommendations will appear once your agents have usage data.
           </p>
           <p className="text-xs text-gray-400 mt-1">
-            Connect an agent and run some tasks — we&rsquo;ll surface cost-saving opportunities automatically.
+            Connect an agent and run some tasks and we&rsquo;ll surface cost-saving opportunities automatically.
           </p>
         </div>
       </div>

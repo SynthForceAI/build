@@ -8,12 +8,12 @@ export default async function SignupPage() {
     await requireUser();
     authed = true;
   } catch {
-    // Not authenticated — fall through to render the signup form
+    // Not authenticated - fall through to render the signup form
   }
   if (authed) redirect("/U");
   return (
     <div className="min-h-screen bg-[#0A0A0A] flex">
-      {/* Left side — branding + value props */}
+      {/* Left side - branding + value props */}
       <div className="hidden lg:flex lg:w-1/2 flex-col justify-between p-16 bg-[#0D0D0D] border-r border-[#1a1a1a]">
         <div>
           <div className="mb-8">
@@ -39,7 +39,7 @@ export default async function SignupPage() {
             </li>
             <li className="flex items-start gap-3 text-[#A1A1AA]">
               <span className="text-[#00B2FF] mt-1">▸</span>
-              <span>Free audit shows you how much you're wasting — before you commit</span>
+              <span>Free audit shows you how much you're wasting, before you commit</span>
             </li>
           </ul>
         </div>
@@ -48,7 +48,7 @@ export default async function SignupPage() {
         </div>
       </div>
 
-      {/* Right side — form */}
+      {/* Right side - form */}
       <div className="w-full lg:w-1/2 flex items-center justify-center px-6 py-12">
         <div className="w-full max-w-sm">
           <div className="lg:hidden text-center mb-8">

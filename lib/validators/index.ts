@@ -5,7 +5,7 @@
  * - Use `*CreateSchema` for POSTs (require all required fields).
  * - Use `*UpdateSchema` for PATCHes (all fields optional, but at least
  *   one must be provided; enforced via `.refine`).
- * - Always strip unknown keys via `.strict()` — defends against
+ * - Always strip unknown keys via `.strict()` - defends against
  *   prototype-pollution-style misuse and accidental field updates.
  */
 import { z } from "zod";

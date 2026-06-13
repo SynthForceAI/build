@@ -1,4 +1,4 @@
-/** POST /api/agents/:id/activate — set status='active' */
+/** POST /api/agents/:id/activate - set status='active' */
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
 import { requireUser, requireRole } from "@/lib/auth";

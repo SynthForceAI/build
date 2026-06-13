@@ -44,7 +44,7 @@ const blockPolicy = (rules: { type: string; value: unknown }[]) => ({
 
 // ---------------------------------------------------------------------------
 
-describe("checkAgentPolicy — agent not found", () => {
+describe("checkAgentPolicy - agent not found", () => {
   it("returns 404 when agent does not exist", async () => {
     mockFindUnique.mockResolvedValueOnce(null);
     const result = await checkAgentPolicy("missing", null, "POST", null);
@@ -54,7 +54,7 @@ describe("checkAgentPolicy — agent not found", () => {
 
 // ---------------------------------------------------------------------------
 
-describe("checkAgentPolicy — agent status kill-switch", () => {
+describe("checkAgentPolicy - agent status kill-switch", () => {
   it("blocks when agent status is paused", async () => {
     mockFindUnique.mockResolvedValueOnce(activeAgent({ status: "paused" }));
     const result = await checkAgentPolicy("agent-1", null, "POST", null);
@@ -77,7 +77,7 @@ describe("checkAgentPolicy — agent status kill-switch", () => {
 
 // ---------------------------------------------------------------------------
 
-describe("checkAgentPolicy — KILL_SWITCH rule", () => {
+describe("checkAgentPolicy - KILL_SWITCH rule", () => {
   it("blocks when KILL_SWITCH rule value is false", async () => {
     mockFindUnique.mockResolvedValueOnce(
       activeAgent({ policyAssignments: [blockPolicy([{ type: "KILL_SWITCH", value: false }])] }),
@@ -97,7 +97,7 @@ describe("checkAgentPolicy — KILL_SWITCH rule", () => {
 
 // ---------------------------------------------------------------------------
 
-describe("checkAgentPolicy — MODEL_WHITELIST", () => {
+describe("checkAgentPolicy - MODEL_WHITELIST", () => {
   const whitelist = [{ type: "MODEL_WHITELIST", value: ["gpt-4o", "gpt-4o-mini"] }];
 
   it("allows a whitelisted model", async () => {
@@ -128,7 +128,7 @@ describe("checkAgentPolicy — MODEL_WHITELIST", () => {
 
 // ---------------------------------------------------------------------------
 
-describe("checkAgentPolicy — MODEL_BLACKLIST", () => {
+describe("checkAgentPolicy - MODEL_BLACKLIST", () => {
   const blacklist = [{ type: "MODEL_BLACKLIST", value: ["o1", "o3"] }];
 
   it("blocks a blacklisted model", async () => {
@@ -150,7 +150,7 @@ describe("checkAgentPolicy — MODEL_BLACKLIST", () => {
 
 // ---------------------------------------------------------------------------
 
-describe("checkAgentPolicy — SPEND_CAP_MONTHLY", () => {
+describe("checkAgentPolicy - SPEND_CAP_MONTHLY", () => {
   const spendCapRule = [{ type: "SPEND_CAP_MONTHLY", value: 10000 }]; // $100
 
   it("blocks when month-to-date spend meets or exceeds cap", async () => {
@@ -187,7 +187,7 @@ describe("checkAgentPolicy — SPEND_CAP_MONTHLY", () => {
 
 // ---------------------------------------------------------------------------
 
-describe("checkAgentPolicy — RATE_LIMIT", () => {
+describe("checkAgentPolicy - RATE_LIMIT", () => {
   const rateLimitRule = [{ type: "RATE_LIMIT", value: { requestsPerMinute: 10 } }];
 
   it("blocks when request count meets or exceeds limit", async () => {
@@ -214,7 +214,7 @@ describe("checkAgentPolicy — RATE_LIMIT", () => {
 
 // ---------------------------------------------------------------------------
 
-describe("checkAgentPolicy — DATA_ACCESS", () => {
+describe("checkAgentPolicy - DATA_ACCESS", () => {
   const dataRule = [{ type: "DATA_ACCESS", value: ["refund", "delete_all"] }];
 
   it("blocks request body containing a disallowed pattern", async () => {
@@ -239,7 +239,7 @@ describe("checkAgentPolicy — DATA_ACCESS", () => {
 
 // ---------------------------------------------------------------------------
 
-describe("checkAgentPolicy — non-block severity is ignored", () => {
+describe("checkAgentPolicy - non-block severity is ignored", () => {
   it("warning severity does not block the request", async () => {
     mockFindUnique.mockResolvedValueOnce(
       activeAgent({

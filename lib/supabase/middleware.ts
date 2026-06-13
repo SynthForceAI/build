@@ -30,7 +30,7 @@ export async function updateSupabaseSession(request: NextRequest) {
     },
   );
 
-  // IMPORTANT: do not put any logic between createServerClient and getUser —
+  // IMPORTANT: do not put any logic between createServerClient and getUser -
   // the @supabase/ssr docs are explicit about this. getUser() is what
   // forces a refresh when the access token is near expiry.
   await supabase.auth.getUser();

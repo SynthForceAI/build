@@ -1,4 +1,4 @@
-/** POST /api/agents/:id/pause — set status='paused' */
+/** POST /api/agents/:id/pause - set status='paused' */
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
 import { requireUser, requireRole } from "@/lib/auth";

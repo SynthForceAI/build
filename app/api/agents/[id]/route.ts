@@ -1,7 +1,7 @@
 /**
- * GET    /api/agents/:id  — agent detail
- * PATCH  /api/agents/:id  — update (owner/admin/member)
- * DELETE /api/agents/:id  — delete (owner/admin)
+ * GET    /api/agents/:id  - agent detail
+ * PATCH  /api/agents/:id  - update (owner/admin/member)
+ * DELETE /api/agents/:id  - delete (owner/admin)
  */
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/db";

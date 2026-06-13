@@ -1,6 +1,6 @@
 /**
- * GET   /api/api-keys  — list stored provider API keys (metadata only, never raw)
- * POST  /api/api-keys  — store a new provider API key (owner/admin)
+ * GET   /api/api-keys  - list stored provider API keys (metadata only, never raw)
+ * POST  /api/api-keys  - store a new provider API key (owner/admin)
  *
  * The plaintext key NEVER leaves the database server-side process.
  * Responses include only { id, providerId, label, keyIdentifier, createdAt }.

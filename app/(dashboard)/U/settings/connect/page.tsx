@@ -32,12 +32,12 @@ export default function ConnectProviderPage() {
 
       toast("Provider connected! Syncing your data…");
 
-      // Fire-and-forget sync — don't block the redirect on it
+      // Fire-and-forget sync - don't block the redirect on it
       fetch(`/api/providers/${providerId}/sync-usage`).catch(() => null);
 
       router.push("/U/spending");
     } catch {
-      setError("Network error — check your connection and try again.");
+      setError("Network error. Check your connection and try again.");
     } finally {
       setIsLoading(false);
     }

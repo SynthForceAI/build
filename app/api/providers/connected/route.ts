@@ -7,7 +7,7 @@
  *
  * We approximate "last used" via the most recent verifiedAt across the
  * provider's keys. UsageLog.lastActiveAt would be more accurate but is
- * agent-scoped, not key-scoped — and would require an aggregate per call.
+ * agent-scoped, not key-scoped - and would require an aggregate per call.
  * Verification timestamp is a good enough proxy for the profile page.
  */
 import { NextResponse } from "next/server";

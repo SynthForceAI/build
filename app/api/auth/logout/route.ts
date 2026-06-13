@@ -4,7 +4,7 @@ import { createSupabaseServerClient } from "@/lib/supabase/server";
 
 export async function POST(req: NextRequest) {
   try {
-    // Sign out of Supabase — clears the Supabase session cookies so that
+    // Sign out of Supabase - clears the Supabase session cookies so that
     // requireUser() returns a clean 401 on the next request. Without this,
     // Supabase still considers the user authenticated even after we delete
     // the synthforce_auth cookie, causing a redirect loop on /login.

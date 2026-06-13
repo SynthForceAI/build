@@ -1,24 +1,24 @@
 /**
- * Dashboard layout — the authenticated shell for the SynthForce product.
+ * Dashboard layout - the authenticated shell for the SynthForce product.
  *
  * This is a SERVER Component. It runs on every request before any dashboard
  * page renders. Two things happen here:
  *
- *   1. AUTH GATE — requireUser() reads the Supabase auth cookie and looks up
+ *   1. AUTH GATE - requireUser() reads the Supabase auth cookie and looks up
  *      the user row in the database. If no valid session exists, the user is
  *      redirected to "/" (the marketing home). Once a /login page exists,
  *      change that redirect target.
  *
- *   2. SHELL LAYOUT — renders the two-column chrome that wraps every product
+ *   2. SHELL LAYOUT - renders the two-column chrome that wraps every product
  *      page: a left sidebar (DashboardSidebar) and a scrollable main area.
  *
  * WHY Server Component?
- * requireUser() calls the Supabase server client and queries Prisma — both
+ * requireUser() calls the Supabase server client and queries Prisma - both
  * are server-only. A Client Component can't do either. We keep the layout on
  * the server and pass the user data down as props to the DashboardSidebar
  * Client Component, which only needs it for display.
  *
- * File location — app/(dashboard)/layout.tsx:
+ * File location - app/(dashboard)/layout.tsx:
  * The "(dashboard)" route group doesn't add a URL segment. Pages under this
  * directory are accessed at their normal paths (e.g. /U, /U/agents).
  * The group just lets this layout apply to dashboard pages while the

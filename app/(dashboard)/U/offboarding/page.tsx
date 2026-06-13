@@ -109,7 +109,7 @@ export default async function OffboardingPage() {
           </p>
           <div className="space-y-3">
             {[
-              { label: "Revoke provider API key access",       note: "Rotated at source — OpenAI, Anthropic, etc." },
+              { label: "Revoke provider API key access",       note: "Rotated at source: OpenAI, Anthropic, etc." },
               { label: "Export usage logs and audit trail",    note: "Data retained for 90 days post-offboarding"  },
               { label: "Notify department manager",            note: "Email sent automatically on completion"      },
               { label: "Clear active task queue",              note: "Drain any in-flight jobs before deactivation"},
@@ -192,7 +192,7 @@ export default async function OffboardingPage() {
         <div className="bg-white border border-gray-200 shadow-sm rounded-2xl p-6">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
 
-            {/* Left — report config */}
+            {/* Left - report config */}
             <div>
               <h3 className="text-sm font-semibold text-gray-900 mb-4">Generate Compliance Report</h3>
               <div className="space-y-4">
@@ -238,7 +238,7 @@ export default async function OffboardingPage() {
               </div>
             </div>
 
-            {/* Right — recent reports */}
+            {/* Right - recent reports */}
             <div>
               <h3 className="text-sm font-semibold text-gray-900 mb-4">Recent Audit Reports</h3>
               <div className="flex flex-col items-center justify-center text-center py-10 px-4 bg-gray-50 rounded-xl border border-gray-100">

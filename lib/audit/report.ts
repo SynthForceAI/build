@@ -2,7 +2,7 @@
  * Audit report writer.
  *
  * Takes structured findings + summary stats and asks an LLM to write a
- * plain-business-English report. Provider-agnostic — currently supports
+ * plain-business-English report. Provider-agnostic - currently supports
  * OpenAI and Anthropic via their standard chat endpoints. DeepSeek uses
  * the OpenAI-compatible API surface.
  *
@@ -32,7 +32,7 @@ export async function generateReport({ companyName, analysis }: ReportInput): Pr
       : "https://api.openai.com/v1";
     return await callOpenAICompatible(companyName, analysis, e.AUDIT_AI_MODEL, e.AUDIT_AI_API_KEY, baseUrl);
   } catch (err) {
-    // Don't fail the whole audit if the LLM is down — return fallback.
+    // Don't fail the whole audit if the LLM is down - return fallback.
     // eslint-disable-next-line no-console
     console.warn("[audit] report LLM failed, using fallback:", err);
     return deterministicFallbackReport(companyName, analysis);
@@ -152,13 +152,13 @@ export function deterministicFallbackReport(companyName: string, a: AuditAnalysi
       const savings = f.potentialSavingsCents != null
         ? ` (estimated savings: $${(f.potentialSavingsCents / 100).toFixed(0)}/mo)`
         : "";
-      lines.push(`- **${f.title}**${savings} — ${f.description}`);
+      lines.push(`- **${f.title}**${savings}: ${f.description}`);
     }
   }
   lines.push(``);
   lines.push(`## What to do next`);
   lines.push(`1. Review which agents or workflows are driving GPT-4 usage and identify candidates to move to GPT-4o-mini.`);
-  lines.push(`2. Investigate any flagged cost spikes — they often signal retry storms or runaway loops.`);
+  lines.push(`2. Investigate any flagged cost spikes. They often signal retry storms or runaway loops.`);
   lines.push(`3. Set a monthly budget per agent so the next spike triggers an alert instead of a surprise invoice.`);
   lines.push(``);
   lines.push(`Want to see exactly which agent is causing this? That's what the full SynthForce platform shows you.`);

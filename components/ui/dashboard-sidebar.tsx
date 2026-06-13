@@ -1,7 +1,7 @@
 "use client";
 
 /**
- * DashboardSidebar — the left navigation rail for all product pages.
+ * DashboardSidebar - the left navigation rail for all product pages.
  *
  * WHY a Client Component?
  * usePathname() (for active-link highlighting) is a React hook and requires
@@ -55,13 +55,13 @@ export function DashboardSidebar({ userName, userEmail, userRole, isOpen, onClos
       toast.success("Signed out successfully");
       router.push("/login");
     } catch {
-      toast.error("Logout failed — please try again");
+      toast.error("Logout failed . Please try again.");
     }
   }
 
   return (
     <>
-      {/* Backdrop — mobile only, tapping it closes the drawer */}
+      {/* Backdrop - mobile only, tapping it closes the drawer */}
       <div
         aria-hidden="true"
         onClick={onClose}

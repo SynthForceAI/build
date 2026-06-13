@@ -87,7 +87,7 @@ export default function BlogPage() {
 
         <div className="max-w-7xl mx-auto px-6 py-12 flex gap-10 items-start">
 
-          {/* Left sidebar — all posts */}
+          {/* Left sidebar - all posts */}
           <aside className="w-52 flex-shrink-0 sticky top-8 self-start border-r border-gray-100 pr-8">
             <p className="text-xs font-bold uppercase tracking-wider text-gray-400 mb-5">All Posts</p>
             {posts.length === 0 ? (

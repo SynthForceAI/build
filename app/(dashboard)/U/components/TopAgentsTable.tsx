@@ -136,7 +136,7 @@ export function TopAgentsTable({ agents }: { agents: TopAgentRow[] }) {
                       {pct}% of {fmtDollars(agent.budgetCents)}
                     </span>
                   ) : (
-                    <span className="text-gray-400">—</span>
+                    <span className="text-gray-400">-</span>
                   )}
                 </td>
               </tr>

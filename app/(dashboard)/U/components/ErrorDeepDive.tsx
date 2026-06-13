@@ -56,7 +56,7 @@ export function ErrorDeepDive({
       <h2 className="text-base font-semibold text-gray-900 mb-4">Error Deep Dive</h2>
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
 
-        {/* Recent errors — empty state until usageLogs are wired */}
+        {/* Recent errors - empty state until usageLogs are wired */}
         <div className="bg-white border border-gray-200 shadow-sm p-6 rounded-xl">
           <h3 className="text-base font-semibold text-gray-900 mb-4">Recent Errors</h3>
           <p className="text-sm text-gray-500">No errors recorded yet.</p>

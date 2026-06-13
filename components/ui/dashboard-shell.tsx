@@ -43,7 +43,7 @@ export function DashboardShell({ userName, userEmail, userRole, children }: Prop
 
   return (
     <div className="flex h-screen overflow-hidden bg-gray-50">
-      {/* Skip-to-content link — visible on focus for keyboard/screen-reader users */}
+      {/* Skip-to-content link - visible on focus for keyboard/screen-reader users */}
       <a
         href="#main-content"
         className="sr-only focus:not-sr-only focus:fixed focus:top-4 focus:left-4 focus:z-[100] focus:px-4 focus:py-2 focus:bg-[#00B2FF] focus:text-white focus:text-sm focus:font-medium focus:rounded-lg focus:shadow-lg"

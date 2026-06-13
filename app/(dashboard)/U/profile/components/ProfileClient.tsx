@@ -146,7 +146,7 @@ export function ProfileClient({ data }: { data: ProfileData }) {
       toast.success("Signed out successfully");
       router.push("/login");
     } catch {
-      toast.error("Logout failed — please try again");
+      toast.error("Logout failed . Please try again.");
       setLoggingOut(false);
     }
   }
@@ -160,7 +160,7 @@ export function ProfileClient({ data }: { data: ProfileData }) {
       toast.success("Signed out of all sessions");
       router.push("/login");
     } catch {
-      toast.error("Couldn't sign out all sessions — please try again");
+      toast.error("Couldn't sign out all sessions . Please try again.");
       setLoggingOutAll(false);
     }
   }
@@ -275,7 +275,7 @@ export function ProfileClient({ data }: { data: ProfileData }) {
               <div>
                 <label className={`${sectionLabel} block mb-1`}>Company</label>
                 <p className={`${theme.fontSize.sm} ${theme.color.textPrimary}`}>
-                  {data.company.name || <span className={theme.color.textDisabled}>—</span>}
+                  {data.company.name || <span className={theme.color.textDisabled}>-</span>}
                 </p>
               </div>
 
@@ -471,7 +471,7 @@ function PasswordModal({ email, onClose }: { email: string; onClose: () => void 
     setError(null);
     const supabase = getSupabaseBrowserClient();
 
-    // Step 1 — verify the old password by attempting a sign-in. Supabase
+    // Step 1 - verify the old password by attempting a sign-in. Supabase
     // does not natively check the current password on updateUser, so we
     // do it explicitly. Success refreshes the session in place.
     const verify = await supabase.auth.signInWithPassword({ email, password: oldPwd });
@@ -481,7 +481,7 @@ function PasswordModal({ email, onClose }: { email: string; onClose: () => void 
       return;
     }
 
-    // Step 2 — set the new password on the now-verified session.
+    // Step 2 - set the new password on the now-verified session.
     const update = await supabase.auth.updateUser({ password: newPwd });
     if (update.error) {
       setError(update.error.message || "Couldn't update password.");

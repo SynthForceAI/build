@@ -126,7 +126,7 @@ export function PoliciesClient({
                       <p className="font-medium text-gray-900">{policy.name}</p>
                     </td>
                     <td className="px-4 py-3 text-gray-600 max-w-xs truncate">{policy.description}</td>
-                    <td className="px-4 py-3 text-gray-600 whitespace-nowrap">{policy.department ?? "—"}</td>
+                    <td className="px-4 py-3 text-gray-600 whitespace-nowrap">{policy.department ?? "-"}</td>
                     <td className="px-4 py-3">
                       <span
                         className={`px-2.5 py-1 rounded-full text-xs font-mono capitalize ${SEVERITY_PILL[policy.severity] ?? "bg-gray-100 text-gray-600"}`}

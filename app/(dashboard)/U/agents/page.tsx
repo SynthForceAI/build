@@ -1,5 +1,5 @@
 /**
- * Agents page — lists every agent for the company with status, spend,
+ * Agents page - lists every agent for the company with status, spend,
  * department, model, and activate/pause controls.
  */
 

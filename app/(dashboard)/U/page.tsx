@@ -1,14 +1,14 @@
 /**
- * Dashboard home — the first screen after login.
+ * Dashboard home - the first screen after login.
  *
  * WHY a Server Component (no "use client")?
  * Server Components can talk directly to Prisma without an extra HTTP round-trip.
- * We query the DB here rather than calling GET /api/usage/summary — same data,
+ * We query the DB here rather than calling GET /api/usage/summary - same data,
  * one fewer network hop.
  *
  * WHY call requireUser() here when the layout already did?
  * Next.js App Router has no built-in mechanism for a layout to pass server-side
- * data down to pages — they're independent async components. The call is cheap
+ * data down to pages - they're independent async components. The call is cheap
  * (cookie read + one DB row) so calling it twice is the accepted pattern.
  *
  * WHY a fallback instead of throwing on DB error?
@@ -63,7 +63,7 @@ type Summary = {
   latestAudit: LatestAudit;
 };
 
-// Zero-value fallback — used when the DB call fails or returns nothing
+// Zero-value fallback - used when the DB call fails or returns nothing
 const EMPTY: Summary = {
   spendCents: 0,
   requests: 0,
@@ -134,7 +134,7 @@ async function fetchSummary(companyId: string): Promise<Summary> {
       orderBy: { name: "asc" },
       include: { department: { select: { name: true } } },
     }),
-    // Most recent completed audit — for "no agents" empty state
+    // Most recent completed audit - for "no agents" empty state
     prisma.audit.findFirst({
       where: { companyId, status: "completed" },
       orderBy: { createdAt: "desc" },
@@ -255,7 +255,7 @@ export default async function DashboardPage() {
         </Link>
       </div>
 
-      {/* ── Get Started checklist — shown until all 3 steps complete ── */}
+      {/* ── Get Started checklist - shown until all 3 steps complete ── */}
       {(!data.checklist.hasApiKey || !data.checklist.hasAgent || !data.checklist.hasUsage) && (
         <div className="mb-8 bg-gradient-to-r from-blue-50 to-white border border-blue-100 rounded-2xl px-6 py-5">
           <h2 className="text-sm font-semibold text-gray-900 mb-3">Get started</h2>
@@ -277,7 +277,7 @@ export default async function DashboardPage() {
             <CheckStep
               done={data.checklist.hasUsage}
               label="See your first usage data"
-              sub="Make API calls — cost & tokens appear here automatically"
+              sub="Make API calls, cost & tokens appear here automatically"
               href="/U/performance"
               cta="View performance"
             />
@@ -287,7 +287,7 @@ export default async function DashboardPage() {
 
       {data.agents.total === 0 ? (
         data.latestAudit ? (
-          /* ── Audit-complete state — has audit but no tracked agents ── */
+          /* ── Audit-complete state - has audit but no tracked agents ── */
           <div className="space-y-4 max-w-lg mx-auto">
             <div className="bg-white rounded-2xl border border-gray-200 shadow-sm px-8 py-10 flex flex-col items-center text-center">
               <div className="w-14 h-14 rounded-full bg-green-50 flex items-center justify-center mb-4">
@@ -337,7 +337,7 @@ export default async function DashboardPage() {
             </div>
             <h2 className="text-lg font-semibold text-gray-900 mb-2">Your AI workforce starts here</h2>
             <p className="text-sm text-gray-500 leading-relaxed mb-6">
-              Onboard your first AI agent to start tracking spend, setting budgets, and measuring ROI — all in one place.
+              Onboard your first AI agent to start tracking spend, setting budgets, and measuring ROI, all in one place.
             </p>
             <div className="flex flex-col sm:flex-row gap-3">
               <Link
@@ -371,7 +371,7 @@ export default async function DashboardPage() {
           {/* ── Spend trend chart ────────────────────────────── */}
           {data.spendByDay.length > 0 && (
             <div className="bg-white rounded-2xl border border-gray-200 shadow-sm px-6 py-5 mb-10">
-              <h2 className="text-sm font-semibold text-gray-900 mb-1">Spend — last 7 days</h2>
+              <h2 className="text-sm font-semibold text-gray-900 mb-1">Spend, last 7 days</h2>
               <p className="text-xs text-gray-400 mb-4">Daily API cost in USD</p>
               <SpendTrendChart data={data.spendByDay} />
             </div>

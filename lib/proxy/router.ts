@@ -85,11 +85,11 @@ export async function routeProxyRequest(
   if (body) {
     bodyBuffer = await new Response(body).text();
     if (bodyBuffer) {
-      try { parsedBody = JSON.parse(bodyBuffer); } catch { /* not JSON — forward as-is */ }
+      try { parsedBody = JSON.parse(bodyBuffer); } catch { /* not JSON - forward as-is */ }
     }
   }
 
-  // Policy enforcement — runs before any provider call
+  // Policy enforcement - runs before any provider call
   await enforcePolicy(agentContext.agentId, method, parsedBody);
 
   const url = `${agentContext.providerApiBaseUrl}${path}`;

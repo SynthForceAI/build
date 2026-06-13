@@ -163,7 +163,7 @@ export async function syncOpenAIUsage(companyId: string, adminKey: ProviderAdmin
   const startUnix = Math.floor(lookbackStart.getTime() / 1_000);
 
   // Fetch usage (tokens + request counts).
-  // Fully manual URL — no URLSearchParams at all, so [] is never encoded to %5B%5D.
+  // Fully manual URL - no URLSearchParams at all, so [] is never encoded to %5B%5D.
   const usageUrlStr = `${OPENAI_USAGE_URL}?start_time=${startUnix}&end_time=${nowUnix}&bucket_width=${bucketWidth}&limit=${limit}&group_by[]=model&group_by[]=project_id`;
 
   console.log('[sync-debug] Fetching usage with URL:', usageUrlStr);
@@ -264,7 +264,7 @@ export async function syncOpenAIUsage(companyId: string, adminKey: ProviderAdmin
       const bucketTokens = b.tokensIn + b.tokensOut;
       return { ...b, costCents: totalTokens > 0 ? (dailyCostCents * bucketTokens) / totalTokens : 0 };
     }
-    // Costs API hasn't surfaced this day yet — persistBuckets will estimate from tokens.
+    // Costs API hasn't surfaced this day yet - persistBuckets will estimate from tokens.
     return b;
   });
 
@@ -274,7 +274,7 @@ export async function syncOpenAIUsage(companyId: string, adminKey: ProviderAdmin
 }
 
 // ---------------------------------------------------------------------------
-// One-shot diagnostic — not called in production
+// One-shot diagnostic - not called in production
 // ---------------------------------------------------------------------------
 
 export async function testOpenAIKeyRequest(): Promise<void> {

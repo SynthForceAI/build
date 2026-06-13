@@ -108,7 +108,7 @@ function ChoiceView({ onSelect }: { onSelect: (v: "deploy" | "connect") => void 
   );
 }
 
-// ── Deploy view — Coming Soon ──────────────────────────────────────────────
+// ── Deploy view - Coming Soon ──────────────────────────────────────────────
 
 function DeployView({ onBack }: { onBack: () => void }) {
   return (
@@ -126,7 +126,7 @@ function DeployView({ onBack }: { onBack: () => void }) {
             We&rsquo;re building the ability to create and deploy new AI agents directly from SynthForce.
           </p>
           <p className="text-sm font-semibold text-[#00B2FF] mb-5">
-            This feature launches in Phase 2 — September 2026.
+            This feature launches in Phase 2, September 2026.
           </p>
           <p className="text-sm text-gray-600">
             For now, connect an existing agent from your AI provider account.
@@ -143,7 +143,7 @@ function DeployView({ onBack }: { onBack: () => void }) {
   );
 }
 
-// ── Connect view — real ProviderForm + RecentlyConnected ──────────────────
+// ── Connect view - real ProviderForm + RecentlyConnected ──────────────────
 
 function ConnectView({
   providers,

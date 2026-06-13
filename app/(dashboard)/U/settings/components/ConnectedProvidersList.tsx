@@ -58,7 +58,7 @@ export function ConnectedProvidersList() {
         toast.error(`Sync failed for ${displayName}`);
       }
     } catch {
-      toast.error("Network error — check your connection.");
+      toast.error("Network error. Check your connection.");
     } finally {
       setSyncing(null);
     }
@@ -76,7 +76,7 @@ export function ConnectedProvidersList() {
         toast.error(`Failed to disconnect ${displayName}`);
       }
     } catch {
-      toast.error("Network error — check your connection.");
+      toast.error("Network error. Check your connection.");
     } finally {
       setDisconnecting(null);
     }
@@ -179,7 +179,7 @@ export function ConnectedProvidersList() {
       <div className="bg-white border border-gray-200 shadow-sm rounded-2xl px-6 py-5">
         <h2 className="text-base font-semibold text-gray-900 mb-1">Account</h2>
         <p className="text-sm text-gray-400">
-          Team management, billing, and notification preferences — coming soon.
+          Team management, billing, and notification preferences: coming soon.
         </p>
       </div>
     </div>

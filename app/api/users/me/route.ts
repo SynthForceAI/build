@@ -1,6 +1,6 @@
 /**
- * GET   /api/users/me  — current user's profile (name, email, role, company)
- * PATCH /api/users/me  — update display name (Prisma + Supabase user_metadata)
+ * GET   /api/users/me  - current user's profile (name, email, role, company)
+ * PATCH /api/users/me  - update display name (Prisma + Supabase user_metadata)
  */
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/db";

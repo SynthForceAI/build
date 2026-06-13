@@ -1,21 +1,21 @@
 "use client";
 
 /**
- * AgentStatusToggle — activate / pause button for a single agent row.
+ * AgentStatusToggle - activate / pause button for a single agent row.
  *
  * WHY a Client Component?
  * The button triggers a POST request and must update the UI on response.
  * useState (loading flag) and useRouter (to refresh server data) are both
- * hooks — hooks require "use client".
+ * hooks - hooks require "use client".
  *
  * WHY router.refresh() instead of local state?
  * The agents table is rendered by a Server Component. After a status change
  * we want the whole table to reflect real DB state, not just optimistically
  * flip a local variable. router.refresh() re-runs the Server Component's
- * data fetch and re-renders the table in place — no full page reload needed.
+ * data fetch and re-renders the table in place - no full page reload needed.
  *
  * WHY only activate/pause, not deactivate?
- * Deactivation is a heavier action (implies offboarding) — it warrants its
+ * Deactivation is a heavier action (implies offboarding) - it warrants its
  * own confirmation flow. This toggle only handles the day-to-day
  * active ↔ paused cycle.
  */
@@ -41,7 +41,7 @@ export function AgentStatusToggle({ agentId, status }: Props) {
       toast.success(action === "activate" ? "Agent activated" : "Agent paused");
       router.refresh();
     } catch {
-      toast.error(`Failed to ${action} agent — please try again`);
+      toast.error(`Failed to ${action} agent . Please try again.`);
     } finally {
       setLoading(false);
     }
@@ -84,6 +84,6 @@ export function AgentStatusToggle({ agentId, status }: Props) {
     );
   }
 
-  // Flagged agents need admin review — no self-service toggle
+  // Flagged agents need admin review - no self-service toggle
   return null;
 }

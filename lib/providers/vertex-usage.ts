@@ -1,5 +1,5 @@
 /**
- * Google Vertex AI / Gemini usage polling — NOT YET IMPLEMENTED.
+ * Google Vertex AI / Gemini usage polling - NOT YET IMPLEMENTED.
  *
  * Unlike OpenAI/Anthropic, Google exposes no first-party usage REST endpoint.
  * Cost/usage comes from Cloud Billing exported to BigQuery (24h lag) and/or

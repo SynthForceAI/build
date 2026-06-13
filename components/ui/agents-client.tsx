@@ -19,7 +19,7 @@ export type AgentRow = {
   model: string | null;
   spendCents: number;
   budgetCents: number;
-  lastActiveAt: string | null; // ISO string — safe across server/client boundary
+  lastActiveAt: string | null; // ISO string - safe across server/client boundary
 };
 
 type Department = { id: string; name: string };
@@ -89,12 +89,12 @@ export function AgentsClient({
         toast.success("Department updated");
         router.refresh();
       } else {
-        toast.error("Couldn't update department — please try again");
-        setDeptUpdateError("Couldn't update department — please try again.");
+        toast.error("Couldn't update department . Please try again.");
+        setDeptUpdateError("Couldn't update department . Please try again..");
       }
     } catch {
-      toast.error("Something went wrong — please check your connection");
-      setDeptUpdateError("Something went wrong — please check your connection.");
+      toast.error("Something went wrong. Please check your connection");
+      setDeptUpdateError("Something went wrong. Please check your connection.");
     } finally {
       setSavingAgentId(null);
       setEditingAgentId(null);
@@ -151,7 +151,7 @@ export function AgentsClient({
             </div>
             <p className="text-sm font-medium text-gray-900 mb-1">No agents connected yet</p>
             <p className="text-xs text-gray-400 mb-6 max-w-xs">
-              Connect an API provider first — your agents will appear here automatically once linked.
+              Connect an API provider first. Your agents will appear here automatically once linked.
             </p>
             <Link
               href="/U/onboard"
@@ -192,7 +192,7 @@ export function AgentsClient({
                   const modelLabel =
                     agent.provider && agent.model
                       ? `${agent.provider} · ${agent.model}`
-                      : agent.model ?? agent.provider ?? "—";
+                      : agent.model ?? agent.provider ?? "-";
 
                   return (
                     <tr
@@ -228,7 +228,7 @@ export function AgentsClient({
                             onClick={() => setEditingAgentId(agent.id)}
                             className="cursor-pointer hover:text-[#00B2FF] transition-colors"
                           >
-                            {agent.department ?? <span className="text-gray-400">—</span>}
+                            {agent.department ?? <span className="text-gray-400">-</span>}
                           </span>
                         )}
                       </td>
@@ -253,12 +253,12 @@ export function AgentsClient({
                             {pct}%
                           </span>
                         ) : (
-                          <span className="text-gray-400">—</span>
+                          <span className="text-gray-400">-</span>
                         )}
                       </td>
 
                       <td className="px-6 py-4 text-right text-xs text-gray-400 whitespace-nowrap">
-                        {agent.lastActiveAt ? fmtRelativeTime(agent.lastActiveAt) : "—"}
+                        {agent.lastActiveAt ? fmtRelativeTime(agent.lastActiveAt) : "-"}
                       </td>
 
                       <td className="px-6 py-4 text-right">

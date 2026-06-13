@@ -5,7 +5,7 @@
  * Output: a list of structured Findings + a top-line metrics object that
  *         will be stored on the audit row and rendered on the LoginDashboard.
  *
- * All math here is pure — given the same input, returns the same output.
+ * All math here is pure - given the same input, returns the same output.
  * No I/O, no LLM. The LLM step (report.ts) is separate and only writes
  * the prose summary.
  */
@@ -51,7 +51,7 @@ export type AuditAnalysis = {
 /** Fraction of GPT-4 spend assumed swappable to gpt-4o-mini. */
 const GPT4_SWAP_RATIO = 0.66;
 
-/** GPT-4 input price ratio vs GPT-4o-mini (rough — see seed.ts for exact). */
+/** GPT-4 input price ratio vs GPT-4o-mini (rough - see seed.ts for exact). */
 const GPT4_VS_MINI_PRICE_RATIO = 0.0000025 / 0.00000015; // ~16x cheaper input
 
 /** Threshold: GPT-4 > this fraction of total spend triggers "over-optimized". */
@@ -83,7 +83,7 @@ export function analyze(report: ProviderUsageReport): AuditAnalysis {
       severity: gpt4Share > 0.6 ? "high" : "medium",
       title:    `${Math.round(gpt4Share * 100)}% of your spend is on GPT-4`,
       description:
-        `GPT-4 is your largest line item. A large share of those calls — based on industry benchmarks, around ${Math.round(GPT4_SWAP_RATIO * 100)}% — could run on GPT-4o-mini at a fraction of the cost. Estimated monthly savings: $${(modelWasteCents / 100).toFixed(0)}.`,
+        `GPT-4 is your largest line item. Based on industry benchmarks, around ${Math.round(GPT4_SWAP_RATIO * 100)}% of those calls could run on GPT-4o-mini at a fraction of the cost. Estimated monthly savings: $${(modelWasteCents / 100).toFixed(0)}.`,
       potentialSavingsCents: modelWasteCents,
       metadata: { gpt4Share, gpt4SpendCents: gpt4Spend, swapRatio: GPT4_SWAP_RATIO },
       orderHint: 0,
@@ -101,7 +101,7 @@ export function analyze(report: ProviderUsageReport): AuditAnalysis {
         severity: spikes.length > 3 ? "high" : "medium",
         title:    `${spikes.length} cost spike${spikes.length > 1 ? "s" : ""} detected`,
         description:
-          `Your highest spike was on ${worst.date} at $${(worst.costCents / 100).toFixed(0)} — about ${(worst.costCents / dailyAvg).toFixed(1)}× your normal daily spend. Spikes often indicate a runaway agent, retry storm, or accidental load.`,
+          `Your highest spike was on ${worst.date} at $${(worst.costCents / 100).toFixed(0)}, about ${(worst.costCents / dailyAvg).toFixed(1)}x your normal daily spend. Spikes often indicate a runaway agent, retry storm, or accidental load.`,
         potentialSavingsCents: null,
         metadata: { spikeDates: spikes.map((s) => s.date), avgDailyCents: dailyAvg },
         orderHint: 1,
@@ -124,7 +124,7 @@ export function analyze(report: ProviderUsageReport): AuditAnalysis {
           description:
             change > 0
               ? `Your spend is accelerating. Worth knowing which agents or models drove the increase before it compounds.`
-              : `Spend has dropped — confirm this matches an intentional change (paused agents, model swap) rather than a silent outage.`,
+              : `Spend has dropped. Confirm this matches an intentional change (paused agents, model swap) rather than a silent outage.`,
           potentialSavingsCents: null,
           metadata: { earlierCents: earlier, laterCents: later, pctChange: change },
           orderHint: 2,

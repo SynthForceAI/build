@@ -90,7 +90,7 @@ async function safeFetch(url: URL, apiKey: string) {
         Authorization: `Bearer ${apiKey}`,
         "Content-Type": "application/json",
       },
-      // Vercel functions cap at ~10s on Hobby — give us some headroom but
+      // Vercel functions cap at ~10s on Hobby - give us some headroom but
       // don't hang forever if OpenAI is slow.
       signal: AbortSignal.timeout(25_000),
     });
@@ -112,7 +112,7 @@ type OpenAIUsageResponse = {
  * Normalize OpenAI's billing response into our generic shape.
  *
  * The LoginDashboard billing endpoints have changed format over time. We code
- * defensively — missing fields become zeros — rather than throwing on
+ * defensively - missing fields become zeros - rather than throwing on
  * shape mismatches the customer can't debug.
  */
 export function normalizeOpenAI(
@@ -132,7 +132,7 @@ export function normalizeOpenAI(
     let dayCostCents = 0;
     let dayCalls     = 0;
     for (const item of day.line_items ?? []) {
-      // OpenAI returns USD (already in cents in some versions — coerce to cents).
+      // OpenAI returns USD (already in cents in some versions - coerce to cents).
       // The legacy response has costs in USD cents already (cost = $0.01 → 1).
       const costCents = Math.round(item.cost);
       dayCostCents   += costCents;

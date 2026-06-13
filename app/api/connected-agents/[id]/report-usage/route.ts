@@ -42,7 +42,7 @@ export async function POST(request: Request, { params }: Ctx) {
       where: { id, deletedAt: null },
     });
 
-    // Same 403 whether the agent is missing or the token is wrong — don't leak
+    // Same 403 whether the agent is missing or the token is wrong - don't leak
     // which agent ids exist to an unauthenticated caller.
     if (!agent || !verifyReportToken(token, agent.reportTokenHash)) {
       throw new ApiError(403, "invalid_agent_or_token");

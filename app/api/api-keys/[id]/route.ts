@@ -28,7 +28,7 @@ export async function DELETE(
     });
 
     // Soft-delete the ApiKey. Also mangle the label so the unique
-    // (companyId, providerId, label) index slot is freed — otherwise
+    // (companyId, providerId, label) index slot is freed - otherwise
     // reconnecting with the same agent name hits a P2002.
     const key = await prisma.apiKey.findUnique({ where: { id: agent.apiKeyId }, select: { label: true } });
     await prisma.apiKey.update({

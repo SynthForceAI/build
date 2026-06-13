@@ -7,7 +7,7 @@
  * hash the presented token and constant-time compare against the stored hash.
  *
  * A plain SHA-256 (not a slow KDF) is appropriate here because the token is
- * 256 bits of CSPRNG output — there is no low-entropy secret to brute force.
+ * 256 bits of CSPRNG output - there is no low-entropy secret to brute force.
  */
 import { createHash, randomBytes, timingSafeEqual } from "node:crypto";
 

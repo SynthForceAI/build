@@ -1,6 +1,6 @@
 /**
- * GET   /api/users/me/preferences  — email digest + currency
- * PATCH /api/users/me/preferences  — upsert preferences
+ * GET   /api/users/me/preferences  - email digest + currency
+ * PATCH /api/users/me/preferences  - upsert preferences
  *
  * Preferences live in their own table (user_preferences) so we can extend
  * them later without colliding with Supabase auth metadata.

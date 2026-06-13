@@ -106,7 +106,7 @@ function HeroGlow() {
   const rawX = useMotionValue(0);
   const rawY = useMotionValue(0);
 
-  // Three blobs at different spring speeds — slowest feels furthest away
+  // Three blobs at different spring speeds - slowest feels furthest away
   const slowX  = useSpring(rawX, { stiffness: 28, damping: 28 });
   const slowY  = useSpring(rawY, { stiffness: 28, damping: 28 });
   const midX   = useSpring(rawX, { stiffness: 50, damping: 22 });
@@ -125,17 +125,17 @@ function HeroGlow() {
 
   return (
     <>
-      {/* Large slow blob — base ambient glow */}
+      {/* Large slow blob - base ambient glow */}
       <motion.div aria-hidden
         className="absolute rounded-full blur-3xl pointer-events-none w-[700px] h-[700px] bg-[#00B2FF]/[0.08] -top-32 left-1/2 -translate-x-1/2"
         style={{ x: slowX, y: slowY }}
       />
-      {/* Mid blob — follows a bit faster, sits left */}
+      {/* Mid blob - follows a bit faster, sits left */}
       <motion.div aria-hidden
         className="absolute rounded-full blur-3xl pointer-events-none w-[450px] h-[450px] bg-[#00B2FF]/[0.06] top-10 left-[10%]"
         style={{ x: midX, y: midY }}
       />
-      {/* Small fast blob — snappiest, sits right, creates highlight near cursor */}
+      {/* Small fast blob - snappiest, sits right, creates highlight near cursor */}
       <motion.div aria-hidden
         className="absolute rounded-full blur-2xl pointer-events-none w-[280px] h-[280px] bg-[#00B2FF]/[0.07] top-[20%] right-[12%]"
         style={{ x: fastX, y: fastY }}
@@ -197,7 +197,7 @@ export default function Home() {
               Now in private beta
             </motion.div>
 
-            {/* Headline — word-by-word entrance */}
+            {/* Headline - word-by-word entrance */}
             <motion.h1
               className="hero-title text-5xl sm:text-6xl md:text-7xl font-bold mb-6 text-gray-900"
               variants={headlineContainer}

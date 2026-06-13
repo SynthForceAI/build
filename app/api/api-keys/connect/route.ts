@@ -24,7 +24,7 @@ export async function POST(req: NextRequest) {
       throw new ApiError(400, "provider_not_found", { detail: "Invalid provider ID." });
     }
 
-    // Verify the key works — make a real test call to the provider
+    // Verify the key works - make a real test call to the provider
     let availableModels: string[];
     try {
       availableModels = await verifyProviderKey(provider.name, parsed.apiKey, parsed.keyType);
@@ -53,7 +53,7 @@ export async function POST(req: NextRequest) {
 
     const label = parsed.label ?? parsed.agentName;
 
-    // Free any soft-deleted keys that share the same label+provider+company —
+    // Free any soft-deleted keys that share the same label+provider+company -
     // they still hold their unique index slot and would cause a P2002 on insert.
     if (label) {
       const stale = await prisma.apiKey.findMany({
@@ -98,7 +98,7 @@ export async function POST(req: NextRequest) {
     }
 
     // Admin key with no agent name: run an immediate audit and redirect there.
-    // Skip ConnectedAgent / Agent creation — user hasn't named anything yet.
+    // Skip ConnectedAgent / Agent creation - user hasn't named anything yet.
     if (parsed.keyType === "admin" && !parsed.agentName) {
       const audit = await prisma.audit.create({
         data: {
@@ -112,7 +112,7 @@ export async function POST(req: NextRequest) {
       try {
         await runAudit({ auditId: audit.id, deleteKeyOnDone: false, periodDays: 30 });
       } catch (err) {
-        // runAudit marks the audit as failed — return the id so the page can show the error.
+        // runAudit marks the audit as failed - return the id so the page can show the error.
         console.error("[connect] inline audit failed:", err);
       }
 

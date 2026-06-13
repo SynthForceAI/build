@@ -1,7 +1,7 @@
 /**
  * GET    /api/departments/:id
  * PATCH  /api/departments/:id   (owner/admin)
- * DELETE /api/departments/:id   (owner/admin) — sets agents.department_id to null
+ * DELETE /api/departments/:id   (owner/admin) - sets agents.department_id to null
  */
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/db";

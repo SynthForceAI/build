@@ -3,7 +3,7 @@
  *
  * `requireUser()` is the workhorse: returns the authenticated user's
  * SynthForce `users` row (with company_id), or throws ApiError(401).
- * The error is intentionally untyped at the call site — route handlers
+ * The error is intentionally untyped at the call site - route handlers
  * catch and convert via `handleApiError` (see lib/api-errors.ts).
  */
 import { prisma } from "./db";
@@ -27,7 +27,7 @@ export async function requireUser(): Promise<AuthContext> {
   }
 
   // Look up the SynthForce-side user row. If it doesn't exist yet, the
-  // signup flow hasn't run — treat as unauthenticated for now. The /api/auth
+  // signup flow hasn't run - treat as unauthenticated for now. The /api/auth
   // bootstrap route is responsible for creating the users + companies rows.
   const user = await prisma.user.findUnique({ where: { id: authUser.id } });
   if (!user) {

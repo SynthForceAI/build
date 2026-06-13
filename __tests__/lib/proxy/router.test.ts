@@ -46,7 +46,7 @@ afterEach(() => {
 
 // ---------------------------------------------------------------------------
 
-describe("routeProxyRequest — auth", () => {
+describe("routeProxyRequest - auth", () => {
   it("throws 401 when no virtual key provided", async () => {
     mockIdentify.mockResolvedValueOnce(null);
 
@@ -66,7 +66,7 @@ describe("routeProxyRequest — auth", () => {
 
 // ---------------------------------------------------------------------------
 
-describe("routeProxyRequest — OpenAI forwarding", () => {
+describe("routeProxyRequest - OpenAI forwarding", () => {
   it("forwards with Authorization: Bearer header and returns upstream response", async () => {
     mockIdentify.mockResolvedValueOnce(OPENAI_CONTEXT);
     mockFetch.mockResolvedValueOnce(new Response(JSON.stringify({ object: "list" }), { status: 200 }));
@@ -90,7 +90,7 @@ describe("routeProxyRequest — OpenAI forwarding", () => {
 
 // ---------------------------------------------------------------------------
 
-describe("routeProxyRequest — Anthropic forwarding", () => {
+describe("routeProxyRequest - Anthropic forwarding", () => {
   it("uses x-api-key header and injects anthropic-version", async () => {
     mockIdentify.mockResolvedValueOnce(ANTHROPIC_CONTEXT);
     mockFetch.mockResolvedValueOnce(new Response("{}", { status: 200 }));

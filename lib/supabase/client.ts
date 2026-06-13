@@ -1,7 +1,7 @@
 /**
  * Browser-side Supabase client. Use in Client Components only.
  *
- * Cached at module scope — Supabase JS handles its own session refresh.
+ * Cached at module scope - Supabase JS handles its own session refresh.
  */
 "use client";
 

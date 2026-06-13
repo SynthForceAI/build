@@ -41,7 +41,7 @@ async function handle(
       if (value) responseHeaders.set(header, value);
     }
 
-    // Stream the body through unmodified — handles both JSON and SSE streaming
+    // Stream the body through unmodified - handles both JSON and SSE streaming
     return new NextResponse(response.body, {
       status: response.status,
       headers: responseHeaders,

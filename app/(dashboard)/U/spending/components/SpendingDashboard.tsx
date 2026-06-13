@@ -391,7 +391,7 @@ function BenchmarkCard({
               <div className={`text-sm font-semibold ${
                 benchmark.ratio !== null && benchmark.ratio > 1 ? "text-red-500" : "text-green-600"
               }`}>
-                {benchmark.ratio !== null ? `${benchmark.ratio}×` : "—"}
+                {benchmark.ratio !== null ? `${benchmark.ratio}x` : "-"}
               </div>
               <div className="text-xs text-gray-400">vs median</div>
             </div>

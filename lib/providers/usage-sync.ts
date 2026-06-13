@@ -103,7 +103,7 @@ export async function persistBuckets(
         },
       });
     } catch (err) {
-      // Already ingested in a prior poll — skip without double-counting.
+      // Already ingested in a prior poll - skip without double-counting.
       if (err instanceof Prisma.PrismaClientKnownRequestError && err.code === "P2002") continue;
       throw err;
     }

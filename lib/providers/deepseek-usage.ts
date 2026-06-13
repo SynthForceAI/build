@@ -1,5 +1,5 @@
 /**
- * DeepSeek has no usage history API — only GET /user/balance (current balance).
+ * DeepSeek has no usage history API - only GET /user/balance (current balance).
  * Primary usage tracking for DeepSeek is agent self-report
  * (POST /api/connected-agents/[id]/report-usage). This balance poll is a reconciliation
  * aid only: we record the latest balance in the admin key's metadata and
@@ -46,7 +46,7 @@ export async function syncDeepSeekBalance(companyId: string, adminKey: ProviderA
   const note =
     delta !== null
       ? `Balance poll only. Spent ~${delta.toFixed(2)} ${info?.currency ?? ""} since last poll. Use agent self-report for per-agent usage.`
-      : "Balance poll only — no prior balance to compare. Use agent self-report for per-agent usage.";
+      : "Balance poll only - no prior balance to compare. Use agent self-report for per-agent usage.";
 
   return { success: true, provider: "deepseek", logsCreated: 0, agentsActivated: 0, note };
 }

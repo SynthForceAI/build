@@ -1,6 +1,6 @@
 /**
- * POST   /api/providers/:providerId/admin-key  — store/replace org admin key
- * DELETE /api/providers/:providerId/admin-key  — remove it
+ * POST   /api/providers/:providerId/admin-key  - store/replace org admin key
+ * DELETE /api/providers/:providerId/admin-key  - remove it
  *
  * Admin keys (sk-admin-…, sk-ant-admin-…, etc.) let the polling job query a
  * provider's org-level usage API. Encrypted at rest like customer keys.

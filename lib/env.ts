@@ -17,16 +17,16 @@ const ServerEnvSchema = z.object({
   NEXT_PUBLIC_SUPABASE_ANON_KEY: z.string().min(20),
   SUPABASE_SERVICE_ROLE_KEY:     z.string().min(20),
 
-  // Crypto — 32 bytes (256 bits), base64-encoded → 44 chars including padding.
+  // Crypto - 32 bytes (256 bits), base64-encoded → 44 chars including padding.
   // Generate with: `openssl rand -base64 32`
   API_KEY_ENCRYPTION_KEY: z.string().regex(
     /^[A-Za-z0-9+/]{43}=$/,
     "API_KEY_ENCRYPTION_KEY must be exactly 32 bytes, base64-encoded (44 chars incl. padding)",
   ),
 
-  // Audit report LLM — SynthForce's own key for generating audit reports.
+  // Audit report LLM - SynthForce's own key for generating audit reports.
   // Separate from customer-provided API keys. Cheap models recommended
-  // (gpt-4o-mini, deepseek-chat) — see lib/audit/report.ts.
+  // (gpt-4o-mini, deepseek-chat) - see lib/audit/report.ts.
   AUDIT_AI_PROVIDER: z.enum(["openai", "anthropic", "deepseek"]).default("openai"),
   AUDIT_AI_MODEL:    z.string().default("gpt-4o-mini"),
   AUDIT_AI_API_KEY:  z.string().min(10).optional(), // Optional; audit run fails gracefully without it.

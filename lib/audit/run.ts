@@ -49,7 +49,7 @@ export async function runAudit({ auditId, deleteKeyOnDone, periodDays = 30 }: Ru
       periodDays,
     });
 
-    // 2. Persist raw logs first — if anything downstream fails we still
+    // 2. Persist raw logs first - if anything downstream fails we still
     //    have a reproducible trace.
     await prisma.auditRawLog.createMany({
       data: usage.rawResponses.map((r) => ({
@@ -125,7 +125,7 @@ export async function runAudit({ auditId, deleteKeyOnDone, periodDays = 30 }: Ru
         data: {
           deletedAt:    new Date(),
           isActive:     false,
-          // Zero out the cipher payload — key material no longer recoverable.
+          // Zero out the cipher payload - key material no longer recoverable.
           encryptedKey: "",
         },
       });

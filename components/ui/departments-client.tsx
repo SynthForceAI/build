@@ -109,7 +109,7 @@ export function DepartmentsClient({ departments }: { departments: DepartmentRow[
 
                   let utilizationEl: React.ReactNode;
                   if (pct === null) {
-                    utilizationEl = <span className="text-gray-400">—</span>;
+                    utilizationEl = <span className="text-gray-400">-</span>;
                   } else if (pct > 100) {
                     utilizationEl = <span className="text-red-600 font-medium">Over budget</span>;
                   } else {

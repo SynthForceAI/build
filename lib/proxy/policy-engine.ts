@@ -26,7 +26,7 @@ export async function checkAgentPolicy(
     return { allowed: false, reason: "Agent not found.", statusCode: 404 };
   }
 
-  // Agent-level kill-switch — status set directly on the agent row
+  // Agent-level kill-switch - status set directly on the agent row
   if (agent.status !== "active") {
     return {
       allowed: false,
@@ -84,7 +84,7 @@ async function evaluateRule(
     }
 
     case "MODEL_WHITELIST": {
-      if (!model) return { allowed: true }; // no model in request — not a completion call
+      if (!model) return { allowed: true }; // no model in request - not a completion call
       const allowed = rule.value as string[];
       if (!allowed.includes(model)) {
         return {
@@ -136,7 +136,7 @@ async function checkMonthlySpend(
     _sum: { costCents: true },
   });
 
-  // costCents is Decimal — convert to number for comparison
+  // costCents is Decimal - convert to number for comparison
   const totalCents = Number(agg._sum.costCents ?? 0);
 
   if (totalCents >= spendCapCents) {

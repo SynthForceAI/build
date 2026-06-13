@@ -1,12 +1,12 @@
 /**
- * Performance page — spend monitoring, budget health, and recommended actions.
+ * Performance page - spend monitoring, budget health, and recommended actions.
  * Read-only counterpart to the Agents page (which handles management/controls).
  *
  * Sections:
- *   1. Stat cards      — aggregate MTD figures
- *   2. Recommended Actions — deterministic signals derived from current data
- *   3. Department Breakdown — spend vs budget rolled up per department
- *   4. Agent table     — all agents sorted by MTD spend descending
+ *   1. Stat cards      - aggregate MTD figures
+ *   2. Recommended Actions - deterministic signals derived from current data
+ *   3. Department Breakdown - spend vs budget rolled up per department
+ *   4. Agent table     - all agents sorted by MTD spend descending
  */
 
 import { redirect } from "next/navigation";
@@ -63,7 +63,7 @@ async function fetchAgents(companyId: string): Promise<AgentRow[]> {
 }
 
 // ── Recommendations engine ─────────────────────────────────────────────────
-// Pure function — no DB calls. Applies deterministic rules to agent data and
+// Pure function - no DB calls. Applies deterministic rules to agent data and
 // returns a prioritised list (danger → warning → info → muted).
 
 function generateRecommendations(agents: AgentRow[]): Recommendation[] {
@@ -85,7 +85,7 @@ function generateRecommendations(agents: AgentRow[]): Recommendation[] {
       recs.push({
         severity:  "warning",
         agentName: agent.name,
-        message:   `At ${Math.round(pct)}% of monthly budget — ${fmtDollars(agent.spendCents)} of ${fmtDollars(agent.budgetCents)}`,
+        message:   `At ${Math.round(pct)}% of monthly budget: ${fmtDollars(agent.spendCents)} of ${fmtDollars(agent.budgetCents)}`,
         action:    "Monitor closely or proactively raise the cap.",
       });
     } else if (agent.status === "active" && agent.budgetCents === 0) {
@@ -200,7 +200,7 @@ export default async function PerformancePage() {
         <Stat value={fmtDollars(totalSpend)}                   label="Total MTD Spend"         tone="bg-purple-50" tooltip="Sum of all API costs billed to your account this calendar month." />
         <Stat value={String(activeCount)}                      label="Active Agents"            tone="bg-blue-50"   tooltip="Agents currently set to active status and able to make API calls." />
         <Stat value={String(overBudget)}                       label="Agents Over Budget"       tone={overBudget > 0 ? "bg-red-50" : "bg-green-50"} tooltip="Agents whose month-to-date spend has exceeded their monthly budget cap." />
-        <Stat value={avgUtil !== null ? `${avgUtil}%` : "—"}  label="Avg. Budget Utilization"  tone="bg-yellow-50" tooltip="Average percentage of monthly budget used across agents that have a budget set." />
+        <Stat value={avgUtil !== null ? `${avgUtil}%` : "-"}  label="Avg. Budget Utilization"  tone="bg-yellow-50" tooltip="Average percentage of monthly budget used across agents that have a budget set." />
       </div>
 
       {/* ── Recommended Actions ──────────────────────────── */}
@@ -277,7 +277,7 @@ export default async function PerformancePage() {
                     const modelLabel =
                       agent.provider && agent.model
                         ? `${agent.provider} · ${agent.model}`
-                        : agent.model ?? agent.provider ?? "—";
+                        : agent.model ?? agent.provider ?? "-";
 
                     return (
                       <tr
@@ -296,12 +296,12 @@ export default async function PerformancePage() {
                             {agent.status}
                           </span>
                         </td>
-                        <td className="px-6 py-4 text-right text-gray-400">—</td>
+                        <td className="px-6 py-4 text-right text-gray-400">-</td>
                         <td className="px-6 py-4 text-right font-mono text-gray-900">
                           {fmtDollars(agent.spendCents)}
                         </td>
                         <td className="px-6 py-4 text-right text-xs text-gray-400 whitespace-nowrap">
-                          {agent.lastActiveAt ? fmtRelativeTime(agent.lastActiveAt) : "—"}
+                          {agent.lastActiveAt ? fmtRelativeTime(agent.lastActiveAt) : "-"}
                         </td>
                       </tr>
                     );

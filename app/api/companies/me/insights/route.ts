@@ -1,7 +1,7 @@
 /**
  * GET /api/companies/me/insights
  *
- * Org-level AI spend insights — the competitive edge over raw spend dashboards.
+ * Org-level AI spend insights - the competitive edge over raw spend dashboards.
  * Layers recommendations + benchmarks + trend analysis on top of usage-summary data.
  *
  * Query params:
@@ -40,7 +40,7 @@ type Recommendation = {
 };
 
 // ---------------------------------------------------------------------------
-// Benchmark data — coarse industry medians by subscription tier.
+// Benchmark data - coarse industry medians by subscription tier.
 // Replace with real cohort data once you have enough customers.
 // ---------------------------------------------------------------------------
 const MONTHLY_SPEND_BENCHMARKS: Record<string, number> = {
@@ -126,7 +126,7 @@ function buildRecommendations(models: ModelRow[], totalCostCents: number): Recom
       });
     }
 
-    // 3. High output ratio (output tokens >> input tokens — possible verbosity issue)
+    // 3. High output ratio (output tokens >> input tokens - possible verbosity issue)
     if (row.tokensIn > 0 && row.tokensOut / row.tokensIn > 3) {
       const currentPrice = priceFor(row.providerName, row.model);
       if (currentPrice) {
@@ -262,7 +262,7 @@ export async function GET(req: NextRequest) {
         benchmarkLabel    = `Near median for ${company.subscriptionTier} tier`;
         benchmarkPosition = "median";
       } else {
-        benchmarkLabel    = `${Math.round(benchmarkRatio)}× median for ${company.subscriptionTier} tier — review spend`;
+        benchmarkLabel    = `${Math.round(benchmarkRatio)}x median for ${company.subscriptionTier} tier. Review spend.`;
         benchmarkPosition = "above";
       }
     }

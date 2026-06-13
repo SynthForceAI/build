@@ -7,7 +7,7 @@
  *
  * For BigInt fields representing cents/tokens, we return numbers when
  * the value fits in Number.MAX_SAFE_INTEGER (2^53 - 1 = ~9e15 cents,
- * i.e. $90 trillion — comfortable for any realistic budget). Anything
+ * i.e. $90 trillion - comfortable for any realistic budget). Anything
  * larger comes back as a string and the client must handle it.
  */
 import type { Decimal } from "@prisma/client/runtime/library";

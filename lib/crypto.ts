@@ -7,7 +7,7 @@
  *
  * The master key (API_KEY_ENCRYPTION_KEY) lives in Vercel's encrypted env
  * settings and is never logged. Rotating it requires re-encrypting every
- * ApiKey row — see docs/BACKEND.md "Key rotation."
+ * ApiKey row - see docs/BACKEND.md "Key rotation."
  *
  * GCM is an AEAD cipher: tampering with any byte of the ciphertext or
  * auth tag causes `decryptApiKey` to throw, which is the property we

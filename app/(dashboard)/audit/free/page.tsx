@@ -154,7 +154,7 @@ export default async function FreeAuditPage({
   }
 
   // ---------------------------------------------------------------------------
-  // Completed — extract data
+  // Completed - extract data
   // ---------------------------------------------------------------------------
 
   const spendCents = Number(audit.totalMonthlySpendCents ?? 0);
@@ -222,7 +222,7 @@ export default async function FreeAuditPage({
         </div>
         <div className={`rounded-xl p-5 border ${colorClass}`}>
           <div className="text-2xl font-bold">{score}<span className="text-sm font-normal ml-1">/100</span></div>
-          <div className="text-sm mt-0.5">Efficiency — {efficiencyLabel(score)}</div>
+          <div className="text-sm mt-0.5">Efficiency: {efficiencyLabel(score)}</div>
         </div>
         <div className="bg-green-50 rounded-xl p-5">
           <div className="text-2xl font-bold text-gray-900">{fmtDollars(wasteCents > 0 ? wasteCents : 0)}</div>

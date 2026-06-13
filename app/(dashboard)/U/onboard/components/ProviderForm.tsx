@@ -68,10 +68,10 @@ function providerPortalUrl(providerName: string | undefined): string | null {
 function actionableApiError(detail: string, providerName: string | undefined): string {
   if (detail.includes("401") || detail.toLowerCase().includes("invalid") || detail.toLowerCase().includes("incorrect")) {
     const portal = providerPortalUrl(providerName);
-    return `Invalid API key${portal ? ` — verify it at ${portal}` : ""}. Make sure you copied it fully with no extra spaces.`;
+    return `Invalid API key${portal ? `. Verify it at ${portal}` : ""}. Make sure you copied it fully with no extra spaces.`;
   }
   if (detail.includes("429") || detail.toLowerCase().includes("rate")) {
-    return "Rate limit reached — wait a moment and try again.";
+    return "Rate limit reached. Wait a moment and try again.";
   }
   if (detail.toLowerCase().includes("permission") || detail.toLowerCase().includes("scope")) {
     return "This key doesn't have the required permissions. Check your provider's key settings.";
@@ -181,7 +181,7 @@ export function ProviderForm({ providers, departments, onSuccess }: Props) {
       setTouched({});
       onSuccess();
     } catch {
-      setBanner({ type: "error", message: "Network error — check your connection and try again." });
+      setBanner({ type: "error", message: "Network error. Check your connection and try again." });
     } finally {
       setLoading(false);
     }
@@ -222,7 +222,7 @@ export function ProviderForm({ providers, departments, onSuccess }: Props) {
         <div>
           <label htmlFor="providerId" className={`${labelClass} flex items-center`}>
             Provider <span className="text-red-500 ml-0.5">*</span>
-            <FieldHelp text="The AI platform that runs your agent — e.g. OpenAI, Anthropic, or Google. SynthForce connects to their API using your key." />
+            <FieldHelp text="The AI platform that runs your agent, e.g. OpenAI, Anthropic, or Google. SynthForce connects to their API using your key." />
           </label>
           <select
             id="providerId"
@@ -249,12 +249,12 @@ export function ProviderForm({ providers, departments, onSuccess }: Props) {
           )}
         </div>
 
-        {/* Key Type — only OpenAI and Anthropic have org-level usage APIs */}
+        {/* Key Type - only OpenAI and Anthropic have org-level usage APIs */}
         {(selectedProvider?.name === "openai" || selectedProvider?.name === "anthropic") && (
           <div>
             <label className={`${labelClass} flex items-center`}>
               Key Type
-              <FieldHelp text="Personal keys (sk-…) work for agent activity tracking. Organization Admin keys (sk-admin-… or sk-org-…) also enable automatic billing sync — SynthForce will poll your provider's usage API hourly to keep spend data current." />
+              <FieldHelp text="Personal keys (sk-…) work for agent activity tracking. Organization Admin keys (sk-admin-… or sk-org-…) also enable automatic billing sync. SynthForce will poll your provider's usage API hourly to keep spend data current." />
             </label>
             <div className="grid grid-cols-2 gap-3">
               {(["personal", "admin"] as const).map((type) => (
@@ -306,7 +306,7 @@ export function ProviderForm({ providers, departments, onSuccess }: Props) {
                     ? "Personal key: platform.openai.com → API keys. Starts with 'sk-'."
                     : selectedProvider?.name === "anthropic"
                     ? "Personal key: console.anthropic.com → API keys. Starts with 'sk-ant-'."
-                    : "Your provider's secret API key. Keep it private — SynthForce encrypts it immediately."
+                    : "Your provider's secret API key. Keep it private. SynthForce encrypts it immediately."
               }
             />
           </label>
@@ -334,17 +334,17 @@ export function ProviderForm({ providers, departments, onSuccess }: Props) {
             <p id="apiKey-error" className="text-xs text-red-500 mt-1" role="alert">{showError("apiKey")}</p>
           ) : (
             <p id="apiKey-hint" className="text-xs text-gray-500 mt-1">
-              Encrypted with AES-256-GCM — never stored or logged as plaintext.
+              Encrypted with AES-256-GCM, never stored or logged as plaintext.
             </p>
           )}
         </div>
 
-        {/* Agent Name — hidden for admin audit flow */}
+        {/* Agent Name - hidden for admin audit flow */}
         {!isAdminAuditFlow && (
           <div>
             <label htmlFor="agentName" className={`${labelClass} flex items-center`}>
               Agent Name <span className="text-red-500 ml-0.5">*</span>
-              <FieldHelp text="A human-readable name for this agent within SynthForce — e.g. 'lead-gen-v2' or 'support-bot'. You can rename it later." />
+              <FieldHelp text="A human-readable name for this agent within SynthForce, e.g. 'lead-gen-v2' or 'support-bot'. You can rename it later." />
             </label>
             <input
               id="agentName"
@@ -370,7 +370,7 @@ export function ProviderForm({ providers, departments, onSuccess }: Props) {
           </div>
         )}
 
-        {/* Department — hidden for admin audit flow */}
+        {/* Department - hidden for admin audit flow */}
         {!isAdminAuditFlow && (
           <div>
             <label htmlFor="departmentId" className={labelClass}>
@@ -393,7 +393,7 @@ export function ProviderForm({ providers, departments, onSuccess }: Props) {
 
         {isAdminAuditFlow && (
           <p className="text-xs text-gray-500 bg-blue-50 border border-blue-100 rounded-lg px-4 py-3">
-            SynthForce will pull your last 30 days of usage and generate a full spend audit — no agent setup needed.
+            SynthForce will pull your last 30 days of usage and generate a full spend audit with no agent setup needed.
           </p>
         )}
 

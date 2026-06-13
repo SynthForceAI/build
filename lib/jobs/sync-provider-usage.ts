@@ -1,6 +1,6 @@
 /**
  * Scheduled fan-out: poll every configured provider admin key and sync usage.
- * Partial-failure tolerant — one provider/company failing does not abort the
+ * Partial-failure tolerant - one provider/company failing does not abort the
  * rest. Invoked by /api/jobs/sync-provider-usage (Vercel Cron).
  */
 import { prisma } from "@/lib/db";

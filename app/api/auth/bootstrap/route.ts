@@ -44,7 +44,7 @@ export async function POST(request: Request) {
       return NextResponse.json({ user: existingUser, company: existingUser.company });
     }
 
-    // Generate a unique slug — append a short random suffix if it collides.
+    // Generate a unique slug - append a short random suffix if it collides.
     let slug = body.slug ?? slugify(body.companyName);
     for (let attempt = 0; attempt < 5; attempt++) {
       const taken = await prisma.company.findUnique({ where: { slug } });

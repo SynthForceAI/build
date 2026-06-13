@@ -39,7 +39,7 @@ const PRICING: Record<string, Record<string, ModelPrice>> = {
     "claude-haiku":      { inputPerMillion: 0.8, outputPerMillion: 4 },
     "claude-sonnet":     { inputPerMillion: 3,   outputPerMillion: 15 },
     "claude-opus":       { inputPerMillion: 15,  outputPerMillion: 75 },
-    // Claude 4.x — longer prefixes win over the generic entries above
+    // Claude 4.x - longer prefixes win over the generic entries above
     "claude-opus-4-":    { inputPerMillion: 5,   outputPerMillion: 25 },
     "claude-sonnet-4":   { inputPerMillion: 3,   outputPerMillion: 15 },
     "claude-haiku-4":    { inputPerMillion: 1,   outputPerMillion: 5 },
@@ -63,7 +63,7 @@ export function priceFor(providerName: string, model: string | null | undefined)
   if (!table) return null;
   if (!model) {
     // Fall back to the cheapest entry so we never silently price at 0 for a
-    // known provider — better to under-bill than to show "$0.00 forever".
+    // known provider - better to under-bill than to show "$0.00 forever".
     return Object.values(table)[0] ?? null;
   }
   const m = model.toLowerCase();
@@ -78,7 +78,7 @@ export function priceFor(providerName: string, model: string | null | undefined)
 
 /**
  * Estimate cost in cents (may be fractional) for a token usage event.
- * Returns 0 when we have no pricing for the provider/model — callers should
+ * Returns 0 when we have no pricing for the provider/model - callers should
  * treat 0 as "unknown" rather than "free".
  */
 export function calculateCostCents(

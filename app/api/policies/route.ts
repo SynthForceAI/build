@@ -1,6 +1,6 @@
 /**
- * GET   /api/policies  — list company policies
- * POST  /api/policies  — create policy (owner/admin)
+ * GET   /api/policies  - list company policies
+ * POST  /api/policies  - create policy (owner/admin)
  */
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/db";

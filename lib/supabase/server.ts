@@ -2,7 +2,7 @@
  * Server-side Supabase client (per-request, reads/writes auth cookies).
  *
  * Use inside Route Handlers, Server Components, and Server Actions.
- * Do NOT cache the returned client — it captures the current request's
+ * Do NOT cache the returned client - it captures the current request's
  * cookie store.
  */
 import { createServerClient, type CookieOptions } from "@supabase/ssr";
@@ -23,7 +23,7 @@ export async function createSupabaseServerClient() {
             cookieStore.set(name, value, options);
           }
         } catch {
-          // Called from a Server Component — cookies are read-only there.
+          // Called from a Server Component - cookies are read-only there.
           // Middleware handles the refresh path; safe to ignore.
         }
       },
@@ -32,7 +32,7 @@ export async function createSupabaseServerClient() {
 }
 
 /**
- * Service-role client. Bypasses RLS — use ONLY in trusted server code
+ * Service-role client. Bypasses RLS - use ONLY in trusted server code
  * (background jobs, admin endpoints, the proxy logging path).
  *
  * Never expose this client to user-facing handlers; route them through

@@ -1,6 +1,6 @@
 /**
- * GET   /api/departments  — list company departments
- * POST  /api/departments  — create department (owner/admin)
+ * GET   /api/departments  - list company departments
+ * POST  /api/departments  - create department (owner/admin)
  */
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/db";

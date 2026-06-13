@@ -1,5 +1,5 @@
 /**
- * Root layout — the HTML shell applied to every page in the app.
+ * Root layout - the HTML shell applied to every page in the app.
  *
  * This is intentionally minimal: fonts, global styles, analytics, and the
  * Tally embed script. That's it.
@@ -35,7 +35,7 @@ export default function RootLayout({
       <body suppressHydrationWarning>
         {children}
         <Analytics />
-        {/* Tally embed — needed by WaitlistTrigger on marketing pages */}
+        {/* Tally embed - needed by WaitlistTrigger on marketing pages */}
         <Script src="https://tally.so/widgets/embed.js" strategy="afterInteractive" />
       </body>
     </html>

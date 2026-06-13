@@ -1,6 +1,6 @@
 /**
- * GET   /api/agents       — list company agents, optional filters
- * POST  /api/agents       — create agent (owner/admin)
+ * GET   /api/agents       - list company agents, optional filters
+ * POST  /api/agents       - create agent (owner/admin)
  *
  * Query params (GET):
  *   ?status=active|paused|deactivated|flagged

@@ -1,5 +1,5 @@
 /**
- * GET /api/providers — list seeded providers + their models.
+ * GET /api/providers - list seeded providers + their models.
  * Read-only reference data. No role restriction beyond authentication.
  */
 import { NextResponse } from "next/server";

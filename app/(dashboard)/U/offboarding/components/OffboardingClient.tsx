@@ -34,7 +34,7 @@ export function OffboardingClient({ activeAgents }: { activeAgents: ActiveAgentO
       router.refresh();
       setSubmitted(true);
     } catch {
-      toast.error("Failed to offboard agent — please try again");
+      toast.error("Failed to offboard agent . Please try again.");
     } finally {
       setLoading(false);
     }

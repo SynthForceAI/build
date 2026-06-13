@@ -85,7 +85,7 @@ function setupMocks({
 
 // ---------------------------------------------------------------------------
 
-describe("GET /api/companies/me/insights — structure", () => {
+describe("GET /api/companies/me/insights - structure", () => {
   it("returns all top-level keys", async () => {
     setupMocks();
     const res  = await GET(makeReq());
@@ -103,7 +103,7 @@ describe("GET /api/companies/me/insights — structure", () => {
 
 // ---------------------------------------------------------------------------
 
-describe("GET /api/companies/me/insights — trend", () => {
+describe("GET /api/companies/me/insights - trend", () => {
   it("detects upward trend", async () => {
     // second half costs more than first half
     setupMocks({ dailyCosts: [100, 100, 100, 100, 200, 200, 200, 200] });
@@ -126,7 +126,7 @@ describe("GET /api/companies/me/insights — trend", () => {
 
 // ---------------------------------------------------------------------------
 
-describe("GET /api/companies/me/insights — benchmark", () => {
+describe("GET /api/companies/me/insights - benchmark", () => {
   it("labels spend above median correctly", async () => {
     // 30-day spend of $60 000 >> $3 000 free-tier median
     setupMocks({ tier: "free", costCents: 6_000_000 });
@@ -136,7 +136,7 @@ describe("GET /api/companies/me/insights — benchmark", () => {
   });
 
   it("labels spend below median correctly", async () => {
-    setupMocks({ tier: "free", costCents: 100_00 }); // $100 — well below $3k median
+    setupMocks({ tier: "free", costCents: 100_00 }); // $100 - well below $3k median
     const body = await (await GET(makeReq())).json();
     expect(body.benchmark.position).toBe("below");
   });
@@ -144,7 +144,7 @@ describe("GET /api/companies/me/insights — benchmark", () => {
 
 // ---------------------------------------------------------------------------
 
-describe("GET /api/companies/me/insights — recommendations", () => {
+describe("GET /api/companies/me/insights - recommendations", () => {
   it("suggests model downgrade from opus to sonnet", async () => {
     setupMocks({
       tier: "free",

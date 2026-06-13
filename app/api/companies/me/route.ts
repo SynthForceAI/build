@@ -1,6 +1,6 @@
 /**
- * GET    /api/companies/me   — current user's company
- * PATCH  /api/companies/me   — owner/admin update
+ * GET    /api/companies/me   - current user's company
+ * PATCH  /api/companies/me   - owner/admin update
  */
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
