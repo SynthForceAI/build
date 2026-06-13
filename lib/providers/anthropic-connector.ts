@@ -31,3 +31,22 @@ export async function verifyAnthropicAdminKey(apiKey: string): Promise<string[]>
   if (!res.ok) throw new Error(`Failed to verify admin key with Anthropic (${res.status}).`);
   return [];
 }
+
+export async function resolveAnthropicKeyId(
+  adminKey: string,
+  fingerprint: string,
+): Promise<string | null> {
+  const url = new URL("https://api.anthropic.com/v1/organizations/api_keys");
+  url.searchParams.set("status", "active");
+  url.searchParams.set("limit", "1000");
+  const res = await fetch(url.toString(), {
+    headers: {
+      "x-api-key": adminKey,
+      "anthropic-version": "2023-06-01",
+    },
+    signal: AbortSignal.timeout(10_000),
+  }).catch(() => null);
+  if (!res || !res.ok) return null;
+  const data = await res.json() as { data: Array<{ id: string; partial_key_hint: string }> };
+  return data.data.find((k) => k.partial_key_hint.endsWith(fingerprint))?.id ?? null;
+}
