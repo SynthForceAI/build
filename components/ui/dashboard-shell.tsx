@@ -7,6 +7,7 @@ import type { UserRole } from "@prisma/client";
 
 const PAGE_LABELS: Record<string, string> = {
   "/U":              "Dashboard",
+  "/U/spending":     "AI Spending",
   "/U/onboard":      "Onboard",
   "/U/performance":  "Performance",
   "/U/compensation": "Compensation",
