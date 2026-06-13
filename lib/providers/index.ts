@@ -1,5 +1,5 @@
 import { verifyOpenAiKey, verifyOpenAiAdminKey } from "./openai-connector";
-import { verifyAnthropicKey } from "./anthropic-connector";
+import { verifyAnthropicKey, verifyAnthropicAdminKey } from "./anthropic-connector";
 import { verifyGeminiKey } from "./gemini-connector";
 import { verifyDeepseekKey } from "./deepseek-connector";
 
@@ -11,7 +11,7 @@ export async function verifyProviderKey(
   switch (providerName) {
     case "openai":
       return keyType === "admin" ? verifyOpenAiAdminKey(apiKey) : verifyOpenAiKey(apiKey);
-    case "anthropic":     return verifyAnthropicKey(apiKey);
+    case "anthropic":     return keyType === "admin" ? verifyAnthropicAdminKey(apiKey) : verifyAnthropicKey(apiKey);
     case "google-gemini": return verifyGeminiKey(apiKey);
     case "deepseek":      return verifyDeepseekKey(apiKey);
     default:

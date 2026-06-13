@@ -11,3 +11,23 @@ export async function verifyAnthropicKey(apiKey: string): Promise<string[]> {
   const data = await res.json() as { data: Array<{ id: string }> };
   return data.data.map((m) => m.id).sort();
 }
+
+// Admin keys (sk-ant-admin-…) are scoped to the Organization API and return 403
+// on /v1/models. Verify them against the usage endpoint instead.
+export async function verifyAnthropicAdminKey(apiKey: string): Promise<string[]> {
+  const url = new URL("https://api.anthropic.com/v1/organizations/usage_report/messages");
+  url.searchParams.set("starting_at", new Date(Date.now() - 3_600_000).toISOString());
+  url.searchParams.set("ending_at", new Date().toISOString());
+  url.searchParams.set("limit", "1");
+  const res = await fetch(url.toString(), {
+    headers: {
+      "x-api-key": apiKey,
+      "anthropic-version": "2023-06-01",
+    },
+  });
+  if (res.status === 401) throw new Error("Anthropic rejected the admin key (401). Use an sk-ant-admin- key.");
+  if (res.status === 403) throw new Error("This key lacks org access (403). Create an Admin key in the Anthropic Console.");
+  if (res.status === 429) throw new Error("Too many requests. Try again in a few minutes.");
+  if (!res.ok) throw new Error(`Failed to verify admin key with Anthropic (${res.status}).`);
+  return [];
+}
