@@ -133,6 +133,7 @@ model Provider {
   connectedAgents      ConnectedAgent[]
   connectedAgentUsage  ConnectedAgentUsageLog[]
   adminKeys            ProviderAdminKey[]
+  agentVirtualKeys     AgentVirtualKey[]
 
   @@map("providers")
 }
@@ -197,6 +198,7 @@ model Agent {
   usageLogs         UsageLog[]
   policyAssignments PolicyAssignment[]
   budgetAlerts      BudgetAlert[]
+  virtualKeys       AgentVirtualKey[]
 
   @@index([companyId])
   @@index([departmentId])
@@ -571,17 +573,21 @@ model ConnectedAgent {
   // to this agent (e.g. { "openaiProjectId": "proj_..." }).
   metadata Json @default("{}")
 
+  // Set when the agent migrates from Phase 1 polling to Phase 2 proxy.
+  virtualKeyId String? @map("virtual_key_id") @db.VarChar(30)
+
   connectedAt         DateTime  @default(now()) @map("connected_at") @db.Timestamptz(6)
   lastUsageReportedAt DateTime? @map("last_usage_reported_at") @db.Timestamptz(6)
   lastSyncedAt        DateTime? @map("last_synced_at") @db.Timestamptz(6)
   lastActiveAt        DateTime? @map("last_active_at") @db.Timestamptz(6)
   deletedAt           DateTime? @map("deleted_at") @db.Timestamptz(6)
 
-  company    Company                  @relation(fields: [companyId], references: [id], onDelete: Cascade)
-  apiKey     ApiKey                   @relation(fields: [apiKeyId], references: [id], onDelete: Cascade)
-  provider   Provider?                @relation(fields: [providerId], references: [id])
-  department Department?              @relation(fields: [departmentId], references: [id], onDelete: SetNull)
-  usageLogs  ConnectedAgentUsageLog[]
+  company     Company                  @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  apiKey      ApiKey                   @relation(fields: [apiKeyId], references: [id], onDelete: Cascade)
+  provider    Provider?                @relation(fields: [providerId], references: [id])
+  department  Department?              @relation(fields: [departmentId], references: [id], onDelete: SetNull)
+  usageLogs   ConnectedAgentUsageLog[]
+  virtualKey  AgentVirtualKey?         @relation(fields: [virtualKeyId], references: [id])
 
   @@index([companyId])
   @@index([apiKeyId])
@@ -685,4 +691,37 @@ enum EmailDigest {
   daily
   weekly
   never
+}
+
+// ---------------------------------------------------------------------------
+// Phase 2: Proxy layer — virtual key system
+//
+// Each managed Agent gets one active AgentVirtualKey per provider.
+// Agents swap their provider key for "sf-key-{hex}" and point their
+// base_url at api.synthforce.io/{provider}/v1. The proxy looks up the
+// virtual key, decrypts the real provider key, forwards the request, and
+// logs usage against the agent.
+// ---------------------------------------------------------------------------
+
+model AgentVirtualKey {
+  // cuid() for short, URL-safe IDs — stored in the "sf-key-" prefixed string
+  id                   String    @id @default(cuid()) @db.VarChar(30)
+  agentId              String    @map("agent_id") @db.Uuid
+  providerId           String    @map("provider_id") @db.Uuid
+  // "sf-key-{32 hex chars}" — shown to customer once, never stored in plain
+  virtualKey           String    @unique @map("virtual_key") @db.VarChar(100)
+  // Real provider API key, encrypted with API_KEY_ENCRYPTION_KEY (AES-256-GCM)
+  encryptedProviderKey String    @map("encrypted_provider_key")
+  isActive             Boolean   @default(true) @map("is_active")
+  createdAt            DateTime  @default(now()) @map("created_at") @db.Timestamptz(6)
+  rotatedAt            DateTime  @default(now()) @map("rotated_at") @db.Timestamptz(6)
+  lastUsedAt           DateTime? @map("last_used_at") @db.Timestamptz(6)
+
+  agent           Agent            @relation(fields: [agentId], references: [id], onDelete: Cascade)
+  provider        Provider         @relation(fields: [providerId], references: [id])
+  connectedAgents ConnectedAgent[]
+
+  @@index([agentId])
+  @@index([isActive])
+  @@map("agent_virtual_keys")
 }

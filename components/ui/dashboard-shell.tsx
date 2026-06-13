@@ -7,6 +7,7 @@ import type { UserRole } from "@prisma/client";
 
 const PAGE_LABELS: Record<string, string> = {
   "/U":              "Dashboard",
+  "/U/spending":     "AI Spending",
   "/U/onboard":      "Onboard",
   "/U/performance":  "Performance",
   "/U/compensation": "Compensation",
@@ -14,8 +15,9 @@ const PAGE_LABELS: Record<string, string> = {
   "/U/offboarding":  "Offboarding",
   "/U/agents":       "Agents",
   "/U/departments":  "Departments",
-  "/U/settings":     "Settings",
-  "/U/profile":      "Profile",
+  "/U/settings":         "Settings",
+  "/U/settings/connect": "Connect Provider",
+  "/U/profile":          "Profile",
 };
 
 function usePageLabel(): string {

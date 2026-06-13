@@ -26,6 +26,7 @@ type NavItem = { href: string; label: string; sub: string; roles?: UserRole[] };
 // owner/admin → full access  |  member → team-level  |  viewer → read-only
 const NAV_ITEMS: NavItem[] = [
   { href: "/U",              label: "Dashboard",    sub: "Active agents & overview"   },
+  { href: "/U/spending",     label: "AI Spending",  sub: "Cost insights & savings"    },
   { href: "/U/onboard",      label: "Onboard",      sub: "Add a new AI agent"          },
   { href: "/U/performance",  label: "Performance",  sub: "Tasks, errors, satisfaction" },
   { href: "/U/compensation", label: "Compensation", sub: "API spend & ROI"             },
