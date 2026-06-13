@@ -9,7 +9,8 @@
  * move this into a Supabase Edge Function or a background queue.
  */
 import { prisma } from "../db";
-import { fetchOpenAIUsage, OpenAIPullerError } from "../providers/openai-billing";
+import { OpenAIPullerError } from "../providers/openai-billing";
+import { fetchAuditData } from "./fetch-usage";
 import { analyze } from "./engine";
 import { generateReport } from "./report";
 
@@ -38,16 +39,12 @@ export async function runAudit({ auditId, deleteKeyOnDone, periodDays = 30 }: Ru
   });
 
   try {
-    if (audit.apiKey.provider.name !== "openai") {
-      // For now, only OpenAI is wired up. Anthropic/Google land later.
-      throw new Error(`provider ${audit.apiKey.provider.name} not yet supported by the audit puller`);
-    }
-
-    // 1. Pull usage.
-    const usage = await fetchOpenAIUsage({
-      encryptedKey: audit.apiKey.encryptedKey,
+    // 1. Pull usage from the correct provider API.
+    const usage = await fetchAuditData(
+      audit.apiKey.provider.name,
+      audit.apiKey.encryptedKey,
       periodDays,
-    });
+    );
 
     // 2. Persist raw logs first - if anything downstream fails we still
     //    have a reproducible trace.

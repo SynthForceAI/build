@@ -17,7 +17,7 @@ const OPENAI_BASE = "https://api.openai.com/v1";
 
 /** Normalized shape consumed by the audit engine. */
 export type ProviderUsageReport = {
-  provider:         "openai";
+  provider:         string;
   periodStart:      Date;
   periodEnd:        Date;
   totalCostCents:   number;   // integer cents (rounded from USD * 100)
