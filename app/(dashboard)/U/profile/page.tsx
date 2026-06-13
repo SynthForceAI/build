@@ -33,27 +33,37 @@ export default async function ProfilePage() {
       orderBy: { displayName: "asc" },
       select:  { id: true, name: true, displayName: true },
     }),
-    // Single fetch of all this company's keys; we'll roll them up below
-    // rather than hitting the DB once per provider.
     prisma.apiKey.findMany({
-      where: { isActive: true, deletedAt: null },
+      where:   { companyId: userId, isActive: true, deletedAt: null },
       select: {
-        providerId: true,
-        verifiedAt: true,
-        createdAt:  true,
-        companyId:  true,
+        id:            true,
+        providerId:    true,
+        label:         true,
+        keyIdentifier: true,
+        verifiedAt:    true,
+        createdAt:     true,
       },
     }),
   ]);
 
-  const companyKeys = apiKeys.filter((k) => k.companyId === user.companyId);
+  type ProviderStats = {
+    count:      number;
+    lastUsedAt: Date | null;
+    keys:       Array<{ id: string; keyIdentifier: string | null; label: string | null; createdAt: string }>;
+  };
 
-  const byProvider = new Map<string, { count: number; lastUsedAt: Date | null }>();
-  for (const k of companyKeys) {
-    const cur = byProvider.get(k.providerId) ?? { count: 0, lastUsedAt: null };
+  const byProvider = new Map<string, ProviderStats>();
+  for (const k of apiKeys) {
+    const cur = byProvider.get(k.providerId) ?? { count: 0, lastUsedAt: null, keys: [] };
     cur.count += 1;
     const ts = k.verifiedAt ?? k.createdAt;
     if (!cur.lastUsedAt || ts > cur.lastUsedAt) cur.lastUsedAt = ts;
+    cur.keys.push({
+      id:            k.id,
+      keyIdentifier: k.keyIdentifier,
+      label:         k.label,
+      createdAt:     k.createdAt.toISOString(),
+    });
     byProvider.set(k.providerId, cur);
   }
 
@@ -83,6 +93,7 @@ export default async function ProfilePage() {
         connected:   !!stats && stats.count > 0,
         keysCount:   stats?.count ?? 0,
         lastUsedAt:  stats?.lastUsedAt?.toISOString() ?? null,
+        keys:        stats?.keys ?? [],
       };
     }),
   };

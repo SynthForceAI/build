@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { Copy, Check, LogOut } from "lucide-react";
+import { Copy, Check, LogOut, KeyRound, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 import { theme } from "@/theme";
 import { getSupabaseBrowserClient } from "@/lib/supabase/client";
@@ -33,6 +33,12 @@ export type ProfileData = {
     connected:   boolean;
     keysCount:   number;
     lastUsedAt:  string | null; // ISO
+    keys:        Array<{
+      id:            string;
+      keyIdentifier: string | null;
+      label:         string | null;
+      createdAt:     string; // ISO
+    }>;
   }>;
 };
 
@@ -132,6 +138,36 @@ export function ProfileClient({ data }: { data: ProfileData }) {
       setPrefsMsg({ ok: false, text: "Couldn't save preference. Please try again." });
     } finally {
       setSavingPrefs(false);
+    }
+  }
+
+  // ── Manage Keys modal ────────────────────────────────────
+  type ProviderWithKeys = ProfileData["providers"][number];
+  const [manageProvider, setManageProvider] = useState<ProviderWithKeys | null>(null);
+  const [providerKeys, setProviderKeys]     = useState<ProfileData["providers"][number]["keys"]>([]);
+  const [revoking, setRevoking]             = useState<string | null>(null);
+
+  function openManageKeys(p: ProviderWithKeys) {
+    setManageProvider(p);
+    setProviderKeys(p.keys);
+  }
+
+  async function revokeKey(keyId: string) {
+    if (!confirm("Revoke this key? This removes it from the database and disconnects any agents using it.")) return;
+    setRevoking(keyId);
+    try {
+      const res = await fetch(`/api/api-keys/${keyId}/revoke`, { method: "DELETE" });
+      if (!res.ok) {
+        toast.error("Failed to revoke key. Please try again.");
+        return;
+      }
+      setProviderKeys((prev) => prev.filter((k) => k.id !== keyId));
+      toast.success("Key revoked and removed.");
+      router.refresh();
+    } catch {
+      toast.error("Network error. Please try again.");
+    } finally {
+      setRevoking(null);
     }
   }
 
@@ -334,17 +370,26 @@ export function ProfileClient({ data }: { data: ProfileData }) {
                         </p>
                         <p className={`${theme.fontSize.xs} ${theme.color.textSubtle}`}>
                           {p.connected
-                            ? `Connected · ${fmtLastUsed(p.lastUsedAt)}`
+                            ? `${p.keysCount} key${p.keysCount === 1 ? "" : "s"} · ${fmtLastUsed(p.lastUsedAt)}`
                             : "Not connected"}
                         </p>
                       </div>
                     </div>
-                    <Link
-                      href="/U/onboard"
-                      className={`text-xs ${theme.font.classMedium} text-[#00B2FF] hover:underline`}
-                    >
-                      {p.connected ? "Manage Keys" : "Connect"}
-                    </Link>
+                    {p.connected ? (
+                      <button
+                        onClick={() => openManageKeys(p)}
+                        className={`text-xs ${theme.font.classMedium} text-[#00B2FF] hover:underline`}
+                      >
+                        Manage keys
+                      </button>
+                    ) : (
+                      <Link
+                        href="/U/onboard"
+                        className={`text-xs ${theme.font.classMedium} text-[#00B2FF] hover:underline`}
+                      >
+                        Connect
+                      </Link>
+                    )}
                   </li>
                 ))}
               </ul>
@@ -447,6 +492,128 @@ export function ProfileClient({ data }: { data: ProfileData }) {
           onClose={() => setPasswordOpen(false)}
         />
       )}
+
+      {manageProvider && (
+        <ManageKeysModal
+          provider={manageProvider}
+          keys={providerKeys}
+          revoking={revoking}
+          onRevoke={revokeKey}
+          onClose={() => setManageProvider(null)}
+        />
+      )}
+    </div>
+  );
+}
+
+// ── Manage Keys Modal ──────────────────────────────────────────────────────
+
+type KeyRow = ProfileData["providers"][number]["keys"][number];
+
+function ManageKeysModal({
+  provider,
+  keys,
+  revoking,
+  onRevoke,
+  onClose,
+}: {
+  provider:  ProfileData["providers"][number];
+  keys:      KeyRow[];
+  revoking:  string | null;
+  onRevoke:  (id: string) => Promise<void>;
+  onClose:   () => void;
+}) {
+  function fmtDate(iso: string) {
+    return new Date(iso).toLocaleDateString("en-US", {
+      month: "short", day: "numeric", year: "numeric",
+    });
+  }
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center">
+      <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" onClick={onClose} />
+      <div
+        role="dialog"
+        aria-label={`Manage keys for ${provider.displayName}`}
+        className="relative bg-white rounded-2xl shadow-xl w-full max-w-lg mx-4 p-6 z-10"
+      >
+        <div className="flex items-center justify-between mb-5">
+          <div>
+            <h2 className="text-lg font-semibold text-gray-900">{provider.displayName} keys</h2>
+            <p className="text-xs text-gray-500 mt-0.5">Revoking a key removes it from the database and disconnects any agents using it.</p>
+          </div>
+          <button
+            onClick={onClose}
+            className="text-gray-400 hover:text-gray-600 text-xl leading-none ml-4 shrink-0"
+            aria-label="Close"
+          >
+            ×
+          </button>
+        </div>
+
+        {keys.length === 0 ? (
+          <div className="py-8 text-center">
+            <KeyRound className="w-8 h-8 text-gray-300 mx-auto mb-3" />
+            <p className="text-sm text-gray-500">No active keys for this provider.</p>
+          </div>
+        ) : (
+          <ul className="divide-y divide-gray-100 mb-5">
+            {keys.map((k) => (
+              <li key={k.id} className="flex items-center justify-between py-3 gap-4">
+                <div className="flex items-center gap-3 min-w-0">
+                  <div className="w-8 h-8 rounded-lg bg-gray-100 flex items-center justify-center shrink-0">
+                    <KeyRound className="w-4 h-4 text-gray-400" />
+                  </div>
+                  <div className="min-w-0">
+                    <p className="text-sm font-medium text-gray-900 truncate">
+                      {k.label ?? "Unnamed key"}
+                    </p>
+                    <p className="text-xs text-gray-400 font-mono">
+                      {k.keyIdentifier ? `…${k.keyIdentifier}` : "no fingerprint"} · Added {fmtDate(k.createdAt)}
+                    </p>
+                  </div>
+                </div>
+                <button
+                  onClick={() => onRevoke(k.id)}
+                  disabled={revoking === k.id}
+                  className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium border border-red-200 text-red-600 rounded-lg hover:bg-red-50 transition disabled:opacity-50 shrink-0"
+                >
+                  {revoking === k.id ? (
+                    <>
+                      <svg className="animate-spin w-3 h-3" fill="none" viewBox="0 0 24 24" aria-hidden="true">
+                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z" />
+                      </svg>
+                      Revoking…
+                    </>
+                  ) : (
+                    <>
+                      <Trash2 className="w-3 h-3" />
+                      Revoke
+                    </>
+                  )}
+                </button>
+              </li>
+            ))}
+          </ul>
+        )}
+
+        <div className="flex items-center justify-between border-t border-gray-100 pt-4">
+          <Link
+            href="/U/onboard"
+            className="text-sm font-medium text-[#00B2FF] hover:underline"
+            onClick={onClose}
+          >
+            + Add new key
+          </Link>
+          <button
+            onClick={onClose}
+            className="px-4 py-2 text-sm font-medium text-gray-600 border border-gray-200 rounded-lg hover:bg-gray-50 transition"
+          >
+            Done
+          </button>
+        </div>
+      </div>
     </div>
   );
 }
