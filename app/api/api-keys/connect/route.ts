@@ -1,12 +1,13 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
 import { ProviderConnectSchema } from "@/lib/validators";
-import { encryptApiKey, keyIdentifierFrom } from "@/lib/crypto";
+import { encryptApiKey, decryptApiKey, keyIdentifierFrom } from "@/lib/crypto";
 import { verifyProviderKey } from "@/lib/providers";
 import { generateReportToken, hashReportToken } from "@/lib/report-token";
 import { requireUser } from "@/lib/auth";
 import { handleApiError, ApiError } from "@/lib/api-errors";
 import { runAudit } from "@/lib/audit/run";
+import { resolveAnthropicKeyId } from "@/lib/providers/anthropic-connector";
 
 export const dynamic = "force-dynamic";
 
@@ -145,6 +146,22 @@ export async function POST(req: NextRequest) {
         status:       "active",
       },
     });
+
+    if(connectedAgent.providerName === 'anthropic'){
+      const storedAdminKey = await prisma.providerAdminKey.findUnique({
+        where: { companyId_providerId: { companyId: user.companyId, providerId: provider.id } },
+      });
+      if(storedAdminKey){
+        const adminKeyPlain = decryptApiKey(storedAdminKey.encryptedKey);      
+        const apiKeyId = await resolveAnthropicKeyId(adminKeyPlain, fingerprint).catch(() => null)
+        if (apiKeyId){
+          await prisma.connectedAgent.update({
+            where: {id: connectedAgent.id},
+            data: {metadata: {apiKeyId}},
+          });
+        }
+      }
+    }
 
     return NextResponse.json(
       {
