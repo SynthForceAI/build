@@ -34,9 +34,10 @@ export default async function ProfilePage() {
       select:  { id: true, name: true, displayName: true },
     }),
     prisma.apiKey.findMany({
-      where:   { companyId: userId, isActive: true, deletedAt: null },
+      where:   { isActive: true, deletedAt: null },
       select: {
         id:            true,
+        companyId:     true,
         providerId:    true,
         label:         true,
         keyIdentifier: true,
@@ -53,7 +54,7 @@ export default async function ProfilePage() {
   };
 
   const byProvider = new Map<string, ProviderStats>();
-  for (const k of apiKeys) {
+  for (const k of apiKeys.filter((k) => k.companyId === user.companyId)) {
     const cur = byProvider.get(k.providerId) ?? { count: 0, lastUsedAt: null, keys: [] };
     cur.count += 1;
     const ts = k.verifiedAt ?? k.createdAt;

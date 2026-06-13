@@ -37,12 +37,43 @@ export async function POST(req: NextRequest) {
     const fingerprint = keyIdentifierFrom(parsed.apiKey);
 
     // Reject duplicates: same fingerprint + provider for this company (non-deleted)
+    // Clean up zombie keys: ApiKey rows left behind by a failed audit attempt
+    // (no agents, all linked audits failed). These block reconnection for no
+    // good reason - wipe them so the user can try again.
+    const zombies = await prisma.apiKey.findMany({
+      where: {
+        companyId:     user.companyId,
+        providerId:    provider.id,
+        keyIdentifier: fingerprint,
+        deletedAt:     null,
+        connectedAgents: { none: {} },
+      },
+      include: { audits: { select: { status: true } } },
+    });
+    for (const zombie of zombies) {
+      const isZombie = zombie.audits.length > 0 && zombie.audits.every((a) => a.status === "failed");
+      if (isZombie) {
+        await prisma.apiKey.update({
+          where: { id: zombie.id },
+          data: {
+            deletedAt:    new Date(),
+            isActive:     false,
+            encryptedKey: "",
+            label:        `${zombie.label ?? ""}__zombie_${zombie.id}`,
+          },
+        });
+        await prisma.providerAdminKey.deleteMany({
+          where: { companyId: user.companyId, providerId: provider.id },
+        });
+      }
+    }
+
     const existing = await prisma.apiKey.findFirst({
       where: {
-        companyId:    user.companyId,
-        providerId:   provider.id,
+        companyId:     user.companyId,
+        providerId:    provider.id,
         keyIdentifier: fingerprint,
-        deletedAt:    null,
+        deletedAt:     null,
       },
     });
     if (existing) {
@@ -112,8 +143,16 @@ export async function POST(req: NextRequest) {
       try {
         await runAudit({ auditId: audit.id, deleteKeyOnDone: false, periodDays: 30 });
       } catch (err) {
-        // runAudit marks the audit as failed - return the id so the page can show the error.
+        // runAudit marks the audit as failed. Wipe the key material so the
+        // user can retry with the same key without hitting the duplicate check.
         console.error("[connect] inline audit failed:", err);
+        await prisma.apiKey.update({
+          where: { id: apiKey.id },
+          data: { deletedAt: new Date(), isActive: false, encryptedKey: "", label: `${apiKey.label ?? ""}__zombie_${apiKey.id}` },
+        }).catch(() => null);
+        await prisma.providerAdminKey.deleteMany({
+          where: { companyId: user.companyId, providerId: provider.id },
+        }).catch(() => null);
       }
 
       return NextResponse.json({ auditId: audit.id }, { status: 201 });
