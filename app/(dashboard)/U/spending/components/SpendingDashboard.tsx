@@ -117,7 +117,7 @@ function EmptyState() {
       </p>
       <div className="flex flex-col sm:flex-row gap-3">
         <Link
-          href="/U/onboard"
+          href="/U/settings/connect"
           className="px-5 py-2.5 bg-[#00B2FF] text-white text-sm font-medium rounded-lg hover:bg-[#00B2FF]/90 transition"
         >
           Connect provider
@@ -602,7 +602,7 @@ export function SpendingDashboard() {
             </button>
           )}
           <Link
-            href="/U/onboard"
+            href="/U/settings/connect"
             className="inline-flex items-center px-4 py-2.5 text-sm font-medium bg-[#00B2FF] text-white border border-[#00B2FF] rounded-lg hover:bg-transparent hover:text-[#00B2FF] transition whitespace-nowrap"
           >
             + Connect Provider
@@ -657,7 +657,7 @@ export function SpendingDashboard() {
               Settings
             </Link>
             <span className="text-gray-300">·</span>
-            <Link href="/U/onboard" className="text-sm text-gray-500 hover:text-gray-700 transition">
+            <Link href="/U/settings/connect" className="text-sm text-gray-500 hover:text-gray-700 transition">
               Connect another provider
             </Link>
           </div>

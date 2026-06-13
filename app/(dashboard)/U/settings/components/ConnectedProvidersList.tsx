@@ -92,7 +92,7 @@ export function ConnectedProvidersList() {
             <p className="text-xs text-gray-500 mt-0.5">Admin keys used to sync spending data</p>
           </div>
           <Link
-            href="/U/onboard"
+            href="/U/settings/connect"
             className="inline-flex items-center px-4 py-2 text-sm font-medium bg-[#00B2FF] text-white rounded-lg hover:bg-[#00B2FF]/90 transition"
           >
             + Connect
@@ -126,7 +126,7 @@ export function ConnectedProvidersList() {
               Connect an admin API key to start syncing spending data.
             </p>
             <Link
-              href="/U/onboard"
+              href="/U/settings/connect"
               className="px-4 py-2 bg-[#00B2FF] text-white text-sm font-medium rounded-lg hover:bg-[#00B2FF]/90 transition"
             >
               Connect your first provider
