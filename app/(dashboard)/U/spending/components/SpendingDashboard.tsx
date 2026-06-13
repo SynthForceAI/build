@@ -111,16 +111,16 @@ function EmptyState() {
           />
         </svg>
       </div>
-      <h2 className="text-lg font-semibold text-gray-900 mb-2">No spending data yet</h2>
+      <h2 className="text-lg font-semibold text-gray-900 mb-2">Monitor Your AI Agent Fleet</h2>
       <p className="text-sm text-gray-500 leading-relaxed mb-6">
-        Connect a provider admin key to start tracking your AI spending. Data syncs automatically every hour.
+        Get visibility into spending, trends, and optimization opportunities.
       </p>
       <div className="flex flex-col sm:flex-row gap-3">
         <Link
           href="/U/settings/connect"
           className="px-5 py-2.5 bg-[#00B2FF] text-white text-sm font-medium rounded-lg hover:bg-[#00B2FF]/90 transition"
         >
-          Connect provider
+          Connect Your First Provider
         </Link>
         <Link
           href="/U/settings"
@@ -133,7 +133,7 @@ function EmptyState() {
         <p className="text-xs font-medium text-gray-500 mb-2">How it works:</p>
         <div className="flex gap-3">
           <span className="shrink-0 w-5 h-5 rounded-full bg-blue-100 text-[#00B2FF] text-xs font-bold flex items-center justify-center">1</span>
-          <p className="text-xs text-gray-600">Connect your API key (encrypted, read-only)</p>
+          <p className="text-xs text-gray-600">Paste your org admin API key (encrypted, read-only)</p>
         </div>
         <div className="flex gap-3">
           <span className="shrink-0 w-5 h-5 rounded-full bg-blue-100 text-[#00B2FF] text-xs font-bold flex items-center justify-center">2</span>
@@ -141,7 +141,7 @@ function EmptyState() {
         </div>
         <div className="flex gap-3">
           <span className="shrink-0 w-5 h-5 rounded-full bg-blue-100 text-[#00B2FF] text-xs font-bold flex items-center justify-center">3</span>
-          <p className="text-xs text-gray-600">Get insights and cost recommendations</p>
+          <p className="text-xs text-gray-600">Get insights &amp; recommendations to save money</p>
         </div>
       </div>
     </div>

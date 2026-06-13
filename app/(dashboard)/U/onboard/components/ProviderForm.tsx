@@ -17,7 +17,6 @@ type FormState = {
   apiKey:       string;
   agentName:    string;
   departmentId: string;
-  keyType:      "personal" | "admin";
 };
 
 type FieldErrors = Partial<Record<keyof FormState, string>>;
@@ -31,7 +30,6 @@ function validateField(
   field: keyof FormState,
   value: string,
   providerName?: string,
-  keyType?: "personal" | "admin",
 ): string | null {
   switch (field) {
     case "providerId":
@@ -39,15 +37,10 @@ function validateField(
     case "apiKey":
       if (value.length === 0) return null;
       if (value.length < 10) return "API key must be at least 10 characters.";
-      if (keyType === "admin") {
-        if (providerName === "openai" && !value.startsWith("sk-admin-"))
-          return "OpenAI admin keys start with 'sk-admin-'. Check you copied it in full.";
-        if (providerName === "anthropic" && !value.startsWith("sk-ant-admin-"))
-          return "Anthropic admin keys start with 'sk-ant-admin-'. Check you copied it in full.";
-      } else {
-        if (providerName === "openai" && !value.startsWith("sk-"))
-          return "OpenAI keys start with 'sk-'. Check you copied it in full.";
-      }
+      if (providerName === "openai" && !value.startsWith("sk-admin-"))
+        return "OpenAI admin keys start with 'sk-admin-'. Check you copied it in full.";
+      if (providerName === "anthropic" && !value.startsWith("sk-ant-admin-"))
+        return "Anthropic admin keys start with 'sk-ant-admin-'. Check you copied it in full.";
       return null;
     case "agentName":
       if (value.length === 0) return null;
@@ -57,6 +50,33 @@ function validateField(
     default:
       return null;
   }
+}
+
+function providerKeyHint(providerName: string | undefined): { text: string; url?: string; urlLabel?: string } | null {
+  if (providerName === "openai") return {
+    text: "OAuth integration coming soon. For now, we recommend connecting Anthropic, Google, or AWS.",
+  };
+  if (providerName === "anthropic") return {
+    text: "Need an org admin key? Create one in",
+    url: "https://console.anthropic.com/org/keys",
+    urlLabel: "console.anthropic.com/org/keys",
+  };
+  if (providerName === "google" || providerName === "gemini") return {
+    text: "Need an API key? Create one in",
+    url: "https://aistudio.google.com/apikey",
+    urlLabel: "aistudio.google.com/apikey",
+  };
+  if (providerName === "aws" || providerName === "bedrock") return {
+    text: "Need AWS credentials? Create an IAM user with Bedrock access in",
+    url: "https://console.aws.amazon.com/",
+    urlLabel: "console.aws.amazon.com",
+  };
+  if (providerName === "azure") return {
+    text: "Need an API key? Find it in",
+    url: "https://portal.azure.com/",
+    urlLabel: "portal.azure.com",
+  };
+  return null;
 }
 
 function providerPortalUrl(providerName: string | undefined): string | null {
@@ -87,7 +107,6 @@ const EMPTY_FORM: FormState = {
   apiKey:       "",
   agentName:    "",
   departmentId: "",
-  keyType:      "personal",
 };
 
 export function ProviderForm({ providers, departments, onSuccess }: Props) {
@@ -100,18 +119,12 @@ export function ProviderForm({ providers, departments, onSuccess }: Props) {
 
   const fieldErrors: FieldErrors = {};
   for (const field of ["providerId", "apiKey", "agentName"] as const) {
-    const err = validateField(field, form[field], selectedProvider?.name, form.keyType);
+    const err = validateField(field, form[field], selectedProvider?.name);
     if (err) fieldErrors[field] = err;
   }
 
   function set(field: keyof FormState, value: string) {
     setForm((prev) => ({ ...prev, [field]: value }));
-    setBanner(null);
-  }
-
-  function setKeyType(value: "personal" | "admin") {
-    setForm((prev) => ({ ...prev, keyType: value, apiKey: "" }));
-    setTouched((prev) => ({ ...prev, apiKey: false }));
     setBanner(null);
   }
 
@@ -123,13 +136,12 @@ export function ProviderForm({ providers, departments, onSuccess }: Props) {
     return touched[field] ? fieldErrors[field] : undefined;
   }
 
-  const isAdminAuditFlow = form.keyType === "admin" && (selectedProvider?.name === "openai" || selectedProvider?.name === "anthropic");
+  const isAdminAuditFlow = selectedProvider?.name === "openai" || selectedProvider?.name === "anthropic";
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     setBanner(null);
 
-    // For admin audit flow, agentName is not required
     const fieldsToValidate: (keyof FormState)[] = isAdminAuditFlow
       ? ["providerId", "apiKey"]
       : ["providerId", "apiKey", "agentName"];
@@ -144,7 +156,7 @@ export function ProviderForm({ providers, departments, onSuccess }: Props) {
       const body: Record<string, string> = {
         providerId: form.providerId,
         apiKey:     form.apiKey,
-        keyType:    form.keyType,
+        keyType:    "admin",
       };
       if (!isAdminAuditFlow && form.agentName.trim()) {
         body.agentName = form.agentName.trim();
@@ -199,9 +211,9 @@ export function ProviderForm({ providers, departments, onSuccess }: Props) {
 
   return (
     <div className="bg-white rounded-2xl border border-gray-200 shadow-sm p-6">
-      <h2 className="text-xl font-semibold text-gray-900 mb-1">API Integration</h2>
+      <h2 className="text-xl font-semibold text-gray-900 mb-1">Connect Your Provider</h2>
       <p className="text-sm text-gray-600 mb-6">
-        Connect a provider API key to bring an agent into SynthForce.
+        Paste your org admin key to start monitoring your AI spending across your agent fleet.
       </p>
 
       {banner && (
@@ -230,7 +242,8 @@ export function ProviderForm({ providers, departments, onSuccess }: Props) {
             onChange={(e) => {
               set("providerId", e.target.value);
               touch("providerId");
-              setKeyType("personal"); // reset key type when provider changes
+              set("apiKey", "");
+              setTouched((prev) => ({ ...prev, apiKey: false }));
             }}
             onBlur={() => touch("providerId")}
             disabled={loading}
@@ -249,44 +262,13 @@ export function ProviderForm({ providers, departments, onSuccess }: Props) {
           )}
         </div>
 
-        {/* Key Type - only OpenAI and Anthropic have org-level usage APIs */}
-        {(selectedProvider?.name === "openai" || selectedProvider?.name === "anthropic") && (
-          <div>
-            <label className={`${labelClass} flex items-center`}>
-              Key Type
-              <FieldHelp text="Personal keys (sk-…) work for agent activity tracking. Organization Admin keys (sk-admin-… or sk-org-…) also enable automatic billing sync. SynthForce will poll your provider's usage API hourly to keep spend data current." />
-            </label>
-            <div className="grid grid-cols-2 gap-3">
-              {(["personal", "admin"] as const).map((type) => (
-                <button
-                  key={type}
-                  type="button"
-                  onClick={() => setKeyType(type)}
-                  disabled={loading}
-                  className={`px-4 py-3 rounded-lg border text-sm font-medium text-left transition-colors ${
-                    form.keyType === type
-                      ? "border-[#00B2FF] bg-blue-50 text-[#00B2FF]"
-                      : "border-gray-200 text-gray-700 hover:border-gray-300 hover:bg-gray-50"
-                  } disabled:opacity-50`}
-                >
-                  {type === "personal" ? (
-                    <>
-                      <span className="block font-semibold">Personal API Key</span>
-                      <span className="text-xs mt-0.5 block font-normal opacity-70">
-                        sk-… · agent activity only
-                      </span>
-                    </>
-                  ) : (
-                    <>
-                      <span className="block font-semibold">Organization Admin Key</span>
-                      <span className="text-xs mt-0.5 block font-normal opacity-70">
-                        sk-admin-… · enables billing sync
-                      </span>
-                    </>
-                  )}
-                </button>
-              ))}
-            </div>
+        {/* API Key Type - always org admin */}
+        {form.providerId && (
+          <div className="bg-blue-50 border border-blue-100 rounded-lg px-4 py-3">
+            <p className="text-sm font-medium text-blue-900">API Key Type: Organization Admin Key</p>
+            <p className="text-xs text-blue-700 mt-0.5">
+              We need your org-level key to see billing data. Personal keys can&apos;t access spending info.
+            </p>
           </div>
         )}
 
@@ -296,17 +278,11 @@ export function ProviderForm({ providers, departments, onSuccess }: Props) {
             API Key <span className="text-red-500 ml-0.5">*</span>
             <FieldHelp
               text={
-                form.keyType === "admin"
-                  ? selectedProvider?.name === "openai"
-                    ? "Admin key: platform.openai.com → API keys → create with 'Read usage data' scope. Starts with 'sk-admin-'."
-                    : selectedProvider?.name === "anthropic"
-                    ? "Admin key: console.anthropic.com → API keys. Starts with 'sk-ant-admin-'."
-                    : "Your provider's organization admin key for billing/usage access."
-                  : selectedProvider?.name === "openai"
-                    ? "Personal key: platform.openai.com → API keys. Starts with 'sk-'."
-                    : selectedProvider?.name === "anthropic"
-                    ? "Personal key: console.anthropic.com → API keys. Starts with 'sk-ant-'."
-                    : "Your provider's secret API key. Keep it private. SynthForce encrypts it immediately."
+                selectedProvider?.name === "openai"
+                  ? "Admin key: platform.openai.com → API keys → create with 'Read usage data' scope. Starts with 'sk-admin-'."
+                  : selectedProvider?.name === "anthropic"
+                  ? "Admin key: console.anthropic.com/org/keys. Starts with 'sk-ant-admin-'."
+                  : "Your provider's organization admin key for billing/usage access."
               }
             />
           </label>
@@ -318,9 +294,11 @@ export function ProviderForm({ providers, departments, onSuccess }: Props) {
             onBlur={() => touch("apiKey")}
             disabled={loading}
             placeholder={
-              form.keyType === "admin"
-                ? selectedProvider?.name === "openai" ? "sk-admin-…" : selectedProvider?.name === "anthropic" ? "sk-ant-admin-…" : "Paste your admin key"
-                : selectedProvider ? `Paste your ${selectedProvider.displayName} key` : "Paste your API key"
+              selectedProvider?.name === "openai"
+                ? "Paste your org admin key (sk-admin-…)"
+                : selectedProvider?.name === "anthropic"
+                ? "Paste your org admin key (sk-ant-admin-…)"
+                : "Paste your org admin key here"
             }
             className={inputClass("apiKey")}
             autoComplete="off"
@@ -334,9 +312,28 @@ export function ProviderForm({ providers, departments, onSuccess }: Props) {
             <p id="apiKey-error" className="text-xs text-red-500 mt-1" role="alert">{showError("apiKey")}</p>
           ) : (
             <p id="apiKey-hint" className="text-xs text-gray-500 mt-1">
-              Encrypted with AES-256-GCM, never stored or logged as plaintext.
+              Encrypted with AES-256-GCM, never stored in plain text.
             </p>
           )}
+          {/* Provider-specific key hint */}
+          {(() => {
+            const hint = providerKeyHint(selectedProvider?.name);
+            if (!hint) return null;
+            return (
+              <div className="mt-2 bg-gray-50 border border-gray-200 rounded-lg px-3 py-2.5 text-xs text-gray-600">
+                {hint.url ? (
+                  <span>
+                    {hint.text}{" "}
+                    <a href={hint.url} target="_blank" rel="noopener noreferrer" className="text-[#00B2FF] hover:underline">
+                      {hint.urlLabel}
+                    </a>
+                  </span>
+                ) : (
+                  <span>{hint.text}</span>
+                )}
+              </div>
+            );
+          })()}
         </div>
 
         {/* Agent Name - hidden for admin audit flow */}
@@ -414,7 +411,7 @@ export function ProviderForm({ providers, departments, onSuccess }: Props) {
           )}
           {loading
             ? (isAdminAuditFlow ? "Running audit…" : "Connecting…")
-            : (isAdminAuditFlow ? "Run Audit" : "Connect Agent")}
+            : (isAdminAuditFlow ? "Run Spending Audit" : "Connect Provider")}
         </button>
       </form>
     </div>

@@ -88,14 +88,14 @@ export function ConnectedProvidersList() {
       <div className="bg-white border border-gray-200 shadow-sm rounded-2xl overflow-hidden">
         <div className="px-6 py-5 border-b border-gray-100 flex items-center justify-between">
           <div>
-            <h2 className="text-base font-semibold text-gray-900">Connected Providers</h2>
-            <p className="text-xs text-gray-500 mt-0.5">Admin keys used to sync spending data</p>
+            <h2 className="text-base font-semibold text-gray-900">Connected Agent Providers</h2>
+            <p className="text-xs text-gray-500 mt-0.5">See which providers you&apos;re monitoring. Your API keys are encrypted and read-only.</p>
           </div>
           <Link
             href="/U/settings/connect"
             className="inline-flex items-center px-4 py-2 text-sm font-medium bg-[#00B2FF] text-white rounded-lg hover:bg-[#00B2FF]/90 transition"
           >
-            + Connect
+            + Add Provider
           </Link>
         </div>
 
