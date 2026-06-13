@@ -1,5 +1,6 @@
 import { ApiError } from "@/lib/api-errors";
 import { identifyAgent, type AgentContext } from "@/lib/proxy/middleware/identify-agent";
+import { enforcePolicy } from "@/lib/proxy/middleware/enforce-policy";
 
 // Providers that use x-api-key instead of Authorization: Bearer
 const API_KEY_PROVIDERS = new Set(["anthropic"]);
@@ -44,6 +45,7 @@ function buildProviderHeaders(
 export type ProxyResult = {
   response: Response;
   agentContext: AgentContext;
+  parsedBody: unknown;
 };
 
 export async function routeProxyRequest(
@@ -75,6 +77,21 @@ export async function routeProxyRequest(
     });
   }
 
+  // Buffer the body once so we can (a) parse it for policy checks and
+  // (b) forward the raw bytes to the provider without consuming the stream twice.
+  let bodyBuffer: string | null = null;
+  let parsedBody: unknown = null;
+
+  if (body) {
+    bodyBuffer = await new Response(body).text();
+    if (bodyBuffer) {
+      try { parsedBody = JSON.parse(bodyBuffer); } catch { /* not JSON — forward as-is */ }
+    }
+  }
+
+  // Policy enforcement — runs before any provider call
+  await enforcePolicy(agentContext.agentId, method, parsedBody);
+
   const url = `${agentContext.providerApiBaseUrl}${path}`;
   const providerHeaders = buildProviderHeaders(
     agentContext.providerName,
@@ -85,11 +102,9 @@ export async function routeProxyRequest(
   const upstream = await fetch(url, {
     method,
     headers: providerHeaders,
-    body: body,
-    // @ts-expect-error - Node 18+ fetch supports duplex for streaming request bodies
-    duplex: body ? "half" : undefined,
+    body: bodyBuffer,
     signal: AbortSignal.timeout(120_000),
   });
 
-  return { response: upstream, agentContext };
+  return { response: upstream, agentContext, parsedBody };
 }

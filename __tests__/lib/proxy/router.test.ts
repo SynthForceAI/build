@@ -6,9 +6,13 @@ vi.mock("@/lib/env", () => ({
   }),
 }));
 
-// Mock identifyAgent so router tests don't touch the DB
+// Mock identify-agent and enforce-policy so router tests don't touch the DB
 vi.mock("@/lib/proxy/middleware/identify-agent", () => ({
   identifyAgent: vi.fn(),
+}));
+
+vi.mock("@/lib/proxy/middleware/enforce-policy", () => ({
+  enforcePolicy: vi.fn().mockResolvedValue(undefined),
 }));
 
 vi.stubGlobal("fetch", vi.fn());
