@@ -43,7 +43,7 @@ async function fetchOpenAIAuditData(apiKey: string, periodDays: number): Promise
   usageUrlObj.searchParams.set("start_time", String(startSec));
   usageUrlObj.searchParams.set("end_time", String(nowSec));
   usageUrlObj.searchParams.set("bucket_width", "1d");
-  usageUrlObj.searchParams.set("limit", "90");
+  usageUrlObj.searchParams.set("limit", "31");
   usageUrlObj.searchParams.append("group_by", "model");
   const usageUrl = usageUrlObj.toString();
 
@@ -51,7 +51,7 @@ async function fetchOpenAIAuditData(apiKey: string, periodDays: number): Promise
   costsUrlObj.searchParams.set("start_time", String(startSec));
   costsUrlObj.searchParams.set("end_time", String(nowSec));
   costsUrlObj.searchParams.set("bucket_width", "1d");
-  costsUrlObj.searchParams.set("limit", "90");
+  costsUrlObj.searchParams.set("limit", "31");
   costsUrlObj.searchParams.append("group_by", "project_id");
   const costsUrl = costsUrlObj.toString();
 
