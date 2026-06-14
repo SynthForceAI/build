@@ -83,7 +83,7 @@ export function analyze(report: ProviderUsageReport): AuditAnalysis {
       severity: gpt4Share > 0.6 ? "high" : "medium",
       title:    `${Math.round(gpt4Share * 100)}% of your spend is on GPT-4`,
       description:
-        `GPT-4 is your largest line item. Based on industry benchmarks, around ${Math.round(GPT4_SWAP_RATIO * 100)}% of those calls could run on GPT-4o-mini at a fraction of the cost. Estimated monthly savings: $${(modelWasteCents / 100).toFixed(0)}.`,
+        `GPT-4 is your largest line item. Based on industry benchmarks, around ${Math.round(GPT4_SWAP_RATIO * 100)}% of those calls could run on GPT-4o-mini at a fraction of the cost. Estimated monthly savings: $${(modelWasteCents / 100).toFixed(2)}.`,
       potentialSavingsCents: modelWasteCents,
       metadata: { gpt4Share, gpt4SpendCents: gpt4Spend, swapRatio: GPT4_SWAP_RATIO },
       orderHint: 0,
@@ -101,7 +101,7 @@ export function analyze(report: ProviderUsageReport): AuditAnalysis {
         severity: spikes.length > 3 ? "high" : "medium",
         title:    `${spikes.length} cost spike${spikes.length > 1 ? "s" : ""} detected`,
         description:
-          `Your highest spike was on ${worst.date} at $${(worst.costCents / 100).toFixed(0)}, about ${(worst.costCents / dailyAvg).toFixed(1)}x your normal daily spend. Spikes often indicate a runaway agent, retry storm, or accidental load.`,
+          `Your highest spike was on ${worst.date} at $${(worst.costCents / 100).toFixed(2)}, about ${(worst.costCents / dailyAvg).toFixed(1)}x your normal daily spend. Spikes often indicate a runaway agent, retry storm, or accidental load.`,
         potentialSavingsCents: null,
         metadata: { spikeDates: spikes.map((s) => s.date), avgDailyCents: dailyAvg },
         orderHint: 1,
