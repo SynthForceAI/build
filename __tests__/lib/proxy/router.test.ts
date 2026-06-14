@@ -25,6 +25,7 @@ const mockFetch    = vi.mocked(fetch);
 
 const OPENAI_CONTEXT = {
   agentId:            "agent-1",
+  companyId:          "company-1",
   providerId:         "provider-openai",
   providerName:       "openai",
   providerApiBaseUrl: "https://api.openai.com/v1",

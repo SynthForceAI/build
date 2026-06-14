@@ -3,6 +3,7 @@
 import { useState } from "react";
 import Link from "next/link";
 import { AgentStatusToggle } from "./agent-status-toggle";
+
 import { AddAgentForm } from "./add-agent-form";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
@@ -200,12 +201,14 @@ export function AgentsClient({
                       className="border-b border-gray-50 last:border-b-0 hover:bg-gray-50/60 transition-colors"
                     >
                       <td className="px-6 py-4">
-                        <p className="font-medium text-gray-900">{agent.name}</p>
-                        {agent.description && (
-                          <p className="text-xs text-gray-400 mt-0.5 max-w-[200px] truncate">
-                            {agent.description}
-                          </p>
-                        )}
+                        <Link href={`/U/agents/${agent.id}`} className="hover:text-[#00B2FF] transition-colors">
+                          <p className="font-medium text-gray-900">{agent.name}</p>
+                          {agent.description && (
+                            <p className="text-xs text-gray-400 mt-0.5 max-w-[200px] truncate">
+                              {agent.description}
+                            </p>
+                          )}
+                        </Link>
                       </td>
 
                       <td className="px-6 py-4 text-gray-600">

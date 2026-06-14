@@ -5,6 +5,7 @@ import { ApiError } from "@/lib/api-errors";
 
 export type VirtualKeyLookup = {
   agentId: string;
+  companyId: string;
   providerId: string;
   providerName: string;
   providerApiBaseUrl: string;
@@ -37,7 +38,10 @@ export async function lookupVirtualKey(virtualKey: string): Promise<VirtualKeyLo
 
   const record = await prisma.agentVirtualKey.findUnique({
     where: { virtualKey },
-    include: { provider: true },
+    include: {
+      provider: true,
+      agent: { select: { companyId: true } },
+    },
   });
 
   if (!record || !record.isActive) return null;
@@ -48,11 +52,12 @@ export async function lookupVirtualKey(virtualKey: string): Promise<VirtualKeyLo
     .catch(() => null);
 
   return {
-    agentId: record.agentId,
-    providerId: record.providerId,
-    providerName: record.provider.name,
+    agentId:           record.agentId,
+    companyId:         record.agent.companyId,
+    providerId:        record.providerId,
+    providerName:      record.provider.name,
     providerApiBaseUrl: record.provider.apiBaseUrl ?? "",
-    providerApiKey: decryptApiKey(record.encryptedProviderKey),
+    providerApiKey:    decryptApiKey(record.encryptedProviderKey),
   };
 }
 

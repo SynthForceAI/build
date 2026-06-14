@@ -33,6 +33,7 @@ const NAV_ITEMS: NavItem[] = [
   { href: "/U/policies",     label: "Policies",     sub: "Guardrails & compliance",    roles: ["owner", "admin", "member"] },
   { href: "/U/offboarding",  label: "Offboarding",  sub: "Archive & audit"             },
   { href: "/U/agents",       label: "Agents",       sub: "Manage your fleet",          roles: ["owner", "admin", "member"] },
+  { href: "/U/audit-log",   label: "Audit Log",    sub: "Proxy request history",       roles: ["owner", "admin", "member"] },
   { href: "/U/departments",  label: "Departments",  sub: "Teams & budgets",            roles: ["owner", "admin", "member"] },
   { href: "/U/settings",     label: "Settings",     sub: "Account & preferences",      roles: ["owner", "admin"] },
 ];

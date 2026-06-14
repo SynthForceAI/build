@@ -1,6 +1,8 @@
 "use client";
 
 import { useState } from "react";
+import { useRouter } from "next/navigation";
+import { toast } from "sonner";
 import { AddPolicyForm } from "./add-policy-form";
 import { FieldHelp } from "./field-help";
 
@@ -30,9 +32,26 @@ export function PoliciesClient({
   policies: Policy[];
   departments: Department[];
 }) {
+  const router = useRouter();
   const [severityFilter, setSeverityFilter] = useState("all");
   const [departmentFilter, setDepartmentFilter] = useState("all");
   const [showModal, setShowModal] = useState(false);
+  const [deletingId, setDeletingId] = useState<string | null>(null);
+
+  async function handleDelete(policy: Policy) {
+    if (!confirm(`Delete policy "${policy.name}"? This cannot be undone.`)) return;
+    setDeletingId(policy.id);
+    try {
+      const res = await fetch(`/api/policies/${policy.id}`, { method: "DELETE" });
+      if (!res.ok) throw new Error("Delete failed");
+      toast.success(`Policy "${policy.name}" deleted`);
+      router.refresh();
+    } catch {
+      toast.error("Failed to delete policy. Please try again.");
+    } finally {
+      setDeletingId(null);
+    }
+  }
 
   const filtered = policies.filter((p) => {
     const severityMatch = severityFilter === "all" || p.severity === severityFilter;
@@ -114,6 +133,7 @@ export function PoliciesClient({
                       <FieldHelp text="Which agents this policy applies to. 'all' means every agent in the workspace; a named scope targets a specific subset." />
                     </span>
                   </th>
+                  <th className="px-6 py-3 font-medium" />
                 </tr>
               </thead>
               <tbody>
@@ -135,6 +155,16 @@ export function PoliciesClient({
                       </span>
                     </td>
                     <td className="px-4 py-3 text-gray-600 whitespace-nowrap">{policy.scope}</td>
+                    <td className="px-4 py-3 text-right">
+                      <button
+                        onClick={() => handleDelete(policy)}
+                        disabled={deletingId === policy.id}
+                        className="text-xs text-red-500 hover:text-red-700 transition-colors disabled:opacity-40"
+                        aria-label={`Delete policy ${policy.name}`}
+                      >
+                        {deletingId === policy.id ? "Deleting…" : "Delete"}
+                      </button>
+                    </td>
                   </tr>
                 ))}
               </tbody>

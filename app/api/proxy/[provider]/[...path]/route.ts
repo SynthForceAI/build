@@ -1,5 +1,6 @@
 import { type NextRequest, NextResponse } from "next/server";
 import { routeProxyRequest } from "@/lib/proxy/router";
+import { logProxyResponse } from "@/lib/proxy/middleware/log-response";
 import { handleApiError } from "@/lib/api-errors";
 
 export const dynamic = "force-dynamic";
@@ -26,7 +27,7 @@ async function handle(
     const { provider, path: pathSegments } = await params;
     const path = "/" + (pathSegments?.join("/") ?? "");
 
-    const { response, agentContext: _ } = await routeProxyRequest(
+    const { response, agentContext, parsedBody } = await routeProxyRequest(
       provider,
       path,
       req.method,
@@ -40,6 +41,10 @@ async function handle(
       const value = response.headers.get(header);
       if (value) responseHeaders.set(header, value);
     }
+
+    // Clone before piping so log-response can read the body independently.
+    // Fire-and-forget: logging must never delay or break the proxy response.
+    logProxyResponse(response.clone(), agentContext, parsedBody).catch(() => null);
 
     // Stream the body through unmodified - handles both JSON and SSE streaming
     return new NextResponse(response.body, {
