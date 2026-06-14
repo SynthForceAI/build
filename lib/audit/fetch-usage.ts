@@ -39,8 +39,21 @@ async function fetchOpenAIAuditData(apiKey: string, periodDays: number): Promise
   const nowSec = Math.floor(now.getTime() / 1000);
   const startSec = Math.floor(start.getTime() / 1000);
 
-  const usageUrl = `${OPENAI_USAGE_URL}?start_time=${startSec}&end_time=${nowSec}&bucket_width=1d&limit=90&group_by[]=model`;
-  const costsUrl = `${OPENAI_COSTS_URL}?start_time=${startSec}&end_time=${nowSec}&bucket_width=1d&limit=90&group_by[]=project_id`;
+  const usageUrlObj = new URL(OPENAI_USAGE_URL);
+  usageUrlObj.searchParams.set("start_time", String(startSec));
+  usageUrlObj.searchParams.set("end_time", String(nowSec));
+  usageUrlObj.searchParams.set("bucket_width", "1d");
+  usageUrlObj.searchParams.set("limit", "90");
+  usageUrlObj.searchParams.append("group_by", "model");
+  const usageUrl = usageUrlObj.toString();
+
+  const costsUrlObj = new URL(OPENAI_COSTS_URL);
+  costsUrlObj.searchParams.set("start_time", String(startSec));
+  costsUrlObj.searchParams.set("end_time", String(nowSec));
+  costsUrlObj.searchParams.set("bucket_width", "1d");
+  costsUrlObj.searchParams.set("limit", "90");
+  costsUrlObj.searchParams.append("group_by", "project_id");
+  const costsUrl = costsUrlObj.toString();
 
   const headers = { Authorization: `Bearer ${apiKey}`, "Content-Type": "application/json" };
   const signal  = AbortSignal.timeout(25_000);
@@ -53,7 +66,10 @@ async function fetchOpenAIAuditData(apiKey: string, periodDays: number): Promise
   if (usageRes.status === 401) throw new Error("OpenAI rejected the admin key (401). Use an sk-admin- key with usage read access.");
   if (usageRes.status === 403) throw new Error("This key lacks usage API access (403). Ensure the admin key has 'Read usage data' scope in the OpenAI dashboard.");
   if (usageRes.status === 429) throw new Error("OpenAI rate-limited the request (429). Try again in a minute.");
-  if (!usageRes.ok) throw new Error(`OpenAI usage endpoint returned ${usageRes.status}.`);
+  if (!usageRes.ok) {
+    const body = await usageRes.text().catch(() => "");
+    throw new Error(`OpenAI usage endpoint returned ${usageRes.status}. ${body}`.trim());
+  }
 
   const usageJson = (await usageRes.json()) as OAIUsageResponse;
 
