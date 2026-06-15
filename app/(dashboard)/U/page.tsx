@@ -28,12 +28,6 @@ import { SpendTrendChart } from "./components/SpendTrendChart";
 
 // ── Types ──────────────────────────────────────────────────────────────────
 
-type ChecklistState = {
-  hasApiKey: boolean;
-  hasAgent: boolean;
-  hasUsage: boolean;
-};
-
 type AgentRow = {
   id: string;
   name: string;
@@ -58,7 +52,6 @@ type Summary = {
   agents: { active: number; paused: number; total: number };
   topAgents: AgentRow[];
   gridAgents: AgentCardData[];
-  checklist: ChecklistState;
   spendByDay: DailySpend[]; // last 7 days, oldest first
   latestAudit: LatestAudit;
 };
@@ -71,7 +64,6 @@ const EMPTY: Summary = {
   agents: { active: 0, paused: 0, total: 0 },
   topAgents: [],
   gridAgents: [],
-  checklist: { hasApiKey: false, hasAgent: false, hasUsage: false },
   spendByDay: [],
   latestAudit: null,
 };
@@ -121,13 +113,11 @@ async function fetchSummary(companyId: string): Promise<Summary> {
   sevenDaysAgo.setUTCDate(sevenDaysAgo.getUTCDate() - 6);
   sevenDaysAgo.setUTCHours(0, 0, 0, 0);
 
-  const [recentLogs, apiKeyCount, allConnectedAgents, latestAuditRow] = await Promise.all([
+  const [recentLogs, allConnectedAgents, latestAuditRow] = await Promise.all([
     prisma.connectedAgentUsageLog.findMany({
       where: { companyId, createdAt: { gte: sevenDaysAgo } },
       select: { createdAt: true, costCents: true },
     }),
-    // Checklist: has the user connected a provider key yet?
-    prisma.apiKey.count({ where: { companyId } }),
     // All connected agents for the directory grid
     prisma.connectedAgent.findMany({
       where: { companyId, deletedAt: null },
@@ -187,11 +177,6 @@ async function fetchSummary(companyId: string): Promise<Summary> {
       spendCents:     Number(a.monthlySpendCents),
       tasksCompleted: 0,
     })),
-    checklist: {
-      hasApiKey: apiKeyCount > 0,
-      hasAgent:  allConnectedAgents.length > 0,
-      hasUsage:  (mtd._count._all ?? 0) > 0,
-    },
     spendByDay,
     latestAudit: latestAuditRow
       ? {
@@ -255,35 +240,6 @@ export default async function DashboardPage() {
         </Link>
       </div>
 
-      {/* ── Get Started checklist - shown until all 3 steps complete ── */}
-      {(!data.checklist.hasApiKey || !data.checklist.hasAgent || !data.checklist.hasUsage) && (
-        <div className="mb-8 bg-gradient-to-r from-blue-50 to-white border border-blue-100 rounded-2xl px-6 py-5">
-          <h2 className="text-sm font-semibold text-gray-900 mb-3">Get started</h2>
-          <ol className="space-y-2.5">
-            <CheckStep
-              done={data.checklist.hasApiKey}
-              label="Connect an API provider"
-              sub="Link your OpenAI, Anthropic, or other keys"
-              href="/U/onboard"
-              cta="Connect now"
-            />
-            <CheckStep
-              done={data.checklist.hasAgent}
-              label="Run your first audit"
-              sub="Connect a provider key to audit your AI spending"
-              href="/U/onboard"
-              cta="Run audit"
-            />
-            <CheckStep
-              done={data.checklist.hasUsage}
-              label="See your first usage data"
-              sub="Make API calls, cost & tokens appear here automatically"
-              href="/U/performance"
-              cta="View performance"
-            />
-          </ol>
-        </div>
-      )}
 
       {data.agents.total === 0 ? (
         data.latestAudit ? (
@@ -408,35 +364,3 @@ function Stat({ value, label, tone }: { value: string; label: string; tone: stri
   );
 }
 
-// ── Checklist step ─────────────────────────────────────────────────────────
-function CheckStep({
-  done, label, sub, href, cta,
-}: { done: boolean; label: string; sub: string; href: string; cta: string }) {
-  return (
-    <li className="flex items-center gap-3">
-      <div className={`shrink-0 w-5 h-5 rounded-full border-2 flex items-center justify-center ${
-        done ? "border-[#00B2FF] bg-[#00B2FF]" : "border-gray-300 bg-white"
-      }`} aria-hidden="true">
-        {done && (
-          <svg className="w-3 h-3 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
-          </svg>
-        )}
-      </div>
-      <div className="flex-1 min-w-0">
-        <span className={`text-sm font-medium ${done ? "line-through text-gray-400" : "text-gray-800"}`}>
-          {label}
-        </span>
-        {!done && <p className="text-xs text-gray-400 mt-0.5">{sub}</p>}
-      </div>
-      {!done && (
-        <Link
-          href={href}
-          className="shrink-0 text-xs font-medium text-[#00B2FF] hover:underline"
-        >
-          {cta} →
-        </Link>
-      )}
-    </li>
-  );
-}
