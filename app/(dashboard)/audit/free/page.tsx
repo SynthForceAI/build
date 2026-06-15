@@ -4,6 +4,7 @@ import { requireUser } from "@/lib/auth";
 import { ApiError } from "@/lib/api-errors";
 import { prisma } from "@/lib/db";
 import { ShareButton } from "./ShareButton";
+import { RerunButton } from "./RerunButton";
 
 // ---------------------------------------------------------------------------
 // Types
@@ -69,6 +70,16 @@ function formatPeriod(start: Date | null, end: Date | null): string {
   if (!start || !end) return "Last 30 days";
   const fmt = (d: Date) => d.toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" });
   return `${fmt(start)} – ${fmt(end)}`;
+}
+
+function formatModelName(raw: string): string {
+  // OpenAI style: base-YYYY-MM-DD  →  base v.YYYY
+  const m1 = raw.match(/^(.+?)-(\d{4})-\d{2}-\d{2}$/);
+  if (m1) return `${m1[1]} v.${m1[2]}`;
+  // Anthropic style: base-YYYYMMDD  →  base v.YYYY  (year must be 2020-2039)
+  const m2 = raw.match(/^(.+?)-(20[2-3]\d)\d{4}$/);
+  if (m2) return `${m2[1]} v.${m2[2]}`;
+  return raw;
 }
 
 function inferRole(m: ModelRow): { label: string; description: string; colorClass: string } {
@@ -267,14 +278,9 @@ export default async function FreeAuditPage({
           <h1 className="text-xl font-bold text-gray-900">Audit Report</h1>
           <p className="text-sm text-gray-500 mt-0.5">{period}</p>
         </div>
-        <div className="flex gap-3">
+        <div className="flex gap-3 items-start">
           <ShareButton text={shareText} />
-          <Link
-            href="/U/onboard"
-            className="px-4 py-2 text-sm font-medium border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition"
-          >
-            + Track agents
-          </Link>
+          <RerunButton auditId={id as string} />
         </div>
       </div>
 
@@ -317,7 +323,7 @@ export default async function FreeAuditPage({
                   <div className="flex flex-wrap items-start justify-between gap-2 mb-2">
                     <div className="min-w-0 flex-1">
                       <div className="flex flex-wrap items-center gap-2">
-                        <span className="text-sm font-medium text-gray-900 truncate">{m.model}</span>
+                        <span className="text-sm font-medium text-gray-900 truncate">{formatModelName(m.model)}</span>
                         {isOutlier && (
                           <span className="text-xs px-2 py-0.5 rounded-full bg-red-50 text-red-700 border border-red-200 font-medium shrink-0">
                             Compensation outlier
@@ -467,7 +473,7 @@ export default async function FreeAuditPage({
             <svg className="w-4 h-4 text-[#00B2FF]" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.347.347A3.001 3.001 0 0112 21a3 3 0 01-2.121-.879l-.347-.347z" />
             </svg>
-            <h2 className="text-sm font-semibold text-gray-900">AI Analysis</h2>
+            <h2 className="text-sm font-semibold text-gray-900">Analysis</h2>
           </div>
           <p className="text-sm text-gray-700 leading-relaxed whitespace-pre-line">{audit.reportSummary}</p>
         </div>
