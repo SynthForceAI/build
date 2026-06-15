@@ -39,8 +39,8 @@ function validateField(
       if (value.length < 10) return "API key must be at least 10 characters.";
       if (providerName === "openai" && !value.startsWith("sk-admin-"))
         return "OpenAI admin keys start with 'sk-admin-'. Check you copied it in full.";
-      if (providerName === "anthropic" && !value.startsWith("sk-ant-admin-"))
-        return "Anthropic admin keys start with 'sk-ant-admin-'. Check you copied it in full.";
+      if (providerName === "anthropic" && !value.startsWith("sk-ant-admin"))
+        return "Anthropic admin keys start with 'sk-ant-admin'. Check you copied it in full.";
       return null;
     case "agentName":
       if (value.length === 0) return null;
@@ -281,7 +281,7 @@ export function ProviderForm({ providers, departments, onSuccess }: Props) {
                 selectedProvider?.name === "openai"
                   ? "Admin key: platform.openai.com → API keys → create with 'Read usage data' scope. Starts with 'sk-admin-'."
                   : selectedProvider?.name === "anthropic"
-                  ? "Admin key: console.anthropic.com/org/keys. Starts with 'sk-ant-admin-'."
+                  ? "Admin key: console.anthropic.com/org/keys. Starts with 'sk-ant-admin'."
                   : "Your provider's organization admin key for billing/usage access."
               }
             />
@@ -297,7 +297,7 @@ export function ProviderForm({ providers, departments, onSuccess }: Props) {
               selectedProvider?.name === "openai"
                 ? "Paste your org admin key (sk-admin-…)"
                 : selectedProvider?.name === "anthropic"
-                ? "Paste your org admin key (sk-ant-admin-…)"
+                ? "Paste your org admin key (sk-ant-admin01-…)"
                 : "Paste your org admin key here"
             }
             className={inputClass("apiKey")}
