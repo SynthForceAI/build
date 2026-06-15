@@ -6,6 +6,7 @@ import { prisma } from "@/lib/db";
 import { ShareButton } from "./ShareButton";
 import { RerunButton } from "./RerunButton";
 import { BurnRateCard } from "./BurnRateCard";
+import { InfoTip } from "./InfoTip";
 
 // ---------------------------------------------------------------------------
 // Types
@@ -344,7 +345,10 @@ export default async function FreeAuditPage({
         </div>
         <div className={`rounded-xl p-5 border ${colorClass}`}>
           <div className="text-2xl font-bold">{score}<span className="text-sm font-normal ml-1">/100</span></div>
-          <div className="text-sm mt-0.5">Efficiency: {efficiencyLabel(score)}</div>
+          <div className="text-sm mt-0.5 flex items-center gap-1">
+            Efficiency: {efficiencyLabel(score)}
+            <InfoTip text="A 0 to 100 score based on how much of your spend SynthForce estimates could be reduced through model swaps, caching, or workload changes. 80 and above is good. 60 to 79 is fair. Below 60 needs attention." />
+          </div>
         </div>
         <div className="bg-green-50 rounded-xl p-5">
           <div className="text-2xl font-bold text-gray-900">{fmtDollars(wasteCents > 0 ? wasteCents : 0)}</div>
@@ -417,7 +421,10 @@ export default async function FreeAuditPage({
                     return (
                       <div className="mt-3 pt-3 border-t border-gray-100">
                         <div className="flex items-center justify-between mb-1">
-                          <span className="text-xs text-gray-500">Cache rate</span>
+                          <span className="text-xs text-gray-500 flex items-center gap-0.5">
+                            Cache rate
+                            <InfoTip text="The share of your input tokens served from the provider's prompt cache. Cached tokens cost up to 90% less than uncached ones. A low rate means your fleet is paying full price for content it has already seen before." />
+                          </span>
                           <span className={`text-xs font-medium ${cache.ratePct >= 50 ? "text-green-600" : cache.ratePct >= 30 ? "text-yellow-600" : "text-orange-600"}`}>
                             {cache.ratePct}%
                             {cache.ratePct < 50 && <span className="text-gray-400 font-normal"> vs 74% benchmark</span>}
@@ -452,7 +459,10 @@ export default async function FreeAuditPage({
       {/* ── Fleet Utilization (Insight 3) ────────────────────────────────── */}
       {totalDays > 0 && (
         <div className="bg-white rounded-2xl border border-gray-200 shadow-sm p-6">
-          <h2 className="text-sm font-semibold text-gray-900 mb-4">Fleet Utilization</h2>
+          <h2 className="text-sm font-semibold text-gray-900 mb-4 flex items-center gap-1">
+            Fleet Utilization
+            <InfoTip text="The percentage of days in the audit period where your fleet logged at least one API call. A healthy fleet runs between 70% and 85% of days. Below 30% suggests idle models sitting on your payroll. Above 85% is worth watching for unintended always-on spend." />
+          </h2>
           <div className="flex items-center justify-between mb-2">
             <span className="text-xs text-gray-500">{activeDays} of {totalDays} days active</span>
             <span className={`text-sm font-bold ${utilBand.colorClass}`}>
@@ -668,13 +678,11 @@ export default async function FreeAuditPage({
       </div>
 
       {/* ── Burn Rate Forecast (Insight 11) ──────────────────────────────── */}
-      {burnRate && (
-        <BurnRateCard
-          dailyRateCents={burnRate.dailyRateCents}
-          weeklyRateCents={burnRate.weeklyRateCents}
-          trendPct={burnRate.trendPct}
-        />
-      )}
+      <BurnRateCard
+        dailyRateCents={burnRate?.dailyRateCents ?? null}
+        weeklyRateCents={burnRate?.weeklyRateCents ?? null}
+        trendPct={burnRate?.trendPct ?? null}
+      />
 
       {/* ── Upgrade CTA ──────────────────────────────────────────────────── */}
       <div className="bg-gradient-to-r from-[#00B2FF]/10 to-blue-50 border border-blue-100 rounded-2xl p-6">
