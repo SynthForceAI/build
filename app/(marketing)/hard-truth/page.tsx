@@ -112,23 +112,21 @@ export default function HardTruthPage() {
       <SiteNav position="fixed" />
 
       {/* ── Hero ─────────────────────────────────────────────────── */}
-      <section className="pt-40 pb-20 px-6 text-center relative overflow-hidden"
-        style={{ background: 'linear-gradient(180deg, #0a0a0a 0%, #111 60%, #fff 100%)' }}
-      >
+      <section className="pt-40 pb-20 px-6 text-center relative overflow-hidden bg-white">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6 }}
           className="max-w-3xl mx-auto"
         >
-          <div className="inline-flex items-center gap-2 bg-red-500/10 border border-red-500/20 rounded-full px-4 py-1.5 text-xs font-semibold text-red-400 mb-8 uppercase tracking-wider">
+          <div className="inline-flex items-center gap-2 bg-red-500/10 border border-red-500/20 rounded-full px-4 py-1.5 text-xs font-semibold text-red-500 mb-8 uppercase tracking-wider">
             <span className="w-1.5 h-1.5 bg-red-500 rounded-full animate-pulse" />
             Verified data · no spin
           </div>
-          <h1 className="text-5xl sm:text-6xl md:text-7xl font-bold mb-6 text-white leading-tight tracking-tight">
+          <h1 className="text-5xl sm:text-6xl md:text-7xl font-bold mb-6 text-gray-900 leading-tight tracking-tight">
             The Hard Truth
           </h1>
-          <p className="text-xl sm:text-2xl text-gray-400 mb-4 font-medium max-w-2xl mx-auto">
+          <p className="text-xl sm:text-2xl text-gray-600 mb-4 font-medium max-w-2xl mx-auto">
             Nine facts about AI agent costs that your provider will never put in a dashboard.
           </p>
           <p className="text-sm text-gray-600 max-w-xl mx-auto">
