@@ -15,6 +15,8 @@ export default async function OnboardPage() {
     throw err;
   }
 
+  const PROVIDER_ORDER: Record<string, number> = { openai: 0, anthropic: 1 };
+
   const [providers, departments, rawAgents] = await Promise.all([
     prisma.provider.findMany({
       where:   { isActive: true },
@@ -44,9 +46,15 @@ export default async function OnboardPage() {
     department:          a.department?.name ?? null,
   }));
 
+  const sortedProviders = [...providers].sort((a, b) => {
+    const aOrder = PROVIDER_ORDER[a.name] ?? 99;
+    const bOrder = PROVIDER_ORDER[b.name] ?? 99;
+    return aOrder !== bOrder ? aOrder - bOrder : a.displayName.localeCompare(b.displayName);
+  });
+
   return (
     <OnboardClient
-      providers={providers.map((p) => ({ id: p.id, name: p.name, displayName: p.displayName }))}
+      providers={sortedProviders.map((p) => ({ id: p.id, name: p.name, displayName: p.displayName }))}
       departments={departments.map((d) => ({ id: d.id, name: d.name }))}
       initialAgents={initialAgents}
     />

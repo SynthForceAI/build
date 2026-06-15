@@ -24,17 +24,17 @@ type NavItem = { href: string; label: string; sub: string; roles?: UserRole[]; d
 
 // roles omitted = visible to all; otherwise only shown to listed roles.
 // owner/admin → full access  |  member → team-level  |  viewer → read-only
-// disabled = Phase 2/3 feature, not yet available
+// disabled = Phase 2/3 feature preview: still navigable so users can see what's coming
 const NAV_ITEMS: NavItem[] = [
   { href: "/U",              label: "Dashboard",    sub: "Spend overview & audits"     },
-  { href: "/U/spending",     label: "Monitor Fleet", sub: "Cost insights & savings",    disabled: true },
   { href: "/U/onboard",      label: "Onboard",      sub: "Run a spending audit"         },
+  { href: "/U/audit-log",    label: "Audit Log",    sub: "Spending audit history",      roles: ["owner", "admin", "member"] },
+  { href: "/U/spending",     label: "Monitor Fleet", sub: "Cost insights & savings",    disabled: true },
   { href: "/U/performance",  label: "Performance",  sub: "Tasks, errors, satisfaction", disabled: true },
   { href: "/U/compensation", label: "Compensation", sub: "API spend & ROI",             disabled: true },
   { href: "/U/policies",     label: "Policies",     sub: "Guardrails & compliance",     roles: ["owner", "admin", "member"], disabled: true },
   { href: "/U/offboarding",  label: "Offboarding",  sub: "Archive & audit",             disabled: true },
   { href: "/U/agents",       label: "Agents",       sub: "Manage your fleet",           roles: ["owner", "admin", "member"], disabled: true },
-  { href: "/U/audit-log",    label: "Audit Log",    sub: "Spending audit history",      roles: ["owner", "admin", "member"] },
   { href: "/U/departments",  label: "Departments",  sub: "Teams & budgets",             roles: ["owner", "admin", "member"], disabled: true },
   { href: "/U/settings",     label: "Settings",     sub: "Account & preferences",       roles: ["owner", "admin"] },
 ];
@@ -126,14 +126,19 @@ export function DashboardSidebar({ userName, userEmail, userRole, isOpen, onClos
 
               if (disabled) {
                 return (
-                  <div
+                  <Link
                     key={href}
-                    title="Coming soon"
-                    className="flex flex-col px-3 py-2.5 rounded-xl border-l-[3px] border-l-transparent opacity-40 cursor-not-allowed select-none"
+                    href={href}
+                    onClick={() => {
+                      if (typeof window !== "undefined" && window.innerWidth < 1024) {
+                        onClose();
+                      }
+                    }}
+                    className="flex flex-col px-3 py-2.5 rounded-xl border-l-[3px] border-l-transparent opacity-40 hover:opacity-60 transition-opacity"
                   >
                     <span className="font-semibold text-[13px] text-gray-400">{label}</span>
                     <span className="text-xs mt-0.5 text-gray-300">{sub}</span>
-                  </div>
+                  </Link>
                 );
               }
 
