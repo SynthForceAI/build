@@ -20,22 +20,23 @@ import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import type { UserRole } from "@prisma/client";
 
-type NavItem = { href: string; label: string; sub: string; roles?: UserRole[] };
+type NavItem = { href: string; label: string; sub: string; roles?: UserRole[]; disabled?: boolean };
 
 // roles omitted = visible to all; otherwise only shown to listed roles.
 // owner/admin → full access  |  member → team-level  |  viewer → read-only
+// disabled = Phase 2/3 feature, not yet available
 const NAV_ITEMS: NavItem[] = [
-  { href: "/U",              label: "Dashboard",    sub: "Active agents & overview"   },
-  { href: "/U/spending",     label: "Monitor Fleet", sub: "Cost insights & savings"    },
-  { href: "/U/onboard",      label: "Onboard",      sub: "Add a new AI agent"          },
-  { href: "/U/performance",  label: "Performance",  sub: "Tasks, errors, satisfaction" },
-  { href: "/U/compensation", label: "Compensation", sub: "API spend & ROI"             },
-  { href: "/U/policies",     label: "Policies",     sub: "Guardrails & compliance",    roles: ["owner", "admin", "member"] },
-  { href: "/U/offboarding",  label: "Offboarding",  sub: "Archive & audit"             },
-  { href: "/U/agents",       label: "Agents",       sub: "Manage your fleet",          roles: ["owner", "admin", "member"] },
-  { href: "/U/audit-log",   label: "Audit Log",    sub: "Proxy request history",       roles: ["owner", "admin", "member"] },
-  { href: "/U/departments",  label: "Departments",  sub: "Teams & budgets",            roles: ["owner", "admin", "member"] },
-  { href: "/U/settings",     label: "Settings",     sub: "Account & preferences",      roles: ["owner", "admin"] },
+  { href: "/U",              label: "Dashboard",    sub: "Spend overview & audits"     },
+  { href: "/U/spending",     label: "Monitor Fleet", sub: "Cost insights & savings",    disabled: true },
+  { href: "/U/onboard",      label: "Onboard",      sub: "Run a spending audit"         },
+  { href: "/U/performance",  label: "Performance",  sub: "Tasks, errors, satisfaction", disabled: true },
+  { href: "/U/compensation", label: "Compensation", sub: "API spend & ROI",             disabled: true },
+  { href: "/U/policies",     label: "Policies",     sub: "Guardrails & compliance",     roles: ["owner", "admin", "member"], disabled: true },
+  { href: "/U/offboarding",  label: "Offboarding",  sub: "Archive & audit",             disabled: true },
+  { href: "/U/agents",       label: "Agents",       sub: "Manage your fleet",           roles: ["owner", "admin", "member"], disabled: true },
+  { href: "/U/audit-log",    label: "Audit Log",    sub: "Spending audit history",      roles: ["owner", "admin", "member"] },
+  { href: "/U/departments",  label: "Departments",  sub: "Teams & budgets",             roles: ["owner", "admin", "member"], disabled: true },
+  { href: "/U/settings",     label: "Settings",     sub: "Account & preferences",       roles: ["owner", "admin"] },
 ];
 
 type Props = {
@@ -117,11 +118,24 @@ export function DashboardSidebar({ userName, userEmail, userRole, isOpen, onClos
 
           {/* ── Nav links ─────────────────────────────────────── */}
           <nav className="flex-1 px-3 py-4 flex flex-col gap-1 overflow-y-auto" aria-label="Main navigation">
-            {NAV_ITEMS.filter(({ roles }) => !roles || roles.includes(userRole)).map(({ href, label, sub }) => {
+            {NAV_ITEMS.filter(({ roles }) => !roles || roles.includes(userRole)).map(({ href, label, sub, disabled }) => {
               const isActive =
                 href === "/U"
                   ? pathname === "/U"
                   : pathname.startsWith(href);
+
+              if (disabled) {
+                return (
+                  <div
+                    key={href}
+                    title="Coming soon"
+                    className="flex flex-col px-3 py-2.5 rounded-xl border-l-[3px] border-l-transparent opacity-40 cursor-not-allowed select-none"
+                  >
+                    <span className="font-semibold text-[13px] text-gray-400">{label}</span>
+                    <span className="text-xs mt-0.5 text-gray-300">{sub}</span>
+                  </div>
+                );
+              }
 
               return (
                 <Link

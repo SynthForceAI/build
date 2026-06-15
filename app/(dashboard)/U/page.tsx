@@ -251,7 +251,7 @@ export default async function DashboardPage() {
           href="/U/onboard"
           className="inline-flex items-center px-5 py-2.5 text-sm font-medium bg-[#00B2FF] text-white border border-[#00B2FF] rounded-lg hover:bg-transparent hover:text-[#00B2FF] transition whitespace-nowrap"
         >
-          + Onboard New Agent
+          + Run New Audit
         </Link>
       </div>
 
@@ -269,10 +269,10 @@ export default async function DashboardPage() {
             />
             <CheckStep
               done={data.checklist.hasAgent}
-              label="Add your first agent"
-              sub="Register an AI agent to start tracking"
+              label="Run your first audit"
+              sub="Connect a provider key to audit your AI spending"
               href="/U/onboard"
-              cta="Add agent"
+              cta="Run audit"
             />
             <CheckStep
               done={data.checklist.hasUsage}
@@ -324,7 +324,7 @@ export default async function DashboardPage() {
               </div>
             </div>
             <p className="text-center text-xs text-gray-400">
-              Upgrade to track per-agent spend, set budgets, and get real-time alerts.
+              Real-time per-agent monitoring and budget alerts are coming in Phase 2.
             </p>
           </div>
         ) : (
