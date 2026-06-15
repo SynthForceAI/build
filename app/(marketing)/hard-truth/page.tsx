@@ -69,11 +69,11 @@ const FACTS: Fact[] = [
     accent:  'green',
   },
   {
-    stat:    '200%',
-    claim:   'Replacing one human costs up to 200% of their annual salary.',
-    context: 'Your agents already do the equivalent of several FTEs. Gallup estimates replacement costs at 200% for managers, 80% for technical roles, 40% for frontline. You are managing a payroll. You just cannot see it yet.',
-    source:  'SHRM / Gallup workforce studies',
-    accent:  'blue',
+    stat:    '95%',
+    claim:   'AI agents fail on up to 95% of real-world tasks. They still charge you for the attempt.',
+    context: 'Fiddler\'s research puts agent task failure rates between 70% and 95% in production environments. Unlike a human who tries again at no extra cost, every failed agent run burns tokens at full price. Retries compound the bill. Without visibility, you cannot tell which portion of your spend was productive and which was wasted on loops that never resolved.',
+    source:  'Fiddler AI · "AI Agent Failure Rate" · April 2026',
+    accent:  'orange',
   },
   {
     stat:    '59%',
