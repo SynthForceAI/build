@@ -81,24 +81,24 @@ function ChoiceView({ onSelect }: { onSelect: (v: "deploy" | "connect") => void 
           <span className={`mt-auto ${btnPrimary}`}>Connect Now</span>
         </button>
 
-        {/* Deploy card - Phase 2 */}
+        {/* Proxy card - Phase 2 */}
         <div className="border border-gray-200 rounded-2xl p-8 flex flex-col items-center text-center h-full opacity-60 cursor-default">
           <div className="text-gray-400 mb-4">
             <svg className="w-12 h-12" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M8 9l3 3-3 3m5 0h3M5 20h14a2 2 0 002-2V6a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
             </svg>
           </div>
-          <h3 className="text-xl font-bold text-gray-900 mb-3">Deploy Managed Agents</h3>
+          <h3 className="text-xl font-bold text-gray-900 mb-3">SynthForce Proxy Layer</h3>
           <p className="text-sm text-gray-500 mb-2 font-medium">Coming in Phase 2 (Sept 2026)</p>
           <p className="text-sm text-gray-500 mb-5">
-            Spin up new AI agents with full management from day one.
+            Route your agent traffic through SynthForce for real-time monitoring, budgets, and policy enforcement.
           </p>
           <div className="space-y-2 mb-6 w-full">
             {[
-              "Deploy with pre-configured budgets",
+              "Real-time per-request cost tracking",
               "Set spend caps and approval gates",
-              "Team-based access controls",
-              "Full cost tracking from first request",
+              "Block or reroute requests by policy",
+              "Per-agent usage breakdown",
             ].map((item) => (
               <div key={item} className="flex items-center justify-center gap-2 text-sm text-gray-400">
                 <span className="w-1.5 h-1.5 rounded-full bg-gray-300 shrink-0" />
@@ -133,7 +133,7 @@ function DeployView({ onBack }: { onBack: () => void }) {
             We&rsquo;re building the ability to create and deploy new AI agents directly from SynthForce.
           </p>
           <p className="text-sm font-semibold text-[#00B2FF] mb-5">
-            This feature launches in Phase 2, September 2026.
+            This feature launches in Phase 3.
           </p>
           <p className="text-sm text-gray-600">
             For now, connect an existing agent from your AI provider account.
