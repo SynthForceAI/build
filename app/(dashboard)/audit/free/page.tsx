@@ -70,6 +70,42 @@ function formatPeriod(start: Date | null, end: Date | null): string {
   return `${fmt(start)} – ${fmt(end)}`;
 }
 
+function inferRole(m: ModelRow): { label: string; description: string; colorClass: string } {
+  const total = m.tokensIn + m.tokensOut;
+  if (total === 0) return { label: "Unknown", description: "No token data available.", colorClass: "text-gray-500 bg-gray-50 border-gray-200" };
+  const inputRatio = m.tokensIn / total;
+  if (inputRatio > 0.72) return { label: "Researcher", description: "Input-heavy. Likely retrieval, Q&A, or context processing.", colorClass: "text-blue-700 bg-blue-50 border-blue-200" };
+  if (inputRatio < 0.42) return { label: "Writer / Coder", description: "Output-heavy. Likely code generation or content creation.", colorClass: "text-purple-700 bg-purple-50 border-purple-200" };
+  return { label: "Analyst", description: "Balanced token mix. Likely reasoning or multi-step analysis.", colorClass: "text-amber-700 bg-amber-50 border-amber-200" };
+}
+
+function utilizationBand(rate: number): { label: string; colorClass: string; barColor: string } {
+  if (rate < 0.30) return { label: "Underutilized", colorClass: "text-orange-600", barColor: "bg-orange-400" };
+  if (rate < 0.70) return { label: "Fair", colorClass: "text-yellow-600", barColor: "bg-yellow-400" };
+  if (rate <= 0.85) return { label: "Healthy", colorClass: "text-green-600", barColor: "bg-green-500" };
+  return { label: "High", colorClass: "text-orange-600", barColor: "bg-orange-500" };
+}
+
+function isFlagshipModel(model: string): boolean {
+  const n = model.toLowerCase();
+  return (n.startsWith("gpt-4") && !n.includes("mini") && !n.includes("nano")) ||
+    n.startsWith("o1") || n.startsWith("o3") ||
+    n.includes("claude-3-opus") || n.includes("claude-opus-4") ||
+    n.includes("gemini-ultra") || n.includes("gemini-1.5-pro");
+}
+
+function detectSpike(daily: DailySpend[]): { spikeDate: string; multiple: number } | null {
+  if (daily.length < 7) return null;
+  const sorted = [...daily].sort((a, b) => a.date.localeCompare(b.date));
+  const half = Math.floor(sorted.length / 2);
+  const baselineMean = sorted.slice(0, half).reduce((s, d) => s + d.costCents, 0) / half;
+  if (baselineMean < 50) return null;
+  const peak = sorted.reduce((mx, d) => d.costCents > mx.costCents ? d : mx, sorted[0]);
+  const multiple = peak.costCents / baselineMean;
+  if (multiple < 2.5) return null;
+  return { spikeDate: peak.date, multiple: Math.round(multiple * 10) / 10 };
+}
+
 // ---------------------------------------------------------------------------
 // Page
 // ---------------------------------------------------------------------------
@@ -169,6 +205,13 @@ export default async function FreeAuditPage({
 
   const byModel: ModelRow[] = reportData?.byModel ?? [];
   const totalModelSpend = byModel.reduce((s, m) => s + m.costCents, 0);
+  const dailySpend: DailySpend[] = reportData?.dailySpendCents ?? [];
+  const activeDays = dailySpend.filter(d => d.costCents > 0).length;
+  const totalDays = dailySpend.length;
+  const utilization = totalDays > 0 ? activeDays / totalDays : 0;
+  const utilBand = utilizationBand(utilization);
+  const spike = detectSpike(dailySpend);
+  const avgModelCost = byModel.length > 1 ? totalModelSpend / byModel.length : 0;
 
   // Top 3 findings (already sorted by orderHint then severity)
   const topFindings = audit.findings.slice(0, 5);
@@ -230,29 +273,97 @@ export default async function FreeAuditPage({
         </div>
       </div>
 
-      {/* ── Model breakdown ──────────────────────────────────────────────── */}
+      {/* ── Synthetic Workforce (Insights 1, 2, 4, 7) ───────────────────── */}
       {byModel.length > 0 && (
         <div className="bg-white rounded-2xl border border-gray-200 shadow-sm p-6">
-          <h2 className="text-sm font-semibold text-gray-900 mb-4">Spend by Model</h2>
-          <div className="space-y-3">
+          <div className="flex items-start justify-between mb-1">
+            <h2 className="text-sm font-semibold text-gray-900">Your Synthetic Workforce</h2>
+            <span className="text-xs text-gray-500 bg-gray-100 px-2.5 py-1 rounded-full shrink-0 ml-3">
+              {byModel.length} model{byModel.length !== 1 ? "s" : ""} active
+            </span>
+          </div>
+          <p className="text-xs text-gray-500 mb-5">
+            Each model in your billing data represents a role in your AI fleet. Role labels are inferred from token patterns.
+          </p>
+          <div className="space-y-4">
             {byModel.map((m) => {
+              const role = inferRole(m);
               const pct = totalModelSpend > 0 ? (m.costCents / totalModelSpend) * 100 : 0;
+              const isOutlier = avgModelCost > 0 && m.costCents > avgModelCost * 3 && byModel.length > 1;
+              const flagship = isFlagshipModel(m.model);
               return (
-                <div key={m.model}>
-                  <div className="flex justify-between text-xs text-gray-600 mb-1">
-                    <span className="font-medium truncate max-w-[60%]">{m.model}</span>
-                    <span>{fmtDollars(m.costCents)} · {Math.round(pct)}%</span>
+                <div key={m.model} className="border border-gray-100 rounded-xl p-4">
+                  <div className="flex flex-wrap items-start justify-between gap-2 mb-2">
+                    <div className="min-w-0 flex-1">
+                      <div className="flex flex-wrap items-center gap-2">
+                        <span className="text-sm font-medium text-gray-900 truncate">{m.model}</span>
+                        {isOutlier && (
+                          <span className="text-xs px-2 py-0.5 rounded-full bg-red-50 text-red-700 border border-red-200 font-medium shrink-0">
+                            Compensation outlier
+                          </span>
+                        )}
+                        {flagship && !isOutlier && (
+                          <span className="text-xs px-2 py-0.5 rounded-full bg-amber-50 text-amber-700 border border-amber-200 font-medium shrink-0">
+                            Flagship tier
+                          </span>
+                        )}
+                      </div>
+                      <span className={`mt-1.5 inline-block text-xs px-2 py-0.5 rounded-full border font-medium ${role.colorClass}`}>
+                        {role.label}
+                      </span>
+                      <p className="text-xs text-gray-500 mt-1">{role.description}</p>
+                      {flagship && m.calls > 500 && (
+                        <p className="text-xs text-amber-600 mt-2">
+                          {m.calls.toLocaleString()} calls on a flagship model. Simple tasks may qualify for a mini-tier model at up to 97% lower cost. Est. savings: {fmtDollars(Math.round(m.costCents * 0.90))}/mo if workload qualifies.
+                        </p>
+                      )}
+                    </div>
+                    <div className="text-right shrink-0">
+                      <div className="text-sm font-bold text-gray-900">{fmtDollars(m.costCents)}</div>
+                      <div className="text-xs text-gray-500">salary / period</div>
+                    </div>
                   </div>
-                  <div className="h-2 bg-gray-100 rounded-full overflow-hidden">
-                    <div
-                      className="h-full bg-[#00B2FF] rounded-full"
-                      style={{ width: `${pct}%` }}
-                    />
+                  <div className="mt-3">
+                    <div className="flex justify-between text-xs text-gray-400 mb-1">
+                      <span>{Math.round(pct)}% of payroll</span>
+                      <span>{m.calls.toLocaleString()} calls</span>
+                    </div>
+                    <div className="h-1.5 bg-gray-100 rounded-full overflow-hidden">
+                      <div className="h-full bg-[#00B2FF] rounded-full" style={{ width: `${pct}%` }} />
+                    </div>
                   </div>
                 </div>
               );
             })}
           </div>
+          {byModel.length > 1 && avgModelCost > 0 && (
+            <p className="text-xs text-gray-400 mt-4 pt-4 border-t border-gray-100">
+              Average model salary this period: {fmtDollars(Math.round(avgModelCost))}
+            </p>
+          )}
+        </div>
+      )}
+
+      {/* ── Fleet Utilization (Insight 3) ────────────────────────────────── */}
+      {totalDays > 0 && (
+        <div className="bg-white rounded-2xl border border-gray-200 shadow-sm p-6">
+          <h2 className="text-sm font-semibold text-gray-900 mb-4">Fleet Utilization</h2>
+          <div className="flex items-center justify-between mb-2">
+            <span className="text-xs text-gray-500">{activeDays} of {totalDays} days active</span>
+            <span className={`text-sm font-bold ${utilBand.colorClass}`}>
+              {Math.round(utilization * 100)}% — {utilBand.label}
+            </span>
+          </div>
+          <div className="h-3 bg-gray-100 rounded-full overflow-hidden mb-3">
+            <div className={`h-full ${utilBand.barColor} rounded-full`} style={{ width: `${Math.round(utilization * 100)}%` }} />
+          </div>
+          <p className="text-xs text-gray-500">
+            Healthy utilization is 70–85%.
+            {utilization < 0.30 && " Your fleet is largely idle. Consider retiring unused models to reduce payroll."}
+            {utilization >= 0.30 && utilization < 0.70 && " Your fleet runs on a moderate schedule."}
+            {utilization >= 0.70 && utilization <= 0.85 && " Your fleet is running at a healthy rate."}
+            {utilization > 0.85 && " Your fleet runs nearly every day. Watch for runaway loops or unintended always-on spend."}
+          </p>
         </div>
       )}
 
@@ -306,6 +417,41 @@ export default async function FreeAuditPage({
         <p className="text-sm text-gray-500">
           See how your spend compares to similar-sized companies. Available once we have enough anonymized data to calculate reliable percentiles.
         </p>
+      </div>
+
+      {/* ── What This Audit Cannot Tell You Yet (Insights 12, 13) ─────────── */}
+      <div className="bg-white rounded-2xl border border-gray-200 shadow-sm p-6 space-y-4">
+        <h2 className="text-sm font-semibold text-gray-900">What This Audit Cannot Tell You Yet</h2>
+
+        {/* Insight 12: Attribution gap */}
+        <div className="bg-gray-50 rounded-xl p-4 border border-gray-200">
+          <div className="flex items-start gap-3">
+            <span className="text-base mt-0.5" aria-hidden="true">🕳️</span>
+            <div>
+              <p className="text-sm font-medium text-gray-900 mb-1">Attribution gap</p>
+              <p className="text-sm text-gray-600">
+                100% of your spend is visible by API key and model. 0% is traceable to a task, customer, or outcome. Billing data shows you the invoice. It cannot show you what produced it.
+              </p>
+              <p className="text-xs text-gray-400 mt-2">Install the SynthForce proxy layer to close the gap.</p>
+            </div>
+          </div>
+        </div>
+
+        {/* Insight 13: Spike forensics */}
+        {spike && (
+          <div className="bg-orange-50 rounded-xl p-4 border border-orange-200">
+            <div className="flex items-start gap-3">
+              <span className="text-base mt-0.5" aria-hidden="true">🚨</span>
+              <div>
+                <p className="text-sm font-medium text-gray-900 mb-1">Spend spike detected</p>
+                <p className="text-sm text-gray-600">
+                  Spend on {new Date(spike.spikeDate + "T12:00:00").toLocaleDateString("en-US", { month: "short", day: "numeric" })} ran at {spike.multiple}x the period baseline. Bug or feature? Billing data cannot say which.
+                </p>
+                <p className="text-xs text-gray-400 mt-2">Upgrade for per-request root cause.</p>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
 
       {/* ── Upgrade CTA ──────────────────────────────────────────────────── */}
