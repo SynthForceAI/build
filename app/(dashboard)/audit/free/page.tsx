@@ -5,6 +5,7 @@ import { ApiError } from "@/lib/api-errors";
 import { prisma } from "@/lib/db";
 import { ShareButton } from "./ShareButton";
 import { RerunButton } from "./RerunButton";
+import { BurnRateCard } from "./BurnRateCard";
 
 // ---------------------------------------------------------------------------
 // Types
@@ -245,6 +246,57 @@ export default async function FreeAuditPage({
   const overtime = detectOvertime(dailySpend);
   const avgModelCost = byModel.length > 1 ? totalModelSpend / byModel.length : 0;
 
+  // Insight 5: spend trend first-half vs second-half
+  const spendTrend = (() => {
+    if (dailySpend.length < 14) return null;
+    const sorted = [...dailySpend].sort((a, b) => a.date.localeCompare(b.date));
+    const half = Math.floor(sorted.length / 2);
+    const firstAvg  = sorted.slice(0, half).reduce((s, d) => s + d.costCents, 0) / half;
+    const secondAvg = sorted.slice(half).reduce((s, d) => s + d.costCents, 0) / (sorted.length - half);
+    if (firstAvg === 0) return null;
+    const pct = Math.round(((secondAvg - firstAvg) / firstAvg) * 100);
+    // Per-model context load (tokens per call) for models with call data
+    const modelContext = byModel
+      .filter((m) => m.calls > 0 && m.tokensIn > 0)
+      .map((m) => {
+        const tpc = Math.round(m.tokensIn / m.calls);
+        const label = tpc > 100_000 ? "Very heavy" : tpc > 50_000 ? "Heavy" : tpc > 10_000 ? "Moderate" : "Light";
+        return { model: m.model, tpc, label, heavy: tpc > 50_000 };
+      });
+    return { pct, modelContext };
+  })();
+
+  // Insight 9: batch eligibility — flagship/mid-tier models with high call volumes
+  const batchCandidates = byModel.filter((m) => {
+    const n = m.model.toLowerCase();
+    const isCheap = n.includes("mini") || n.includes("nano") || n.includes("haiku") || n.includes("flash");
+    return m.calls > 500 && !isCheap && m.costCents > 500;
+  });
+  const batchSavingsEstimateCents = batchCandidates.reduce(
+    (s, m) => s + Math.round(m.costCents * 0.25), 0,
+  );
+
+  // Insight 11: burn rate (7-day rolling average)
+  const burnRate = (() => {
+    if (dailySpend.length < 7) return null;
+    const sorted = [...dailySpend].sort((a, b) => a.date.localeCompare(b.date));
+    const last7  = sorted.slice(-7);
+    const prev7  = sorted.slice(-14, -7);
+    const last7Avg = last7.reduce((s, d) => s + d.costCents, 0) / last7.length;
+    if (last7Avg === 0) return null;
+    const prev7Avg = prev7.length > 0
+      ? prev7.reduce((s, d) => s + d.costCents, 0) / prev7.length
+      : last7Avg;
+    const trendPct = prev7Avg > 0
+      ? Math.round(((last7Avg - prev7Avg) / prev7Avg) * 100)
+      : 0;
+    return {
+      dailyRateCents:  Math.round(last7Avg),
+      weeklyRateCents: Math.round(last7Avg * 7),
+      trendPct,
+    };
+  })();
+
   // Top 3 findings (already sorted by orderHint then severity)
   const topFindings = audit.findings.slice(0, 5);
 
@@ -420,6 +472,63 @@ export default async function FreeAuditPage({
         </div>
       )}
 
+      {/* ── Fleet Performance Review (Insight 5) ─────────────────────────── */}
+      {spendTrend && (
+        <div className="bg-white rounded-2xl border border-gray-200 shadow-sm p-6">
+          <h2 className="text-sm font-semibold text-gray-900 mb-4">Fleet Performance Review</h2>
+
+          {/* Spend trend verdict */}
+          <div className={`rounded-xl p-4 mb-4 border ${
+            spendTrend.pct < -10 ? "bg-green-50 border-green-200" :
+            spendTrend.pct >  10 ? "bg-orange-50 border-orange-200" :
+            "bg-gray-50 border-gray-200"
+          }`}>
+            <div className="flex items-center justify-between">
+              <span className="text-sm font-medium text-gray-900">Overall fleet verdict</span>
+              <span className={`text-sm font-bold ${
+                spendTrend.pct < -10 ? "text-green-700" :
+                spendTrend.pct >  10 ? "text-orange-600" :
+                "text-gray-700"
+              }`}>
+                {spendTrend.pct < -10 ? "Exceeds Expectations" :
+                 spendTrend.pct >  10 ? "Needs Improvement" :
+                 "Meets Expectations"}
+              </span>
+            </div>
+            <p className="text-xs text-gray-500 mt-1">
+              {spendTrend.pct < -10
+                ? `Daily spend is down ${Math.abs(spendTrend.pct)}% in the second half of the period. Efficiency is improving.`
+                : spendTrend.pct > 10
+                ? `Daily spend is up ${spendTrend.pct}% in the second half of the period. Context bloat or increased load.`
+                : "Daily spend is stable across the period."}
+            </p>
+          </div>
+
+          {/* Per-model context load */}
+          {spendTrend.modelContext.length > 0 && (
+            <div>
+              <p className="text-xs font-medium text-gray-500 mb-2">Context load per request</p>
+              <div className="space-y-2">
+                {spendTrend.modelContext.map((mc) => (
+                  <div key={mc.model} className="flex items-center justify-between text-xs py-1.5 border-b border-gray-100 last:border-0">
+                    <span className="text-gray-700 truncate max-w-[55%]">{formatModelName(mc.model)}</span>
+                    <div className="flex items-center gap-2 shrink-0">
+                      <span className="text-gray-500">{mc.tpc.toLocaleString()} tokens/call</span>
+                      <span className={`px-2 py-0.5 rounded-full font-medium ${
+                        mc.heavy ? "bg-orange-50 text-orange-700 border border-orange-200" :
+                        "bg-gray-100 text-gray-600"
+                      }`}>
+                        {mc.label}
+                      </span>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+        </div>
+      )}
+
       {/* ── Burnout / Overtime (Insight 6) ───────────────────────────────── */}
       {overtime && (
         <div className="bg-white rounded-2xl border border-orange-200 shadow-sm p-6">
@@ -435,6 +544,39 @@ export default async function FreeAuditPage({
               </p>
             </div>
           </div>
+        </div>
+      )}
+
+      {/* ── Batch Eligibility (Insight 9) ────────────────────────────────── */}
+      {batchCandidates.length > 0 && (
+        <div className="bg-white rounded-2xl border border-gray-200 shadow-sm p-6">
+          <div className="flex items-start justify-between mb-1">
+            <h2 className="text-sm font-semibold text-gray-900">Batch Eligibility</h2>
+            {batchSavingsEstimateCents > 0 && (
+              <span className="text-xs text-green-700 bg-green-50 border border-green-200 px-2.5 py-1 rounded-full shrink-0 ml-3">
+                Est. save {fmtDollars(batchSavingsEstimateCents)}/mo
+              </span>
+            )}
+          </div>
+          <p className="text-xs text-gray-500 mb-4">
+            OpenAI and Anthropic both offer a 50% discount via their Batch API for non-urgent requests. These models have high call volumes that may qualify.
+          </p>
+          <div className="space-y-2">
+            {batchCandidates.map((m) => (
+              <div key={m.model} className="flex items-center justify-between text-xs py-2 border-b border-gray-100 last:border-0">
+                <span className="text-gray-700 truncate max-w-[55%]">{formatModelName(m.model)}</span>
+                <div className="flex items-center gap-3 shrink-0">
+                  <span className="text-gray-500">{m.calls.toLocaleString()} calls</span>
+                  <span className="text-green-700 font-medium">
+                    Save {fmtDollars(Math.round(m.costCents * 0.25))}/mo if 50% moves to batch
+                  </span>
+                </div>
+              </div>
+            ))}
+          </div>
+          <p className="text-xs text-gray-400 mt-4">
+            Estimate assumes 50% of calls are non-time-sensitive and a 50% batch discount. Actual savings depend on your workload.
+          </p>
         </div>
       )}
 
@@ -524,6 +666,15 @@ export default async function FreeAuditPage({
           </div>
         )}
       </div>
+
+      {/* ── Burn Rate Forecast (Insight 11) ──────────────────────────────── */}
+      {burnRate && (
+        <BurnRateCard
+          dailyRateCents={burnRate.dailyRateCents}
+          weeklyRateCents={burnRate.weeklyRateCents}
+          trendPct={burnRate.trendPct}
+        />
+      )}
 
       {/* ── Upgrade CTA ──────────────────────────────────────────────────── */}
       <div className="bg-gradient-to-r from-[#00B2FF]/10 to-blue-50 border border-blue-100 rounded-2xl p-6">
