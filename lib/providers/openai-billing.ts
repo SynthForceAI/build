@@ -28,11 +28,12 @@ export type ProviderUsageReport = {
   dailySpendCents:  Array<{ date: string; costCents: number; calls: number }>;
   /** Per-model breakdown across the whole period. */
   byModel:          Array<{
-    model:        string;
-    costCents:    number;
-    calls:        number;
-    tokensIn:     number;
-    tokensOut:    number;
+    model:          string;
+    costCents:      number;
+    calls:          number;
+    tokensIn:       number;
+    tokensOut:      number;
+    tokensInCached: number;
   }>;
   /** Raw responses kept for auditing reproducibility. */
   rawResponses:     Array<{ source: string; body: unknown }>;
@@ -121,7 +122,7 @@ export function normalizeOpenAI(
   periodStart: Date,
   periodEnd: Date,
 ): ProviderUsageReport {
-  const byModelMap = new Map<string, { costCents: number; calls: number; tokensIn: number; tokensOut: number }>();
+  const byModelMap = new Map<string, { costCents: number; calls: number; tokensIn: number; tokensOut: number; tokensInCached: number }>();
   const dailySpendCents: ProviderUsageReport["dailySpendCents"] = [];
 
   let totalCostCents = 0;
@@ -137,7 +138,7 @@ export function normalizeOpenAI(
       const costCents = Math.round(item.cost);
       dayCostCents   += costCents;
 
-      const bucket = byModelMap.get(item.name) ?? { costCents: 0, calls: 0, tokensIn: 0, tokensOut: 0 };
+      const bucket = byModelMap.get(item.name) ?? { costCents: 0, calls: 0, tokensIn: 0, tokensOut: 0, tokensInCached: 0 };
       bucket.costCents += costCents;
       // Billing API doesn't break out per-call or per-token counts; leave 0.
       byModelMap.set(item.name, bucket);

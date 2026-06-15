@@ -22,6 +22,7 @@ const OPENAI_COSTS_URL = "https://api.openai.com/v1/organization/costs";
 type OAIUsageResult = {
   input_tokens?: number;
   output_tokens?: number;
+  input_cached_tokens?: number;
   num_model_requests?: number;
   project_id?: string | null;
   model?: string | null;
@@ -87,7 +88,7 @@ async function fetchOpenAIAuditData(apiKey: string, periodDays: number): Promise
   }
 
   // Aggregate tokens per (day, model).
-  type DayModel = { tokensIn: number; tokensOut: number; requests: number };
+  type DayModel = { tokensIn: number; tokensOut: number; requests: number; tokensInCached: number };
   const byDayModel = new Map<string, DayModel>();
   const dayTokenTotals = new Map<number, number>();
 
@@ -98,17 +99,18 @@ async function fetchOpenAIAuditData(apiKey: string, periodDays: number): Promise
       const tokensOut = r.output_tokens ?? 0;
       if (tokensIn === 0 && tokensOut === 0) continue;
       const key = `${day}:${r.model ?? "unknown"}`;
-      const cur = byDayModel.get(key) ?? { tokensIn: 0, tokensOut: 0, requests: 0 };
-      cur.tokensIn  += tokensIn;
-      cur.tokensOut += tokensOut;
-      cur.requests  += r.num_model_requests ?? 0;
+      const cur = byDayModel.get(key) ?? { tokensIn: 0, tokensOut: 0, requests: 0, tokensInCached: 0 };
+      cur.tokensIn       += tokensIn;
+      cur.tokensOut      += tokensOut;
+      cur.requests       += r.num_model_requests ?? 0;
+      cur.tokensInCached += r.input_cached_tokens ?? 0;
       byDayModel.set(key, cur);
       dayTokenTotals.set(day, (dayTokenTotals.get(day) ?? 0) + tokensIn + tokensOut);
     }
   }
 
   // Build per-model totals and per-day spend.
-  const modelTotals = new Map<string, { costCents: number; calls: number; tokensIn: number; tokensOut: number }>();
+  const modelTotals = new Map<string, { costCents: number; calls: number; tokensIn: number; tokensOut: number; tokensInCached: number }>();
   const dailySpendMap = new Map<number, number>();
 
   for (const [key, dm] of byDayModel) {
@@ -129,11 +131,12 @@ async function fetchOpenAIAuditData(apiKey: string, periodDays: number): Promise
 
     dailySpendMap.set(day, (dailySpendMap.get(day) ?? 0) + costCents);
 
-    const mt = modelTotals.get(model) ?? { costCents: 0, calls: 0, tokensIn: 0, tokensOut: 0 };
-    mt.costCents += costCents;
-    mt.calls     += dm.requests;
-    mt.tokensIn  += dm.tokensIn;
-    mt.tokensOut += dm.tokensOut;
+    const mt = modelTotals.get(model) ?? { costCents: 0, calls: 0, tokensIn: 0, tokensOut: 0, tokensInCached: 0 };
+    mt.costCents      += costCents;
+    mt.calls          += dm.requests;
+    mt.tokensIn       += dm.tokensIn;
+    mt.tokensOut      += dm.tokensOut;
+    mt.tokensInCached += dm.tokensInCached;
     modelTotals.set(model, mt);
   }
 
@@ -219,28 +222,30 @@ async function fetchAnthropicAuditData(apiKey: string, periodDays: number): Prom
 
   const json = (await res.json()) as AntUsageResponse;
 
-  type DayModel = { tokensIn: number; tokensOut: number };
+  type DayModel = { tokensIn: number; tokensOut: number; tokensInCached: number };
   const byDayModel = new Map<string, DayModel>();
 
   for (const bucket of json.data ?? []) {
     const day = bucket.starting_at?.slice(0, 10) ?? "unknown";
     for (const r of bucket.results ?? []) {
+      const cachedRead = r.cache_read_input_tokens ?? 0;
       const tokensIn =
         r.input_tokens ??
         (r.uncached_input_tokens ?? 0) +
         (r.cache_creation_input_tokens ?? 0) +
-        (r.cache_read_input_tokens ?? 0);
+        cachedRead;
       const tokensOut = r.output_tokens ?? 0;
       if (tokensIn === 0 && tokensOut === 0) continue;
       const key = `${day}:${r.model ?? "unknown"}`;
-      const cur = byDayModel.get(key) ?? { tokensIn: 0, tokensOut: 0 };
-      cur.tokensIn  += tokensIn;
-      cur.tokensOut += tokensOut;
+      const cur = byDayModel.get(key) ?? { tokensIn: 0, tokensOut: 0, tokensInCached: 0 };
+      cur.tokensIn       += tokensIn;
+      cur.tokensOut      += tokensOut;
+      cur.tokensInCached += cachedRead;
       byDayModel.set(key, cur);
     }
   }
 
-  const modelTotals = new Map<string, { costCents: number; calls: number; tokensIn: number; tokensOut: number }>();
+  const modelTotals = new Map<string, { costCents: number; calls: number; tokensIn: number; tokensOut: number; tokensInCached: number }>();
   const dailySpendMap = new Map<string, number>();
 
   for (const [key, dm] of byDayModel) {
@@ -251,10 +256,11 @@ async function fetchAnthropicAuditData(apiKey: string, periodDays: number): Prom
 
     dailySpendMap.set(day, (dailySpendMap.get(day) ?? 0) + cost);
 
-    const mt = modelTotals.get(model) ?? { costCents: 0, calls: 0, tokensIn: 0, tokensOut: 0 };
-    mt.costCents += cost;
-    mt.tokensIn  += dm.tokensIn;
-    mt.tokensOut += dm.tokensOut;
+    const mt = modelTotals.get(model) ?? { costCents: 0, calls: 0, tokensIn: 0, tokensOut: 0, tokensInCached: 0 };
+    mt.costCents      += cost;
+    mt.tokensIn       += dm.tokensIn;
+    mt.tokensOut      += dm.tokensOut;
+    mt.tokensInCached += dm.tokensInCached;
     modelTotals.set(model, mt);
   }
 

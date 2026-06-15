@@ -10,11 +10,12 @@ import { ShareButton } from "./ShareButton";
 // ---------------------------------------------------------------------------
 
 type ModelRow = {
-  model: string;
-  costCents: number;
-  calls: number;
-  tokensIn: number;
-  tokensOut: number;
+  model:           string;
+  costCents:       number;
+  calls:           number;
+  tokensIn:        number;
+  tokensOut:       number;
+  tokensInCached?: number;
 };
 
 type DailySpend = {
@@ -104,6 +105,25 @@ function detectSpike(daily: DailySpend[]): { spikeDate: string; multiple: number
   const multiple = peak.costCents / baselineMean;
   if (multiple < 2.5) return null;
   return { spikeDate: peak.date, multiple: Math.round(multiple * 10) / 10 };
+}
+
+function detectOvertime(daily: DailySpend[]): { highDays: number; avgMultiple: number } | null {
+  if (daily.length < 7) return null;
+  const sorted = [...daily].sort((a, b) => a.date.localeCompare(b.date));
+  const half = Math.floor(sorted.length / 2);
+  const baselineMean = sorted.slice(0, half).reduce((s, d) => s + d.costCents, 0) / half;
+  if (baselineMean < 100) return null;
+  const last7 = sorted.slice(-7);
+  const highDays = last7.filter(d => d.costCents > baselineMean * 1.3).length;
+  if (highDays < 5) return null;
+  const avgMultiple = last7.reduce((s, d) => s + d.costCents, 0) / 7 / baselineMean;
+  return { highDays, avgMultiple: Math.round(avgMultiple * 10) / 10 };
+}
+
+function cacheInfo(m: ModelRow): { ratePct: number; opportunity: boolean } | null {
+  if (!m.tokensInCached || m.tokensIn === 0) return null;
+  const ratePct = Math.round(Math.min(100, (m.tokensInCached / m.tokensIn) * 100));
+  return { ratePct, opportunity: ratePct < 30 && m.tokensIn > 20000 };
 }
 
 // ---------------------------------------------------------------------------
@@ -211,6 +231,7 @@ export default async function FreeAuditPage({
   const utilization = totalDays > 0 ? activeDays / totalDays : 0;
   const utilBand = utilizationBand(utilization);
   const spike = detectSpike(dailySpend);
+  const overtime = detectOvertime(dailySpend);
   const avgModelCost = byModel.length > 1 ? totalModelSpend / byModel.length : 0;
 
   // Top 3 findings (already sorted by orderHint then severity)
@@ -332,6 +353,32 @@ export default async function FreeAuditPage({
                       <div className="h-full bg-[#00B2FF] rounded-full" style={{ width: `${pct}%` }} />
                     </div>
                   </div>
+                  {(() => {
+                    const cache = cacheInfo(m);
+                    if (!cache) return null;
+                    return (
+                      <div className="mt-3 pt-3 border-t border-gray-100">
+                        <div className="flex items-center justify-between mb-1">
+                          <span className="text-xs text-gray-500">Cache rate</span>
+                          <span className={`text-xs font-medium ${cache.ratePct >= 50 ? "text-green-600" : cache.ratePct >= 30 ? "text-yellow-600" : "text-orange-600"}`}>
+                            {cache.ratePct}%
+                            {cache.ratePct < 50 && <span className="text-gray-400 font-normal"> vs 74% benchmark</span>}
+                          </span>
+                        </div>
+                        <div className="h-1 bg-gray-100 rounded-full overflow-hidden">
+                          <div
+                            className={`h-full rounded-full ${cache.ratePct >= 50 ? "bg-green-500" : cache.ratePct >= 30 ? "bg-yellow-400" : "bg-orange-400"}`}
+                            style={{ width: `${cache.ratePct}%` }}
+                          />
+                        </div>
+                        {cache.opportunity && (
+                          <p className="text-xs text-orange-600 mt-1.5">
+                            Low cache rate. Moving static content into your cached prefix could significantly reduce input token costs.
+                          </p>
+                        )}
+                      </div>
+                    );
+                  })()}
                 </div>
               );
             })}
@@ -364,6 +411,24 @@ export default async function FreeAuditPage({
             {utilization >= 0.70 && utilization <= 0.85 && " Your fleet is running at a healthy rate."}
             {utilization > 0.85 && " Your fleet runs nearly every day. Watch for runaway loops or unintended always-on spend."}
           </p>
+        </div>
+      )}
+
+      {/* ── Burnout / Overtime (Insight 6) ───────────────────────────────── */}
+      {overtime && (
+        <div className="bg-white rounded-2xl border border-orange-200 shadow-sm p-6">
+          <div className="flex items-start gap-3">
+            <span className="text-xl mt-0.5" aria-hidden="true">🔥</span>
+            <div>
+              <h2 className="text-sm font-semibold text-gray-900 mb-1">Sustained High Spend Detected</h2>
+              <p className="text-sm text-gray-600 mb-2">
+                {overtime.highDays} of the last 7 days ran at {overtime.avgMultiple}x the period baseline. Sustained elevated spend is a warning sign for runaway agents or unintended always-on workloads.
+              </p>
+              <p className="text-xs text-gray-400">
+                Real-time runaway detection requires the SynthForce proxy layer. Billing data can only flag the pattern after the fact.
+              </p>
+            </div>
+          </div>
         </div>
       )}
 
