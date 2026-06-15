@@ -36,7 +36,7 @@ const FACTS: Fact[] = [
   {
     stat:    '$47,000',
     claim:   'Lost in 11 days. No one noticed until the invoice arrived.',
-    context: 'Four LangChain agents in an A2A coordination loop ran undetected for 264 hours. Cost compounded from $127 in week one to $18,400 in week four — discovered only at billing.',
+    context: 'Four LangChain agents in an A2A coordination loop ran undetected for 264 hours. Cost compounded from $127 in week one to $18,400 in week four, discovered only when the invoice arrived.',
     source:  'Post-mortem by Teja Kusireddy · TechStartups.com, Nov 14 2025 · HN #45802430',
     accent:  'red',
   },
@@ -50,7 +50,7 @@ const FACTS: Fact[] = [
   {
     stat:    '26%',
     claim:   'Only one in four companies can actually see their AI costs.',
-    context: 'The other 74% are flying blind — approving budgets, shipping agents, and signing off on invoices with no real visibility into where the money goes.',
+    context: 'The other 74% are flying blind. They are approving budgets, shipping agents, and signing off on invoices with no real visibility into where the money goes.',
     source:  'KPMG enterprise AI survey',
     accent:  'red',
   },
@@ -64,14 +64,14 @@ const FACTS: Fact[] = [
   {
     stat:    '96%',
     claim:   'AI agents are 96% cheaper per task than human workers.',
-    context: 'Human workers average $24.79 per task. AI agents powered by GPT-4o and Claude Sonnet average $0.94 and $2.39 — a 96.2% and 90.4% cost reduction. The agents are not a bet on the future. They are already cheaper.',
+    context: 'Human workers average $24.79 per task. AI agents powered by GPT-4o and Claude Sonnet average $0.94 and $2.39, a 96.2% and 90.4% cost reduction respectively. The agents are not a bet on the future. They are already cheaper.',
     source:  'Stanford/CMU · "How Do AI Agents Do Human Work?" · arXiv:2510.22780',
     accent:  'green',
   },
   {
     stat:    '200%',
     claim:   'Replacing one human costs up to 200% of their annual salary.',
-    context: 'Your agents already do the equivalent of several FTEs. Gallup estimates replacement costs at 200% for managers, 80% for technical roles, 40% for frontline. You are managing a payroll — you just cannot see it yet.',
+    context: 'Your agents already do the equivalent of several FTEs. Gallup estimates replacement costs at 200% for managers, 80% for technical roles, 40% for frontline. You are managing a payroll. You just cannot see it yet.',
     source:  'SHRM / Gallup workforce studies',
     accent:  'blue',
   },
@@ -84,7 +84,7 @@ const FACTS: Fact[] = [
   },
   {
     stat:    '97%',
-    claim:   'Mini models cost 97% less — and agree with flagship models 90% of the time.',
+    claim:   'Mini models cost 97% less, and agree with flagship models 90% of the time.',
     context: 'Most high-volume, simple workloads do not need GPT-4-class reasoning. The agents running them are overqualified. You are paying executive salaries for filing-cabinet work.',
     source:  'Cross-provider model benchmarks · 2025',
     accent:  'blue',
@@ -92,7 +92,7 @@ const FACTS: Fact[] = [
   {
     stat:    '0%',
     claim:   'Billing data can show you the spike. It cannot tell you who caused it.',
-    context: 'Every AI provider will tell you how much you spent. None will tell you which agent, task, or customer triggered a five-figure overage. That attribution gap is where the damage happens — and where SynthForce operates.',
+    context: 'Every AI provider will tell you how much you spent. None will tell you which agent, task, or customer triggered a five-figure overage. That attribution gap is where the damage happens, and where SynthForce operates.',
     source:  'OpenAI / Anthropic Usage API documentation',
     accent:  'gray',
   },
@@ -132,7 +132,7 @@ export default function HardTruthPage() {
             Nine facts about AI agent costs that your provider will never put in a dashboard.
           </p>
           <p className="text-sm text-gray-600 max-w-xl mx-auto">
-            Every number below is sourced. Every incident is documented. This is the reality companies are navigating — mostly without the tools to see it.
+            Every number below is sourced. Every incident is documented. This is the reality companies are navigating, mostly without the tools to see it.
           </p>
         </motion.div>
       </section>
