@@ -13,7 +13,7 @@ const PORTAL_URLS: Record<string, string> = {
 
 const KEY_HINTS: Record<string, string> = {
   openai:    "sk-admin-…",
-  anthropic: "sk-ant-admin-…",
+  anthropic: "sk-ant-admin01-…",
 };
 
 interface Props {
