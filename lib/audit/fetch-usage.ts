@@ -191,15 +191,16 @@ async function fetchAnthropicAuditData(apiKey: string, periodDays: number): Prom
   const now   = new Date();
   const start = new Date(now.getTime() - periodDays * 24 * 60 * 60 * 1000);
 
-  const url = new URL(ANTHROPIC_USAGE_URL);
-  url.searchParams.set("starting_at",  start.toISOString());
-  url.searchParams.set("ending_at",    now.toISOString());
-  url.searchParams.set("bucket_width", "1d");
-  url.searchParams.append("group_by[]", "api_key_id");
-  url.searchParams.append("group_by[]", "model");
-  url.searchParams.set("limit", "90");
+  const baseParams = new URLSearchParams({
+    starting_at:  start.toISOString(),
+    ending_at:    now.toISOString(),
+    bucket_width: "1d",
+    limit:        "31",
+  });
+  // group_by[] must be literal brackets — URLSearchParams encodes them to %5B%5D which Anthropic rejects.
+  const urlStr = `${ANTHROPIC_USAGE_URL}?${baseParams.toString()}&group_by[]=api_key_id&group_by[]=model`;
 
-  const res = await fetch(url.toString(), {
+  const res = await fetch(urlStr, {
     headers: {
       "x-api-key":          apiKey,
       "anthropic-version":  ANTHROPIC_VERSION,
@@ -208,10 +209,13 @@ async function fetchAnthropicAuditData(apiKey: string, periodDays: number): Prom
     signal: AbortSignal.timeout(25_000),
   });
 
-  if (res.status === 401) throw new Error("Anthropic rejected the admin key (401). Use an sk-ant-admin- key.");
+  if (res.status === 401) throw new Error("Anthropic rejected the admin key (401). Use an sk-ant-admin key.");
   if (res.status === 403) throw new Error("This key lacks org access (403). Create an Admin key in the Anthropic Console.");
   if (res.status === 429) throw new Error("Anthropic rate-limited the usage request (429). Try again in a minute.");
-  if (!res.ok) throw new Error(`Anthropic usage endpoint returned ${res.status}.`);
+  if (!res.ok) {
+    const body = await res.text().catch(() => "");
+    throw new Error(`Anthropic usage endpoint returned ${res.status}. ${body}`.trim());
+  }
 
   const json = (await res.json()) as AntUsageResponse;
 
