@@ -34,10 +34,47 @@ function parseUsageFromResponse(parsedResponse: unknown): { tokensIn: number; to
 }
 
 /**
+ * Extract token usage from a Server-Sent Events (SSE) stream body.
+ *
+ * We read the full cloned stream (the original, piped to the caller, is
+ * untouched) and scan every `data:` event for usage. Providers report usage in
+ * different events/shapes:
+ *   - OpenAI (stream_options.include_usage): a final chunk with top-level `usage`.
+ *   - Anthropic: `message_start` carries `message.usage.input_tokens`; the
+ *     `message_delta` carries the final cumulative `usage.output_tokens`.
+ * We take the max seen for each direction, which yields the final totals
+ * regardless of which event carried them.
+ */
+export function parseStreamingUsage(sseText: string): { tokensIn: number; tokensOut: number } {
+  let tokensIn = 0;
+  let tokensOut = 0;
+
+  for (const line of sseText.split("\n")) {
+    const trimmed = line.trim();
+    if (!trimmed.startsWith("data:")) continue;
+    const payload = trimmed.slice(5).trim();
+    if (!payload || payload === "[DONE]") continue;
+
+    let obj: unknown;
+    try { obj = JSON.parse(payload); } catch { continue; }
+
+    // Usage can sit at the top level (OpenAI) or under `message` (Anthropic).
+    const nested = (obj as { message?: unknown })?.message;
+    for (const candidate of [obj, nested]) {
+      const { tokensIn: ti, tokensOut: to } = parseUsageFromResponse(candidate);
+      if (ti > tokensIn) tokensIn = ti;
+      if (to > tokensOut) tokensOut = to;
+    }
+  }
+
+  return { tokensIn, tokensOut };
+}
+
+/**
  * Fire-and-forget usage log write.
  *
- * Call with response.clone() so the original stream is unaffected.
- * For SSE/streaming responses we log what we know from the request side only.
+ * Call with response.clone() so the original stream is unaffected — we can then
+ * fully read the clone (including SSE streams) to recover token usage.
  */
 export async function logProxyResponse(
   responseClone: Response,
@@ -48,16 +85,17 @@ export async function logProxyResponse(
   const isStreaming = responseClone.headers.get("content-type")?.includes("text/event-stream") ?? false;
 
   try {
+    const text = await responseClone.text();
     let tokensIn: number;
     let tokensOut: number;
 
     if (isStreaming) {
-      // Can't parse SSE chunks without consuming the stream.
-      // Log request-side estimate; tokensOut stays 0 for now.
-      tokensIn  = estimateTokens(parsedBody);
-      tokensOut = 0;
+      // The clone is independent of the streamed response, so reading it here
+      // does not affect what the caller receives.
+      const usage = parseStreamingUsage(text);
+      tokensIn  = usage.tokensIn  || estimateTokens(parsedBody);
+      tokensOut = usage.tokensOut;
     } else {
-      const text = await responseClone.text();
       let parsed: unknown = null;
       try { parsed = JSON.parse(text); } catch { /* binary or non-JSON body */ }
 

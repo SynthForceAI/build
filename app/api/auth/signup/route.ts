@@ -53,7 +53,8 @@ export async function POST(req: NextRequest) {
       });
     }
 
-    // Create user in SynthForce users table
+    // Create user in SynthForce users table. A self-signup creates their own
+    // workspace, so they are its owner (consistent with /api/auth/bootstrap).
     const user = await prisma.user.upsert({
       where: { id: data.user.id },
       create: {
@@ -61,6 +62,7 @@ export async function POST(req: NextRequest) {
         email,
         name: email.split("@")[0],
         companyId: company.id,
+        role: "owner",
       },
       update: {
         email,

@@ -1,4 +1,5 @@
 import { prisma } from "@/lib/db";
+import { rateLimit } from "@/lib/rate-limit";
 import type { Policy, PolicySeverity } from "@prisma/client";
 
 export type PolicyCheckResult =
@@ -113,7 +114,9 @@ async function evaluateRule(
       return checkMonthlySpend(agentId, rule.value as number);
 
     case "RATE_LIMIT":
-      return checkRateLimit(agentId, (rule.value as { requestsPerMinute: number }).requestsPerMinute);
+      return Promise.resolve(
+        checkRateLimit(agentId, (rule.value as { requestsPerMinute: number }).requestsPerMinute),
+      );
 
     case "DATA_ACCESS":
       return checkDataAccessPatterns(parsedBody, rule.value as string[]);
@@ -150,20 +153,28 @@ async function checkMonthlySpend(
   return { allowed: true };
 }
 
-async function checkRateLimit(
+/**
+ * Per-agent request rate limit.
+ *
+ * Counts synchronously in-memory at policy-check time (which runs *before* the
+ * upstream call), so it holds under concurrent bursts. The previous approach
+ * counted rows in `usageLog`, which is written fire-and-forget *after* the
+ * response — a burst of concurrent requests all saw a stale count and slipped
+ * through. See lib/rate-limit.ts for the per-instance caveat.
+ */
+function checkRateLimit(
   agentId: string,
   requestsPerMinute: number,
-): Promise<PolicyCheckResult> {
-  const oneMinuteAgo = new Date(Date.now() - 60_000);
+): PolicyCheckResult {
+  if (typeof requestsPerMinute !== "number" || requestsPerMinute <= 0) {
+    return { allowed: true }; // misconfigured rule - fail open rather than block everything
+  }
 
-  const recent = await prisma.usageLog.count({
-    where: { agentId, createdAt: { gte: oneMinuteAgo } },
-  });
-
-  if (recent >= requestsPerMinute) {
+  const { ok } = rateLimit(`agent-rpm:${agentId}`, requestsPerMinute, 60_000);
+  if (!ok) {
     return {
       allowed: false,
-      reason: `Rate limit exceeded: ${recent} requests in the past minute (limit: ${requestsPerMinute}).`,
+      reason: `Rate limit exceeded: limit is ${requestsPerMinute} requests/minute.`,
       statusCode: 429,
     };
   }

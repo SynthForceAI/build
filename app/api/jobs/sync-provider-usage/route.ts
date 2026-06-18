@@ -1,5 +1,3 @@
-console.log("[ROUTE-LOAD] sync-provider-usage module loaded");
-
 /**
  * POST /api/jobs/sync-provider-usage
  *

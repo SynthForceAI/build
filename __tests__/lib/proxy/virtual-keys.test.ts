@@ -79,6 +79,7 @@ describe("lookupVirtualKey", () => {
       name: "openai",
       apiBaseUrl: "https://api.openai.com/v1",
     },
+    agent: { companyId: "company-1" },
     ...overrides,
   });
 

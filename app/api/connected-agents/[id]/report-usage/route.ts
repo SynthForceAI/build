@@ -17,6 +17,7 @@ import { UsageReportSchema, Uuid } from "@/lib/validators";
 import { verifyReportToken } from "@/lib/report-token";
 import { calculateCostCents } from "@/lib/providers/pricing";
 import { bigintToJson } from "@/lib/serialize";
+import { rateLimitByIp, tooManyRequests } from "@/lib/rate-limit";
 
 export const dynamic = "force-dynamic";
 
@@ -29,6 +30,12 @@ function bearer(request: Request): string | null {
 }
 
 export async function POST(request: Request, { params }: Ctx) {
+  // Per-IP ceiling: usage values are self-reported, so cap the volume an agent
+  // (or a flood of unauthenticated requests) can push at us. Generous enough
+  // for high-throughput agents reporting per task (10 req/s sustained).
+  const rl = rateLimitByIp(request, { scope: "report-usage", limit: 600, windowMs: 60_000 });
+  if (!rl.ok) return tooManyRequests(rl.retryAfterSec);
+
   try {
     const { id } = await params;
     Uuid.parse(id);
