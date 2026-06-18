@@ -48,6 +48,30 @@ export type ProxyResult = {
   parsedBody: unknown;
 };
 
+/**
+ * Build the upstream URL and verify it stays on the provider's host. Rejects
+ * path traversal (`..`), control characters, and any path that would resolve
+ * to a different origin than the configured provider base URL. Returns the
+ * plain `base + path` string the caller forwards to fetch.
+ */
+function buildUpstreamUrl(baseUrl: string, path: string): string {
+  const concatenated = `${baseUrl}${path}`;
+  if (/(\.\.)|[\r\n\t\\]/.test(path)) {
+    throw new ApiError(400, "invalid_path", { detail: "Request path is not allowed." });
+  }
+  try {
+    const resolved = new URL(concatenated);
+    const base = new URL(baseUrl);
+    if (resolved.origin !== base.origin) {
+      throw new ApiError(400, "invalid_path", { detail: "Request path is not allowed." });
+    }
+  } catch (err) {
+    if (err instanceof ApiError) throw err;
+    throw new ApiError(400, "invalid_path", { detail: "Request path is not allowed." });
+  }
+  return concatenated;
+}
+
 export async function routeProxyRequest(
   provider: string,
   path: string,
@@ -92,7 +116,7 @@ export async function routeProxyRequest(
   // Policy enforcement - runs before any provider call
   await enforcePolicy(agentContext.agentId, method, parsedBody);
 
-  const url = `${agentContext.providerApiBaseUrl}${path}`;
+  const url = buildUpstreamUrl(agentContext.providerApiBaseUrl, path);
   const providerHeaders = buildProviderHeaders(
     agentContext.providerName,
     agentContext.providerApiKey,

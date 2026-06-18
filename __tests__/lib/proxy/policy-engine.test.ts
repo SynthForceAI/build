@@ -19,8 +19,12 @@ vi.mock("@/lib/db", () => ({
 }));
 
 import { checkAgentPolicy } from "@/lib/proxy/policy-engine";
+import { __resetRateLimitStore } from "@/lib/rate-limit";
 
-afterEach(() => vi.resetAllMocks());
+afterEach(() => {
+  vi.resetAllMocks();
+  __resetRateLimitStore();
+});
 
 // ---------------------------------------------------------------------------
 // helpers
@@ -187,28 +191,36 @@ describe("checkAgentPolicy - SPEND_CAP_MONTHLY", () => {
 
 // ---------------------------------------------------------------------------
 
-describe("checkAgentPolicy - RATE_LIMIT", () => {
-  const rateLimitRule = [{ type: "RATE_LIMIT", value: { requestsPerMinute: 10 } }];
+describe("checkAgentPolicy - RATE_LIMIT (in-memory)", () => {
+  const rule = (rpm: number) => [{ type: "RATE_LIMIT", value: { requestsPerMinute: rpm } }];
 
-  it("blocks when request count meets or exceeds limit", async () => {
-    mockFindUnique.mockResolvedValueOnce(
-      activeAgent({ policyAssignments: [blockPolicy(rateLimitRule)] }),
+  it("allows up to the limit then blocks further requests in the window", async () => {
+    mockFindUnique.mockResolvedValue(
+      activeAgent({ id: "agent-rl-1", policyAssignments: [blockPolicy(rule(3))] }),
     );
-    mockCount.mockResolvedValueOnce(10);
 
-    const result = await checkAgentPolicy("agent-1", null, "POST", null);
-    expect(result).toMatchObject({ allowed: false, statusCode: 429 });
-    expect((result as { reason: string }).reason).toMatch(/Rate limit/);
+    for (let i = 0; i < 3; i++) {
+      const ok = await checkAgentPolicy("agent-rl-1", null, "POST", null);
+      expect(ok).toMatchObject({ allowed: true });
+    }
+
+    const blocked = await checkAgentPolicy("agent-rl-1", null, "POST", null);
+    expect(blocked).toMatchObject({ allowed: false, statusCode: 429 });
+    expect((blocked as { reason: string }).reason).toMatch(/Rate limit/);
   });
 
-  it("allows when under the limit", async () => {
-    mockFindUnique.mockResolvedValueOnce(
-      activeAgent({ policyAssignments: [blockPolicy(rateLimitRule)] }),
+  it("tracks limits per agent independently", async () => {
+    mockFindUnique.mockResolvedValue(
+      activeAgent({ id: "agent-rl-2", policyAssignments: [blockPolicy(rule(1))] }),
     );
-    mockCount.mockResolvedValueOnce(9);
 
-    const result = await checkAgentPolicy("agent-1", null, "POST", null);
-    expect(result).toMatchObject({ allowed: true });
+    expect(await checkAgentPolicy("agent-rl-2", null, "POST", null)).toMatchObject({ allowed: true });
+    expect(await checkAgentPolicy("agent-rl-2", null, "POST", null)).toMatchObject({ allowed: false, statusCode: 429 });
+    // A different agent has its own bucket.
+    mockFindUnique.mockResolvedValue(
+      activeAgent({ id: "agent-rl-3", policyAssignments: [blockPolicy(rule(1))] }),
+    );
+    expect(await checkAgentPolicy("agent-rl-3", null, "POST", null)).toMatchObject({ allowed: true });
   });
 });
 

@@ -9,7 +9,10 @@
  * fresh module scope, so the global cache is a no-op there.
  */
 import { config } from "dotenv";
-config({ path: ".env.local" });
+// Only load .env.local as a fallback for contexts that don't populate env
+// themselves (e.g. `prisma/seed.ts` run via tsx). Next.js dev/build and the
+// Vercel runtime already inject DATABASE_URL, so we never override them here.
+if (!process.env.DATABASE_URL) config({ path: ".env.local" });
 
 import { PrismaClient } from "@prisma/client";
 
