@@ -1,15 +1,19 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
 import { AuditCreateSchema } from "@/lib/validators";
-import { logActivity } from "@/lib/activity-logs";
 import { encryptApiKey } from "@/lib/crypto";
 import { runAudit } from "@/lib/audit/run";
 import { handleApiError } from "@/lib/api-errors";
+import { rateLimitByIp, tooManyRequests } from "@/lib/rate-limit";
 
 /**
  * POST /api/audits
  * Create a new audit. Accepts raw API key, encrypts it, creates audit record,
  * and kicks off the audit run synchronously (or queues it for later).
+ *
+ * This endpoint is intentionally unauthenticated (the public "free audit"
+ * tool) but runs an expensive inline LLM + provider-polling job, so it is
+ * strictly rate-limited per IP to prevent cost-amplification / DoS abuse.
  *
  * Request body:
  * - apiKey: string (raw API key to audit)
@@ -21,6 +25,10 @@ import { handleApiError } from "@/lib/api-errors";
  * - createdAt: timestamp
  */
 export async function POST(req: NextRequest) {
+  // Expensive, unauthenticated endpoint: allow only a few runs per IP per hour.
+  const rl = rateLimitByIp(req, { scope: "audits-create", limit: 3, windowMs: 60 * 60_000 });
+  if (!rl.ok) return tooManyRequests(rl.retryAfterSec);
+
   try {
     const body = await req.json();
     const parsed = AuditCreateSchema.parse(body);

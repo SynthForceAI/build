@@ -1,29 +1,26 @@
-import { NextRequest, NextResponse } from "next/server";
+/**
+ * GET /api/users — platform-owner-only listing of every user across all
+ * companies. Authenticated via a real Supabase session; the caller must be
+ * the platform owner (OWNER_EMAIL). See lib/auth.ts `requireOwner`.
+ */
+import { NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
-import { cookies } from "next/headers";
+import { requireOwner } from "@/lib/auth";
+import { handleApiError } from "@/lib/api-errors";
 
-export async function GET(req: NextRequest) {
+export const dynamic = "force-dynamic";
+
+export async function GET() {
   try {
-    const cookieStore = await cookies();
-    const token = cookieStore.get("synthforce_auth")?.value;
+    await requireOwner();
 
-    if (!token) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
-
-    // Check if it's owner token (simple check for demo)
-    if (!token.startsWith("owner_")) {
-      return NextResponse.json({ error: "Owner access required" }, { status: 403 });
-    }
-
-    // Get all users (excluding the owner user itself)
     const users = await prisma.user.findMany({
-      where: {
-        id: { not: "owner-synthforce" }, // Exclude owner from list
-      },
       select: {
         id: true,
         email: true,
+        name: true,
+        role: true,
+        companyId: true,
         createdAt: true,
         lastLoginAt: true,
       },
@@ -31,8 +28,7 @@ export async function GET(req: NextRequest) {
     });
 
     return NextResponse.json({ users });
-  } catch (error) {
-    console.error("Get users error:", error);
-    return NextResponse.json({ error: "An error occurred" }, { status: 500 });
+  } catch (err) {
+    return handleApiError(err);
   }
 }

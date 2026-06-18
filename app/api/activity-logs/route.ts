@@ -1,79 +1,77 @@
+/**
+ * GET  /api/activity-logs — platform-owner-only cross-tenant activity feed.
+ * POST /api/activity-logs — record an activity entry for the *authenticated*
+ *                           user. The actor is derived from the session, never
+ *                           from the request body, so callers cannot forge
+ *                           entries against other users.
+ */
 import { NextRequest, NextResponse } from "next/server";
+import { z } from "zod";
 import { prisma } from "@/lib/db";
-import { cookies } from "next/headers";
+import { requireUser, requireOwner } from "@/lib/auth";
+import { handleApiError } from "@/lib/api-errors";
+
+export const dynamic = "force-dynamic";
+
+const PaginationSchema = z.object({
+  limit:  z.coerce.number().int().min(1).max(500).default(100),
+  offset: z.coerce.number().int().min(0).default(0),
+});
+
+const ActivityCreateSchema = z.object({
+  action:   z.enum(["signup", "login", "logout"]),
+  metadata: z.record(z.unknown()).optional(),
+}).strict();
 
 export async function GET(req: NextRequest) {
   try {
-    const cookieStore = await cookies();
-    const token = cookieStore.get("synthforce_auth")?.value;
-
-    if (!token) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
-
-    // Check if it's owner token
-    if (!token.startsWith("owner_")) {
-      return NextResponse.json({ error: "Owner access required" }, { status: 403 });
-    }
+    await requireOwner();
 
     const { searchParams } = new URL(req.url);
-    const limit = parseInt(searchParams.get("limit") || "100");
-    const offset = parseInt(searchParams.get("offset") || "0");
-
-    const logs = await prisma.activityLog.findMany({
-      include: {
-        user: {
-          select: {
-            id: true,
-            email: true,
-          },
-        },
-      },
-      orderBy: { createdAt: "desc" },
-      take: limit,
-      skip: offset,
+    const { limit, offset } = PaginationSchema.parse({
+      limit:  searchParams.get("limit")  ?? undefined,
+      offset: searchParams.get("offset") ?? undefined,
     });
 
-    const total = await prisma.activityLog.count();
+    const [logs, total] = await Promise.all([
+      prisma.activityLog.findMany({
+        include: { user: { select: { id: true, email: true } } },
+        orderBy: { createdAt: "desc" },
+        take: limit,
+        skip: offset,
+      }),
+      prisma.activityLog.count(),
+    ]);
 
-    // Format the response
     const formattedLogs = logs.map((log) => ({
-      id: log.id,
-      userId: log.userId,
+      id:        log.id,
+      userId:    log.userId,
       userEmail: log.user.email,
-      action: log.action,
+      action:    log.action,
       createdAt: log.createdAt,
     }));
 
     return NextResponse.json({ logs: formattedLogs, total });
-  } catch (error) {
-    console.error("Get activity logs error:", error);
-    return NextResponse.json({ error: "An error occurred" }, { status: 500 });
+  } catch (err) {
+    return handleApiError(err);
   }
 }
 
 export async function POST(req: NextRequest) {
   try {
-    const { userId, action, metadata } = await req.json();
-
-    if (!userId || !action) {
-      return NextResponse.json(
-        { error: "userId and action required" },
-        { status: 400 }
-      );
-    }
+    const { user } = await requireUser();
+    const { action, metadata } = ActivityCreateSchema.parse(await req.json());
 
     const log = await prisma.activityLog.create({
       data: {
-        userId,
+        userId:   user.id, // actor from the session, not the request body
         action,
-        metadata: metadata || {},
+        metadata: (metadata ?? {}) as object,
       },
     });
 
     return NextResponse.json(log, { status: 201 });
-  } catch (error) {
-    console.error("Create activity log error:", error);
-    return NextResponse.json({ error: "An error occurred" }, { status: 500 });
+  } catch (err) {
+    return handleApiError(err);
   }
 }

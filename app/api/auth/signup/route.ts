@@ -2,9 +2,13 @@ import { NextRequest, NextResponse } from "next/server";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { prisma } from "@/lib/db";
 import { logActivity } from "@/lib/activity-logs";
-import { cookies } from "next/headers";
+import { rateLimitByIp, tooManyRequests } from "@/lib/rate-limit";
 
 export async function POST(req: NextRequest) {
+  // Abuse protection: cap account-creation attempts per IP.
+  const rl = rateLimitByIp(req, { scope: "auth-signup", limit: 5, windowMs: 10 * 60_000 });
+  if (!rl.ok) return tooManyRequests(rl.retryAfterSec);
+
   try {
     const { email, password } = await req.json();
 
@@ -68,21 +72,12 @@ export async function POST(req: NextRequest) {
       method: "email_password",
     });
 
-    // Set auth cookie
-    if (data.session?.access_token) {
-      const cookieStore = await cookies();
-      cookieStore.set("synthforce_auth", data.session.access_token, {
-        httpOnly: true,
-        secure: process.env.NODE_ENV === "production",
-        sameSite: "lax",
-        maxAge: 60 * 60 * 24 * 7,
-      });
-    }
-
+    // The Supabase session cookies are written by createSupabaseServerClient.
+    // We do not return the access token in the body or mirror it into a second
+    // cookie — that would needlessly expose the bearer token to client JS.
     return NextResponse.json({
-      id: user.id,
+      id:    user.id,
       email: user.email,
-      token: data.session?.access_token,
     });
   } catch (error) {
     console.error("Signup error:", error);

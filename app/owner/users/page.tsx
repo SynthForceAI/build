@@ -1,49 +1,46 @@
-import { Button } from "@/components/ui/button";
+import { redirect } from "next/navigation";
 import { UserList } from "@/components/owner/UserList";
 import { ActivityLog } from "@/components/owner/ActivityLog";
-import Link from "next/link";
+import { requireUser, isOwner } from "@/lib/auth";
+import { createSupabaseServerClient } from "@/lib/supabase/server";
+import { prisma } from "@/lib/db";
 
-async function getUsers() {
-  const response = await fetch(
-    new URL("/api/users", process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000"),
-    {
-      method: "GET",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      cache: "no-store",
-    }
-  );
+export const dynamic = "force-dynamic";
 
-  if (!response.ok) {
-    return { users: [] };
-  }
-
-  return response.json();
-}
-
-async function getActivityLogs() {
-  const response = await fetch(
-    new URL("/api/activity-logs", process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000"),
-    {
-      method: "GET",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      cache: "no-store",
-    }
-  );
-
-  if (!response.ok) {
-    return { logs: [], total: 0 };
-  }
-
-  return response.json();
-}
-
+/**
+ * Platform-owner dashboard. As a Server Component it enforces the session +
+ * owner check itself and reads the database directly — no round-trip to our
+ * own API (which would not carry the caller's auth cookies anyway).
+ */
 export default async function OwnerUsersPage() {
-  const { users = [] } = await getUsers();
-  const { logs = [] } = await getActivityLogs();
+  let email: string | undefined;
+  try {
+    const { user } = await requireUser();
+    email = user.email;
+  } catch {
+    redirect("/login");
+  }
+  if (!isOwner(email)) redirect("/U");
+
+  const [users, logRows] = await Promise.all([
+    prisma.user.findMany({
+      select: { id: true, email: true, createdAt: true, lastLoginAt: true },
+      orderBy: { createdAt: "desc" },
+    }),
+    prisma.activityLog.findMany({
+      include: { user: { select: { id: true, email: true } } },
+      orderBy: { createdAt: "desc" },
+      take: 100,
+    }),
+  ]);
+
+  const logs = logRows.map((log) => ({
+    id:        log.id,
+    userId:    log.userId,
+    userEmail: log.user.email,
+    action:    log.action,
+    createdAt: log.createdAt,
+  }));
 
   return (
     <div className="min-h-screen bg-[#0A0A0A] text-[#EDEDED]">
@@ -54,7 +51,9 @@ export default async function OwnerUsersPage() {
           <form
             action={async () => {
               "use server";
-              await fetch("/api/auth/logout", { method: "POST" });
+              const supabase = await createSupabaseServerClient();
+              await supabase.auth.signOut();
+              redirect("/login");
             }}
           >
             <button
@@ -70,14 +69,11 @@ export default async function OwnerUsersPage() {
       {/* Content */}
       <div className="max-w-7xl mx-auto px-6 py-8">
         <div className="grid gap-8">
-          {/* Users Section */}
           <div>
-            <UserList users={users} />
+            <UserList users={users as never} />
           </div>
-
-          {/* Activity Log Section */}
           <div>
-            <ActivityLog logs={logs} />
+            <ActivityLog logs={logs as never} />
           </div>
         </div>
       </div>
