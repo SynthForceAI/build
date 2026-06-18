@@ -47,9 +47,22 @@ export function requireRole(user: User, ...allowed: User["role"][]): void {
   }
 }
 
-// Owner-specific auth check
-
-
+// Platform-owner check. The platform owner is the single SynthForce operator
+// (identified by OWNER_EMAIL), distinct from a per-company "owner" role. Only
+// the platform owner may read cross-tenant data (all users, all activity).
 export function isOwner(email?: string): boolean {
-  return email === OWNER_EMAIL;
+  return !!email && email === OWNER_EMAIL;
+}
+
+/**
+ * Require an authenticated platform owner. Verifies a real Supabase session
+ * (via requireUser) and that the user's email matches OWNER_EMAIL. Throws
+ * ApiError(403) for any other authenticated user.
+ */
+export async function requireOwner(): Promise<AuthContext> {
+  const ctx = await requireUser();
+  if (!isOwner(ctx.user.email)) {
+    throw new ApiError(403, "owner_only", { detail: "Platform owner access required." });
+  }
+  return ctx;
 }

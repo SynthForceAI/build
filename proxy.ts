@@ -5,8 +5,9 @@ type CookiesToSet = { name: string; value: string; options?: CookieOptions }[];
 
 // Routes that authenticated users should not linger on
 const AUTH_BYPASS = ["/", "/login", "/signup"];
-// Route prefix that requires authentication
-const PROTECTED_PREFIX = "/U";
+// Route prefixes that require authentication. The owner area additionally
+// enforces an owner-email check in the page itself; this is the coarse gate.
+const PROTECTED_PREFIXES = ["/U", "/owner"];
 
 export async function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
@@ -41,7 +42,7 @@ export async function proxy(request: NextRequest) {
   }
 
   // Redirect unauthenticated users away from protected pages
-  if (!user && pathname.startsWith(PROTECTED_PREFIX)) {
+  if (!user && PROTECTED_PREFIXES.some((prefix) => pathname.startsWith(prefix))) {
     return NextResponse.redirect(new URL("/login", request.url));
   }
 

@@ -1,10 +1,14 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
-import { handleApiError } from "@/lib/api-errors";
+import { requireUser } from "@/lib/auth";
+import { handleApiError, ApiError } from "@/lib/api-errors";
+import { Uuid } from "@/lib/validators";
 
 /**
  * GET /api/audits/:id
- * Fetch audit results by ID.
+ * Fetch audit results by ID. Requires authentication; an audit is only
+ * readable by a member of the company that owns it. A mismatched or missing
+ * audit returns the same 404 so we don't leak which audit ids exist.
  *
  * Response:
  * - id: audit ID
@@ -18,15 +22,17 @@ import { handleApiError } from "@/lib/api-errors";
  * - errorMessage: if status="failed"
  */
 export async function GET(
-  req: NextRequest,
+  _req: NextRequest,
   { params }: { params: Promise<{ id: string }> },
 ) {
   try {
+    const { user } = await requireUser();
     const { id } = await params;
+    Uuid.parse(id);
 
-    // 1. Fetch audit with findings and agents.
-    const audit = await prisma.audit.findUnique({
-      where: { id },
+    // 1. Fetch audit (scoped to the caller's company) with findings and agents.
+    const audit = await prisma.audit.findFirst({
+      where: { id, companyId: user.companyId },
       include: {
         findings: {
           orderBy: { orderHint: "asc" },
@@ -36,10 +42,7 @@ export async function GET(
     });
 
     if (!audit) {
-      return NextResponse.json(
-        { error: "Audit not found" },
-        { status: 404 },
-      );
+      throw new ApiError(404, "audit_not_found", { detail: "Audit not found." });
     }
 
     // 2. Return the audit record.
