@@ -29,7 +29,16 @@ export async function verifyAnthropicAdminKey(apiKey: string): Promise<string[]>
   if (res.status === 403) throw new Error("This key lacks org access (403). Create an Admin key in the Anthropic Console.");
   if (res.status === 429) throw new Error("Too many requests. Try again in a few minutes.");
   if (!res.ok) throw new Error(`Failed to verify admin key with Anthropic (${res.status}).`);
-  return [];
+  // Admin keys 403 on /v1/models, so return the known current model list.
+  return [
+    "claude-3-5-haiku-20241022",
+    "claude-3-5-sonnet-20241022",
+    "claude-3-7-sonnet-20250219",
+    "claude-3-opus-20240229",
+    "claude-haiku-4-5-20251001",
+    "claude-opus-4-8",
+    "claude-sonnet-4-6",
+  ];
 }
 
 export async function resolveAnthropicKeyId(
