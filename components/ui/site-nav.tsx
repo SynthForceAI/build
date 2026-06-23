@@ -87,6 +87,7 @@ export function SiteNav({ position = "sticky" }: SiteNavProps) {
             <Link href="/demo" onClick={close} className="py-2 hover:text-gray-900">Demo</Link>
             <Link href="/blog" onClick={close} className="py-2 hover:text-gray-900">Blog</Link>
             <Link href="/about" onClick={close} className="py-2 hover:text-gray-900">About</Link>
+            <Link href="/faq" onClick={close} className="py-2 hover:text-gray-900">FAQ</Link>
             <Link href="/hard-truth" onClick={close} className="py-2 font-semibold text-red-600 hover:text-red-700">The Hard Truth</Link>
             <WaitlistTrigger
               onClick={close}
