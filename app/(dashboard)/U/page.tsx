@@ -19,6 +19,7 @@
 
 import Link from "next/link";
 import { redirect } from "next/navigation";
+import { cookies } from "next/headers";
 import { requireUser } from "@/lib/auth";
 import { ApiError } from "@/lib/api-errors";
 import { prisma } from "@/lib/db";
@@ -216,6 +217,9 @@ export default async function DashboardPage() {
     throw err;
   }
 
+  const cookieStore = await cookies();
+  const skipIntro = cookieStore.get("synthforce-skip-intro")?.value === "1";
+
   let data: Summary = EMPTY;
   try {
     data = await fetchSummary(companyId);
@@ -227,7 +231,7 @@ export default async function DashboardPage() {
   const month = new Date().toLocaleString("en-US", { month: "long", year: "numeric" });
 
   return (
-    <IntroAnimation userId={userId}>
+    <IntroAnimation userId={userId} skip={skipIntro}>
     <div>
 
       {/* ── Page header ─────────────────────────────────── */}

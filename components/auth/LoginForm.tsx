@@ -14,6 +14,8 @@ export function LoginForm() {
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
+  const [fading, setFading] = useState(false);
+  const [fadeOpacity, setFadeOpacity] = useState(0);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -41,12 +43,13 @@ export function LoginForm() {
         return;
       }
 
-      // Redirect based on user role
-      if (data.isOwner) {
-        router.push("/owner/users");
-      } else {
-        router.push("/U");
-      }
+      // Fade the login page to blue, then navigate so there's no jarring jump
+      const destination = data.isOwner ? "/owner/users" : "/U";
+      setFading(true);
+      requestAnimationFrame(() =>
+        requestAnimationFrame(() => setFadeOpacity(1))
+      );
+      setTimeout(() => router.push(destination), 450);
     } catch (err) {
       setError(err instanceof Error ? err.message : "An error occurred");
       setLoading(false);
@@ -54,6 +57,18 @@ export function LoginForm() {
   };
 
   return (
+    <>
+    {fading && (
+      <div
+        style={{
+          position: "fixed", inset: 0, zIndex: 50,
+          backgroundColor: "#00B2FF",
+          opacity: fadeOpacity,
+          transition: "opacity 400ms ease",
+          pointerEvents: "none",
+        }}
+      />
+    )}
     <Card className="w-full max-w-md mx-auto">
       <CardHeader>
         <CardTitle>Log In</CardTitle>
@@ -110,5 +125,6 @@ export function LoginForm() {
         </form>
       </CardContent>
     </Card>
+    </>
   );
 }
