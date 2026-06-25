@@ -1,11 +1,6 @@
-import { SiteNav } from "@/components/ui/site-nav";
-
 export default function AboutPage() {
   return (
-    <>
-      <SiteNav />
-
-      <main className="pt-16 pb-20 container mx-auto px-6">
+    <main className="pt-16 pb-20 container mx-auto px-6">
         <div className="max-w-5xl mx-auto">
           <div className="text-center mb-16">
             <h1 className="text-5xl font-bold text-gray-900 mb-6">About SynthForce</h1>
@@ -62,6 +57,5 @@ export default function AboutPage() {
           </div>
         </div>
       </main>
-    </>
   );
 }

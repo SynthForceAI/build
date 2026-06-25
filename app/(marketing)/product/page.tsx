@@ -1,5 +1,4 @@
 import Link from "next/link";
-import { SiteNav } from "@/components/ui/site-nav";
 import { WaitlistTrigger } from "@/components/ui/waitlist-trigger";
 
 const TOC = [
@@ -31,7 +30,6 @@ const HR_AGENTS = [
 export default function ProductPage() {
   return (
     <>
-      <SiteNav />
 
       <main className="pt-12 pb-20 container mx-auto px-6">
         <div className="flex flex-col lg:flex-row gap-12">

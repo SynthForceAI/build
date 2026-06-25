@@ -240,7 +240,7 @@ export function ProfileClient({ data }: { data: ProfileData }) {
       </div>
 
       {/* ── Tab panels ──────────────────────────────────── */}
-      <div className="max-w-3xl">
+      <div className="max-w-3xl mx-auto">
 
         {/* Account */}
         {activeTab === "account" && (

@@ -66,3 +66,12 @@ export async function requireOwner(): Promise<AuthContext> {
   }
   return ctx;
 }
+
+export async function getUser(): Promise<AuthContext | null> {
+  try {
+    return await requireUser();
+  } catch {
+    return null;
+  }
+}
+

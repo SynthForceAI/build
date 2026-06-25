@@ -12,14 +12,19 @@
  * routes to app/(marketing)/product/page.tsx exactly as before.
  */
 import { Footer } from "@/components/ui/footer";
+import { getUser } from "@/lib/auth";
+import { SiteNav } from "@/components/ui/site-nav";
 
-export default function MarketingLayout({
+export default async function MarketingLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
+  const auth = await getUser();
+  const user = auth ? { name: auth.user.name ?? "", email: auth.user.email } : null;
   return (
     <>
+      <SiteNav user={user}/>
       {children}
       <Footer />
     </>
