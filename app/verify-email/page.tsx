@@ -15,16 +15,16 @@ export default async function VerifyEmailPage({ searchParams }: Props) {
         <img
           src="https://www.synthforceai.com/assets/7.png"
           alt="SynthForce"
-          className="w-48 h-auto"
+          className="w-[576px] h-auto"
         />
 
         {/* Card */}
         <div className="bg-white/10 backdrop-blur-sm border border-white/20 rounded-2xl px-8 py-10 w-full">
-          <h1 className="text-3xl font-bold text-white mb-3">Check your email</h1>
-          <p className="text-white/90 text-base leading-relaxed">
+          <h1 className="text-4xl font-bold text-black mb-3">Check your email</h1>
+          <p className="text-black text-lg leading-relaxed">
             We sent a verification link to{" "}
             {email ? (
-              <span className="font-semibold text-white">{email}</span>
+              <span className="font-semibold text-black">{email}</span>
             ) : (
               "your email address"
             )}
@@ -41,9 +41,9 @@ export default async function VerifyEmailPage({ searchParams }: Props) {
           </div>
         </div>
 
-        <p className="text-white/60 text-sm">
+        <p className="text-black/70 text-sm">
           Didn&apos;t receive an email? Check your spam folder or{" "}
-          <Link href="/signup" className="text-white underline underline-offset-2">
+          <Link href="/signup" className="text-black underline underline-offset-2">
             try signing up again
           </Link>
           .
