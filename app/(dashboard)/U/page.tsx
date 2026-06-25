@@ -25,6 +25,7 @@ import { prisma } from "@/lib/db";
 import { AgentGrid, type AgentCardData } from "./components/AgentGrid";
 import { TopAgentsTable } from "./components/TopAgentsTable";
 import { SpendTrendChart } from "./components/SpendTrendChart";
+import { IntroAnimation } from "@/components/IntroAnimation";
 
 // ── Types ──────────────────────────────────────────────────────────────────
 
@@ -205,9 +206,11 @@ function fmtNumber(n: number): string {
 
 export default async function DashboardPage() {
   let companyId: string;
+  let userId: string;
   try {
     const { user } = await requireUser();
     companyId = user.companyId;
+    userId = user.id;
   } catch (err) {
     if (err instanceof ApiError && err.status === 401) redirect("/login");
     throw err;
@@ -224,6 +227,7 @@ export default async function DashboardPage() {
   const month = new Date().toLocaleString("en-US", { month: "long", year: "numeric" });
 
   return (
+    <IntroAnimation userId={userId}>
     <div>
 
       {/* ── Page header ─────────────────────────────────── */}
@@ -351,6 +355,7 @@ export default async function DashboardPage() {
       )}
 
     </div>
+    </IntroAnimation>
   );
 }
 
