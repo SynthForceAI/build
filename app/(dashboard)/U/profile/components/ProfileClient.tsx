@@ -174,6 +174,21 @@ export function ProfileClient({ data }: { data: ProfileData }) {
   // ── Logout ───────────────────────────────────────────────
   const [loggingOut, setLoggingOut]       = useState(false);
   const [loggingOutAll, setLoggingOutAll] = useState(false);
+  const [deleteOpen, setDeleteOpen] = useState(false);
+  const [deleting, setDeleting] = useState(false);
+
+
+  async function handleDeleteAccount() {
+    setDeleting(true);
+    try{
+      const res = await fetch("/api/users/me", { method: "DELETE" })
+      if (!res.ok) throw new Error();
+      router.push("/")
+    } catch {
+      toast.error("Couldn't delete account. Please try again.")
+      setDeleting(false);
+    }
+  }
 
   async function handleLogout() {
     setLoggingOut(true);
@@ -295,6 +310,20 @@ export function ProfileClient({ data }: { data: ProfileData }) {
                   Joined {fmtJoined(data.user.createdAt)}
                 </p>
               </div>
+              <div>
+                <label className={`${sectionLabel} block mb-1`}>Your data</label>
+                <a
+                  href="/api/users/me/export"
+                  download
+                  className="inline-flex items-center gap-2 px-4 py-2 border border-gray-300 text-gray-700 rounded-lg text-sm font-medium hover:bg-gray-50 transition"
+                >
+                  Download my data
+                </a>
+                <p className={`${theme.fontSize.xs} ${theme.color.textSubtle} mt-1`}>
+                  Downloads a JSON file with your profile, preferences, and audit history.
+                </p>
+              </div>
+
             </div>
           </section>
         )}
@@ -482,6 +511,19 @@ export function ProfileClient({ data }: { data: ProfileData }) {
                 </button>
               </div>
             </section>
+
+            <section className={`${card} border-red-100`}>
+              <h2 className={`${sectionTitle} mb-1 text-red-600`}>Danger Zone</h2>
+              <p className={`${theme.fontSize.xs} ${theme.color.textSubtle} mb-5`}>
+                Permanently delete your account and all associated data. This cannot be undone.
+              </p>
+              <button
+                onClick={() => setDeleteOpen(true)}
+                className="flex items-center gap-2 px-4 py-2 border border-red-300 text-red-700 rounded-lg text-sm font-medium hover:bg-red-50 transition"
+              >
+                Delete Account
+              </button>
+            </section>
           </div>
         )}
       </div>
@@ -491,6 +533,33 @@ export function ProfileClient({ data }: { data: ProfileData }) {
           email={data.user.email}
           onClose={() => setPasswordOpen(false)}
         />
+      )}
+
+      {deleteOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center">
+          <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" onClick={() => setDeleteOpen(false)} />
+          <div role="dialog" aria-label="Delete account" className="relative bg-white rounded-2xl shadow-xl w-full max-w-md mx-4 p-6 z-10">
+            <h2 className="text-lg font-semibold text-gray-900 mb-2">Delete your account?</h2>
+            <p className="text-sm text-gray-500 mb-6">
+              This will permanently delete your account, preferences, and disconnect all API keys. Company data and agents are not affected. <strong>This cannot be undone.</strong>
+            </p>
+            <div className="flex gap-3 justify-end">
+              <button
+                onClick={() => setDeleteOpen(false)}
+                className="px-4 py-2 text-sm font-medium text-gray-600 border border-gray-200 rounded-lg hover:bg-gray-50 transition"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleDeleteAccount}
+                disabled={deleting}
+                className="px-4 py-2 text-sm font-medium text-white bg-red-600 rounded-lg hover:bg-red-700 transition disabled:opacity-40"
+              >
+                {deleting ? "Deleting…" : "Yes, delete my account"}
+              </button>
+            </div>
+          </div>
+        </div>
       )}
 
       {manageProvider && (
