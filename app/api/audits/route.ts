@@ -42,8 +42,6 @@ export async function POST(req: NextRequest) {
         data: {
           name: "openai",
           displayName: "OpenAI",
-          slug: "openai",
-          description: "OpenAI API access",
         },
       });
     }
