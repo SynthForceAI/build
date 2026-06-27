@@ -9,7 +9,6 @@
 import { prisma } from "./db";
 import { createSupabaseServerClient } from "./supabase/server";
 import { ApiError } from "./api-errors";
-import { isEmailConfirmed } from "./auth/email-verification";
 import { OWNER_EMAIL } from "./constants";
 import type { User } from "@prisma/client";
 
@@ -25,12 +24,6 @@ export async function requireUser(): Promise<AuthContext> {
 
   if (error || !authUser) {
     throw new ApiError(401, "unauthenticated");
-  }
-
-  if (!isEmailConfirmed(authUser)) {
-    throw new ApiError(403, "email_not_verified", {
-      detail: "Verify your email before continuing.",
-    });
   }
 
   // Look up the SynthForce-side user row. If it doesn't exist yet, the

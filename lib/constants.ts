@@ -3,15 +3,6 @@
 export const OWNER_EMAIL = "samarth@synthforceai.com";
 
 // Routes
-export const PUBLIC_ROUTES = [
-  "/",
-  "/signup",
-  "/login",
-  "/verify-email",
-  "/about",
-  "/product",
-  "/demo",
-  "/blog",
-];
+export const PUBLIC_ROUTES = ["/", "/signup", "/login", "/about", "/product", "/demo", "/blog"];
 export const PROTECTED_ROUTES = ["/U", "/owner"];
 export const OWNER_ROUTES = ["/owner"];
