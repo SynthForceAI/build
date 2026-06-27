@@ -27,10 +27,16 @@ const atLeastOneKey = <T extends z.ZodRawShape>(shape: T) =>
 // Companies (admin / onboarding)
 // ---------------------------------------------------------------------------
 
+// NOTE: `subscriptionTier` is intentionally NOT accepted here. The tier is the
+// paywall boundary (see lib/audit/quota.ts) and must only ever be changed by a
+// verified Stripe webhook (lib/billing/applyTierFromWebhook), the seed, or a
+// manual admin DB write — never by the company itself. Every self-signup user
+// is the "owner" of their workspace, so accepting it here would let any user
+// self-grant a paid tier and bypass billing entirely. The schema is `.strict()`,
+// so a request that includes `subscriptionTier` is rejected with a 400.
 export const CompanyUpdateSchema = atLeastOneKey({
   name:             NonEmptyString.max(255).optional(),
   slug:             z.string().trim().min(1).max(100).regex(/^[a-z0-9-]+$/, "Slug must be kebab-case lowercase.").optional(),
-  subscriptionTier: z.enum(["free", "starter", "team", "enterprise"]).optional(),
   settings:         z.record(z.unknown()).optional(),
 });
 
