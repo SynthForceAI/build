@@ -117,6 +117,13 @@ export default async function OwnerDashboard() {
               <p className="text-xs text-gray-400">{email}</p>
             </div>
           </div>
+          <div className="flex items-center gap-3">
+            <a
+              href="/U"
+              className="px-3 py-1.5 text-sm font-medium text-[#00B2FF] border border-[#00B2FF] rounded-lg hover:bg-blue-50 transition"
+            >
+              ← Back to Dashboard
+            </a>
           <form
             action={async () => {
               "use server";
@@ -135,6 +142,7 @@ export default async function OwnerDashboard() {
               Log out
             </button>
           </form>
+          </div>
         </div>
       </header>
 
