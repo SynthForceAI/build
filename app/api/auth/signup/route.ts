@@ -1,11 +1,11 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
-import { prisma } from "@/lib/db";
+import { emailVerificationRedirectUrl } from "@/lib/auth/email-verification";
+import { provisionNewUser } from "@/lib/auth/provision-user";
 import { logActivity } from "@/lib/activity-logs";
 import { rateLimitByIp, tooManyRequests } from "@/lib/rate-limit";
 
 export async function POST(req: NextRequest) {
-  // Abuse protection: cap account-creation attempts per IP.
   const rl = rateLimitByIp(req, { scope: "auth-signup", limit: 5, windowMs: 10 * 60_000 });
   if (!rl.ok) return tooManyRequests(rl.retryAfterSec);
 
@@ -16,14 +16,13 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "Email and password required" }, { status: 400 });
     }
 
-    // Create user in Supabase Auth
     const supabase = await createSupabaseServerClient();
 
     const { data, error } = await supabase.auth.signUp({
       email,
       password,
       options: {
-        emailRedirectTo: `${process.env.NEXT_PUBLIC_APP_URL}/auth/callback`,
+        emailRedirectTo: emailVerificationRedirectUrl(),
       },
     });
 
@@ -35,50 +34,26 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "Signup failed" }, { status: 500 });
     }
 
-    // Create default company for user (if they don't have one)
-    let company = await prisma.company.findFirst({
-      where: {
-        users: {
-          some: { id: data.user.id },
-        },
-      },
-    });
-
-    if (!company) {
-      company = await prisma.company.create({
-        data: {
-          name: `${email}'s Workspace`,
-          slug: `workspace-${data.user.id.substring(0, 8)}`,
-        },
+    // When Supabase "Confirm email" is enabled, signUp returns a user but no session.
+    // Defer SynthForce account provisioning until the user clicks the verification link.
+    if (!data.session) {
+      return NextResponse.json({
+        needsEmailVerification: true,
+        email: data.user.email ?? email,
       });
     }
 
-    // Create user in SynthForce users table. A self-signup creates their own
-    // workspace, so they are its owner (consistent with /api/auth/bootstrap).
-    const user = await prisma.user.upsert({
-      where: { id: data.user.id },
-      create: {
-        id: data.user.id,
-        email,
-        name: email.split("@")[0],
-        companyId: company.id,
-        role: "owner",
-      },
-      update: {
-        email,
-      },
+    const user = await provisionNewUser({
+      id: data.user.id,
+      email: data.user.email ?? email,
     });
 
-    // Log signup activity
     await logActivity(user.id, "signup", {
       method: "email_password",
     });
 
-    // The Supabase session cookies are written by createSupabaseServerClient.
-    // We do not return the access token in the body or mirror it into a second
-    // cookie — that would needlessly expose the bearer token to client JS.
     return NextResponse.json({
-      id:    user.id,
+      id: user.id,
       email: user.email,
     });
   } catch (error) {

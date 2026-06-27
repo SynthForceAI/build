@@ -36,6 +36,10 @@ export function LoginForm() {
       const data = await response.json();
 
       if (!response.ok) {
+        if (data.code === "email_not_verified") {
+          router.push(`/verify-email?email=${encodeURIComponent(email)}`);
+          return;
+        }
         setError(data.error || "Login failed");
         setLoading(false);
         return;

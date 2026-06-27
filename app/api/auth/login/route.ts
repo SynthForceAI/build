@@ -3,10 +3,10 @@ import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { prisma } from "@/lib/db";
 import { logActivity } from "@/lib/activity-logs";
 import { isOwner } from "@/lib/auth";
+import { isEmailConfirmed } from "@/lib/auth/email-verification";
 import { rateLimitByIp, tooManyRequests } from "@/lib/rate-limit";
 
 export async function POST(req: NextRequest) {
-  // Brute-force protection: cap login attempts per IP.
   const rl = rateLimitByIp(req, { scope: "auth-login", limit: 10, windowMs: 5 * 60_000 });
   if (!rl.ok) return tooManyRequests(rl.retryAfterSec);
 
@@ -17,14 +17,22 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "Email and password required" }, { status: 400 });
     }
 
-    // Authentication is delegated entirely to Supabase. The platform owner is
-    // simply the user whose email matches OWNER_EMAIL — there is no separate
-    // password-in-env backdoor and no self-asserted "owner" token.
     const supabase = await createSupabaseServerClient();
     const { data, error } = await supabase.auth.signInWithPassword({ email, password });
 
     if (error || !data.user) {
       return NextResponse.json({ error: "Invalid email or password" }, { status: 401 });
+    }
+
+    if (!isEmailConfirmed(data.user)) {
+      await supabase.auth.signOut();
+      return NextResponse.json(
+        {
+          error: "Please verify your email before signing in.",
+          code: "email_not_verified",
+        },
+        { status: 403 },
+      );
     }
 
     const userId = data.user.id;
@@ -44,12 +52,9 @@ export async function POST(req: NextRequest) {
 
     await logActivity(userId, "login", { method: "email_password" });
 
-    // Supabase's @supabase/ssr writes the httpOnly session cookies for us via
-    // createSupabaseServerClient. We intentionally do NOT return the access
-    // token in the body or mirror it into a second cookie.
     return NextResponse.json({
-      id:      user.id,
-      email:   user.email,
+      id: user.id,
+      email: user.email,
       isOwner: isOwner(user.email),
     });
   } catch (error) {

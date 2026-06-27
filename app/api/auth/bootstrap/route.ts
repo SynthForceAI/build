@@ -12,6 +12,7 @@ import { z } from "zod";
 import { prisma } from "@/lib/db";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { handleApiError, ApiError } from "@/lib/api-errors";
+import { isEmailConfirmed } from "@/lib/auth/email-verification";
 
 const BootstrapSchema = z.object({
   companyName: z.string().trim().min(1).max(255),
@@ -33,6 +34,11 @@ export async function POST(request: Request) {
     const supabase = await createSupabaseServerClient();
     const { data: { user: authUser }, error } = await supabase.auth.getUser();
     if (error || !authUser) throw new ApiError(401, "unauthenticated");
+    if (!isEmailConfirmed(authUser)) {
+      throw new ApiError(403, "email_not_verified", {
+        detail: "Verify your email before completing onboarding.",
+      });
+    }
 
     const body = BootstrapSchema.parse(await request.json());
 

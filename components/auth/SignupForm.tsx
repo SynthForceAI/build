@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Alert, AlertDescription } from "@/components/ui/alert";
+import { VerifyEmailCard } from "@/components/auth/VerifyEmailCard";
 
 export function SignupForm() {
   const router = useRouter();
@@ -15,13 +16,13 @@ export function SignupForm() {
   const [confirmPassword, setConfirmPassword] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
+  const [pendingVerificationEmail, setPendingVerificationEmail] = useState<string | null>(null);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError("");
     setLoading(true);
 
-    // Validation
     if (!email || !password || !confirmPassword) {
       setError("All fields are required");
       setLoading(false);
@@ -62,12 +63,22 @@ export function SignupForm() {
         return;
       }
 
+      if (data.needsEmailVerification) {
+        setPendingVerificationEmail(data.email ?? email);
+        setLoading(false);
+        return;
+      }
+
       router.push("/U");
     } catch (err) {
       setError(err instanceof Error ? err.message : "An error occurred");
       setLoading(false);
     }
   };
+
+  if (pendingVerificationEmail) {
+    return <VerifyEmailCard email={pendingVerificationEmail} />;
+  }
 
   return (
     <Card className="w-full max-w-md mx-auto">
