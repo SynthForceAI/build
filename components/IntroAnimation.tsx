@@ -46,6 +46,7 @@ export function IntroAnimation({
   const synthRef = useRef<HTMLSpanElement>(null);
   const forceRef = useRef<HTMLSpanElement>(null);
   const storageKey = `synthforce-skip-intro-${userId}`;
+  const skippedRef = useRef(false);
 
   useEffect(() => {
     if (skip) return;
@@ -59,6 +60,15 @@ export function IntroAnimation({
     const t = setTimeout(() => setPhase(next), duration);
     return () => clearTimeout(t);
   }, [phase]);
+
+  // When the intro plays all the way through (not skipped), mark it as played
+  // for this login session so it doesn't replay across tabs or page navigations.
+  // The cookie is cleared on logout so it plays again after the next login.
+  useEffect(() => {
+    if (phase === "done" && !skip && !skippedRef.current) {
+      document.cookie = "synthforce-intro-played=1; path=/; max-age=2592000; SameSite=Lax";
+    }
+  }, [phase, skip]);
 
   // When synthforce phase starts, measure Synth and Force positions and
   // calculate the translateX each needs to meet at viewport center.
@@ -77,6 +87,7 @@ export function IntroAnimation({
   }, [phase]);
 
   const handleSkip = () => {
+    skippedRef.current = true;
     localStorage.setItem(storageKey, "true");
     document.cookie = `synthforce-skip-intro=1; path=/; max-age=31536000; SameSite=Lax`;
     setPhase("done");

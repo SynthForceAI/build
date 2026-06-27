@@ -218,7 +218,9 @@ export default async function DashboardPage() {
   }
 
   const cookieStore = await cookies();
-  const skipIntro = cookieStore.get("synthforce-skip-intro")?.value === "1";
+  const skipIntro =
+    cookieStore.get("synthforce-skip-intro")?.value === "1" ||
+    cookieStore.get("synthforce-intro-played")?.value === "1";
 
   let data: Summary = EMPTY;
   try {

@@ -122,6 +122,9 @@ export default async function OwnerDashboard() {
               "use server";
               const supabase = await createSupabaseServerClient();
               await supabase.auth.signOut();
+              const { cookies } = await import("next/headers");
+              const store = await cookies();
+              store.delete("synthforce-intro-played");
               redirect("/login");
             }}
           >
