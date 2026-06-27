@@ -6,7 +6,7 @@ import { NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
 import { requireUser } from "@/lib/auth";
 import { handleApiError } from "@/lib/api-errors";
-import { createSupabaseServerClient } from "@/lib/supabase/server";
+import { createSupabaseServerClient, createSupabaseServiceClient } from "@/lib/supabase/server";
 import { ProfileUpdateSchema } from "@/lib/validators";
 
 export const dynamic = "force-dynamic";
@@ -64,3 +64,19 @@ export async function PATCH(request: Request) {
     return handleApiError(err);
   }
 }
+
+export async function DELETE() {
+  try {
+    const { user, authId } = await requireUser();
+
+    await prisma.user.delete({ where: { id: user.id } });
+
+    const supabase = createSupabaseServiceClient();
+    await supabase.auth.admin.deleteUser(authId);
+
+    return new NextResponse(null, { status: 204 });
+  } catch (err) {
+    return handleApiError(err);
+  }
+}
+

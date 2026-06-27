@@ -3,7 +3,6 @@
 import Link from 'next/link';
 import { useState, useEffect, type CSSProperties } from 'react';
 import { motion, useMotionValue, useSpring } from 'framer-motion';
-import { SiteNav } from "@/components/ui/site-nav";
 import { WaitlistTrigger } from "@/components/ui/waitlist-trigger";
 
 // ── CSS ────────────────────────────────────────────────────────────────────
@@ -171,7 +170,6 @@ export default function Home() {
   return (
     <div className="min-h-screen flex flex-col relative bg-white text-void font-sans">
       <style dangerouslySetInnerHTML={{ __html: pageStyles }} />
-      <SiteNav position="fixed" />
 
       <main className="grow pt-24 pb-20">
 

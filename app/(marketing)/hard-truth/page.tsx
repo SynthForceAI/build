@@ -2,7 +2,6 @@
 
 import Link from 'next/link';
 import { motion } from 'framer-motion';
-import { SiteNav } from '@/components/ui/site-nav';
 
 const EASE = [0.22, 1, 0.36, 1] as const;
 
@@ -109,7 +108,6 @@ const accentStyles: Record<Fact['accent'], { border: string; stat: string; dot: 
 export default function HardTruthPage() {
   return (
     <div className="min-h-screen bg-white text-gray-900 font-sans">
-      <SiteNav position="fixed" />
 
       {/* ── Hero ─────────────────────────────────────────────────── */}
       <section className="pt-40 pb-20 px-6 text-center relative overflow-hidden bg-white">

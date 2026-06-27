@@ -12,7 +12,6 @@ export const metadata: Metadata = {
 export default function WaitlistSignupPage() {
   return (
     <>
-      <SiteNav />
 
       <main className="pt-12 pb-20 container mx-auto px-6">
         <div className="max-w-4xl mx-auto text-center mb-12">

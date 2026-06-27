@@ -2,7 +2,6 @@ import Link from 'next/link';
 import fs from 'fs';
 import path from 'path';
 import matter from 'gray-matter';
-import { SiteNav } from "@/components/ui/site-nav";
 
 function getAllBlogPosts() {
   const postsDir = path.join(process.cwd(), 'app', '(marketing)', 'blog', 'posts');
@@ -36,7 +35,6 @@ export default function BlogArchivePage() {
 
   return (
     <div className="bg-paper text-void font-sans">
-      <SiteNav />
       <main className="pb-20">
         <div className="bg-gray-50 border-b border-subtle py-20">
           <div className="max-w-3xl mx-auto px-6">

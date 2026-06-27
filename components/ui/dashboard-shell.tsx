@@ -1,8 +1,16 @@
 "use client";
 
 import { useState } from "react";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
+import Link from "next/link";
 import { DashboardSidebar } from "./dashboard-sidebar";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import type { UserRole } from "@prisma/client";
 
 const PAGE_LABELS: Record<string, string> = {
@@ -40,6 +48,16 @@ type Props = {
 export function DashboardShell({ userName, userEmail, userRole, children }: Props) {
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const pageLabel = usePageLabel();
+  const router = useRouter();
+
+  async function handleSignOut() {
+    await fetch("/api/auth/logout", { method: "POST" });
+    router.push("/login");
+  }
+
+  const initials = userName
+    ? userName.split(" ").map((n: string) => n[0]).join("").toUpperCase().slice(0, 2)
+    : "?";
 
   return (
     <div className="flex h-screen overflow-hidden bg-gray-50">
@@ -70,13 +88,7 @@ export function DashboardShell({ userName, userEmail, userRole, children }: Prop
               aria-expanded={sidebarOpen}
               aria-controls="dashboard-sidebar"
             >
-              <svg
-                width="18"
-                height="18"
-                viewBox="0 0 18 18"
-                fill="currentColor"
-                aria-hidden="true"
-              >
+              <svg width="18" height="18" viewBox="0 0 18 18" fill="currentColor" aria-hidden="true">
                 <rect y="2"  width="18" height="2" rx="1" />
                 <rect y="8"  width="18" height="2" rx="1" />
                 <rect y="14" width="18" height="2" rx="1" />
@@ -84,6 +96,31 @@ export function DashboardShell({ userName, userEmail, userRole, children }: Prop
             </button>
             <span className="text-sm font-semibold text-gray-900" aria-live="polite">{pageLabel}</span>
           </div>
+
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <button className="w-8 h-8 rounded-full bg-gray-900 text-white text-xs font-bold flex items-center justify-center hover:bg-gray-700 transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-[#00B2FF]">
+                {initials}
+              </button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end" className="w-48">
+              <div className="px-2 py-1.5">
+                <p className="text-sm font-medium text-gray-900 truncate">{userName}</p>
+                <p className="text-xs text-gray-500 truncate">{userEmail}</p>
+              </div>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem asChild>
+                <Link href="/U/profile">Profile</Link>
+              </DropdownMenuItem>
+              <DropdownMenuItem asChild>
+                <Link href="/U/settings">Settings</Link>
+              </DropdownMenuItem>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem onClick={handleSignOut} className="text-red-600 focus:text-red-600">
+                Sign Out
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
         </header>
 
         <main id="main-content" className="flex-1 overflow-y-auto p-4 sm:p-6" tabIndex={-1}>

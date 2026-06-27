@@ -4,7 +4,6 @@ import path from 'path';
 import matter from 'gray-matter';
 import markdownit from 'markdown-it';
 import { notFound } from 'next/navigation';
-import { SiteNav } from "@/components/ui/site-nav";
 import { WaitlistTrigger } from "@/components/ui/waitlist-trigger";
 
 const md = markdownit({ html: true, breaks: true, linkify: true });
@@ -75,7 +74,6 @@ export default async function BlogPostPage({ params }: { params: Promise<{ slug:
   return (
     <div className="bg-paper text-void font-sans">
       <style dangerouslySetInnerHTML={{ __html: articleStyles }} />
-      <SiteNav />
 
       <main className="pb-20">
         <div className="bg-gray-50 border-b border-subtle py-12">
