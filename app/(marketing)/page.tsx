@@ -661,7 +661,7 @@ export default function Home() {
                 Join the Waitlist
               </h2>
               <p className="text-xl text-gray-600 mb-10">
-                Be the first to get early access, a free agent-audit report, and manage your first 5 agents free for 6 months.
+                Be the first to get early access and a free agent-audit report.
               </p>
               <div className="bg-white rounded-3xl border border-subtle p-10 shadow-lg max-w-2xl mx-auto">
                 <div className="space-y-6">
@@ -671,7 +671,6 @@ export default function Home() {
                       {([
                         <><strong>Early access</strong> to SynthForce before public launch</>,
                         <><strong>Free agent-audit report</strong> – see where your AI agents are leaking money</>,
-                        <><strong>6 months free</strong> for your first 5 agents</>,
                       ] as React.ReactNode[]).map((content, i) => (
                         <li key={i} className="flex items-start gap-3">
                           <svg className="w-5 h-5 text-accent mt-0.5 shrink-0" fill="currentColor" viewBox="0 0 20 20">

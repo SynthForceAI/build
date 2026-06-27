@@ -238,8 +238,7 @@ export default function ProductPage() {
                   Ready to Manage Your Synthetic Workforce?
                 </h2>
                 <p className="text-xl text-gray-600 mb-10 max-w-2xl mx-auto">
-                  Join the waitlist for early access. Pilot customers get 3 months free and a
-                  dedicated onboarding call.
+                  Join the waitlist for early access and a free agent-audit report.
                 </p>
                 <WaitlistTrigger className="inline-block px-10 py-5 font-sans font-semibold text-sm uppercase rounded-lg bg-[#00B2FF] text-white border border-[#00B2FF] hover:bg-transparent hover:text-[#00B2FF] transition cursor-pointer">
                   Join Waitlist - Early Access

@@ -28,7 +28,7 @@ export function WaitlistTrigger({ children, className, ...props }: WaitlistTrigg
         <DialogHeader>
           <DialogTitle>Join the Waitlist</DialogTitle>
           <DialogDescription>
-            Early access, a free agent-audit report, and 6 months free for your first 5 agents.
+            Early access and a free agent-audit report.
           </DialogDescription>
         </DialogHeader>
         <WaitlistForm variant="modal" />

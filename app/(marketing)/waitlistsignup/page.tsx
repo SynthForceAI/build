@@ -6,7 +6,7 @@ import { WaitlistForm } from "@/components/waitlist/waitlist-form";
 export const metadata: Metadata = {
   title: "SynthForce | Join the Waitlist",
   description:
-    "Join the SynthForce waitlist for early access, a free agent-audit report, and 6 months free for your first 5 AI agents.",
+    "Join the SynthForce waitlist for early access and a free agent-audit report.",
 };
 
 export default function WaitlistSignupPage() {
@@ -19,8 +19,7 @@ export default function WaitlistSignupPage() {
             Join the Waitlist
           </h1>
           <p className="text-xl text-gray-600 mb-10">
-            Be the first to get early access, a free agent-audit report, and manage your first 5
-            agents free for 6 months.
+            Be the first to get early access and a free agent-audit report.
           </p>
           <p className="text-sm text-gray-500">Fill out the form below. No spam. Unsubscribe anytime.</p>
         </div>
