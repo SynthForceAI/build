@@ -3,7 +3,13 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 
-export function RerunButton({ auditId }: { auditId: string }) {
+export function RerunButton({
+  auditId,
+  getRedirectPath,
+}: {
+  auditId: string;
+  getRedirectPath?: (newAuditId: string) => string;
+}) {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const router = useRouter();
@@ -22,7 +28,7 @@ export function RerunButton({ auditId }: { auditId: string }) {
         setLoading(false);
         return;
       }
-      router.push(`/audit/free?id=${data.auditId}`);
+      router.push(getRedirectPath ? getRedirectPath(data.auditId!) : `/audit/free?id=${data.auditId}`);
     } catch {
       setError("Network error. Try again.");
       setLoading(false);
