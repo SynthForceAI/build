@@ -1,9 +1,0 @@
-# Merge these sections into supabase/config.toml after running `supabase init`.
-# Used by `supabase start` for local auth email template testing.
-
-[auth.email]
-enable_confirmations = true
-
-[auth.email.template.confirmation]
-subject = "Verify your SynthForce email"
-content_path = "./supabase/templates/confirm-signup.html"
