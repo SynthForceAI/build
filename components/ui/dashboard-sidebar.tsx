@@ -36,6 +36,7 @@ const NAV_ITEMS: NavItem[] = [
   { href: "/U/offboarding",  label: "Offboarding",  sub: "Archive & audit",             disabled: true },
   { href: "/U/agents",       label: "Agents",       sub: "Manage your fleet",           roles: ["owner", "admin", "member"], disabled: true },
   { href: "/U/departments",  label: "Departments",  sub: "Teams & budgets",             roles: ["owner", "admin", "member"], disabled: true },
+  { href: "/U/billing",      label: "Billing",      sub: "Plan & usage",                roles: ["owner", "admin"] },
   { href: "/U/settings",     label: "Settings",     sub: "Account & preferences",       roles: ["owner", "admin"] },
 ];
 

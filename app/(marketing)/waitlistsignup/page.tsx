@@ -1,5 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import { SiteNav } from "@/components/ui/site-nav";
+import { WaitlistForm } from "@/components/waitlist/waitlist-form";
 
 export const metadata: Metadata = {
   title: "SynthForce | Join the Waitlist",
@@ -24,15 +26,7 @@ export default function WaitlistSignupPage() {
         </div>
 
         <div className="max-w-3xl mx-auto border border-subtle rounded-2xl overflow-hidden shadow-lg">
-          <iframe
-            src="https://tally.so/embed/D4DGyq?transparentBackground=1"
-            width="100%"
-            height={800}
-            frameBorder={0}
-            marginHeight={0}
-            marginWidth={0}
-            title="SynthForce Waiting List"
-          />
+          <WaitlistForm variant="page" />
         </div>
 
         <div className="mt-12 text-center">

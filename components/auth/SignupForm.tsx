@@ -62,7 +62,7 @@ export function SignupForm() {
         return;
       }
 
-      router.push("/U");
+      router.push(`/verify-email?email=${encodeURIComponent(email)}`);
     } catch (err) {
       setError(err instanceof Error ? err.message : "An error occurred");
       setLoading(false);

@@ -7,6 +7,7 @@ import { generateReportToken, hashReportToken } from "@/lib/report-token";
 import { requireUser } from "@/lib/auth";
 import { handleApiError, ApiError } from "@/lib/api-errors";
 import { runAudit } from "@/lib/audit/run";
+import { assertCanRunAudit } from "@/lib/audit/quota";
 import { resolveAnthropicKeyId } from "@/lib/providers/anthropic-connector";
 
 export const dynamic = "force-dynamic";
@@ -16,6 +17,14 @@ export async function POST(req: NextRequest) {
     const { user } = await requireUser();
     const body = await req.json();
     const parsed = ProviderConnectSchema.parse(body);
+
+    // One-free-audit moat: the admin-key-with-no-agent path runs a free audit.
+    // Block it up front for free-tier companies that already used their run,
+    // before we verify the key or create any ApiKey rows.
+    const isAdminAuditFlow = parsed.keyType === "admin" && !parsed.agentName;
+    if (isAdminAuditFlow) {
+      await assertCanRunAudit(user.companyId);
+    }
 
     const provider = await prisma.provider.findFirst({
       where: { id: parsed.providerId, isActive: true },

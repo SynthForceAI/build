@@ -245,3 +245,15 @@ export const PreferencesUpdateSchema = atLeastOneKey({
   // Locked to USD for the free tier. Validated server-side too.
   currency:    z.literal("USD").optional(),
 });
+
+// ---------------------------------------------------------------------------
+// Waitlist (POST /api/waitlist)
+// ---------------------------------------------------------------------------
+
+export const WaitlistSignupSchema = z.object({
+  email:   z.string().trim().email().max(255),
+  name:    z.string().trim().min(1).max(255).optional(),
+  company: z.string().trim().min(1).max(255).optional(),
+  role:    z.string().trim().min(1).max(255).optional(),
+  source:  z.string().trim().min(1).max(255).optional(),
+}).strict();
