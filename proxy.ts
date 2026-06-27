@@ -3,8 +3,8 @@ import { NextResponse, type NextRequest } from "next/server";
 
 type CookiesToSet = { name: string; value: string; options?: CookieOptions }[];
 
-// Routes that authenticated users should not linger on
-const AUTH_BYPASS = ["/", "/login", "/signup"];
+// Routes that authenticated users should not linger on (auth pages only — not marketing pages)
+const AUTH_BYPASS = ["/login", "/signup"];
 // Route prefixes that require authentication. The owner area additionally
 // enforces an owner-email check in the page itself; this is the coarse gate.
 const PROTECTED_PREFIXES = ["/U", "/owner"];

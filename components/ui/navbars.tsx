@@ -4,7 +4,6 @@ import { WaitlistTrigger } from "@/components/ui/waitlist-trigger";
 export function OriginalNavbar() {
     return (
         <div className="hidden md:flex gap-8 text-sm font-sans text-gray-600">
-            <Link href="/" className="hover:text-gray-900">Home</Link>
             <Link href="/product" className="hover:text-gray-900">Product</Link>
             <Link href="/demo" className="hover:text-gray-900">Demo</Link>
             <Link href="/blog" className="hover:text-gray-900">Blog</Link>

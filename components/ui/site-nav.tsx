@@ -50,38 +50,34 @@ export function SiteNav({ position = "sticky", user = null }: SiteNavProps) {
           {/* Desktop auth area */}
           <div className="hidden md:flex items-center gap-3">
             {user ? (
-              <>
-                <Link
-                  href="/U"
-                  className="text-sm font-semibold text-gray-700 hover:text-gray-900 border border-gray-300 rounded-lg px-4 py-1.5 hover:border-gray-500 transition"
-                >
-                  Dashboard
-                </Link>
-                <DropdownMenu>
-                  <DropdownMenuTrigger asChild>
-                    <button className="w-8 h-8 rounded-full bg-gray-900 text-white text-xs font-bold flex items-center justify-center hover:bg-gray-700 transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-gray-900">
-                      {initials}
-                    </button>
-                  </DropdownMenuTrigger>
-                  <DropdownMenuContent align="end" className="w-48">
-                    <div className="px-2 py-1.5">
-                      <p className="text-sm font-medium text-gray-900 truncate">{user.name}</p>
-                      <p className="text-xs text-gray-500 truncate">{user.email}</p>
-                    </div>
-                    <DropdownMenuSeparator />
-                    <DropdownMenuItem asChild>
-                      <Link href="/U/profile">Profile</Link>
-                    </DropdownMenuItem>
-                    <DropdownMenuItem asChild>
-                      <Link href="/U/settings">Settings</Link>
-                    </DropdownMenuItem>
-                    <DropdownMenuSeparator />
-                    <DropdownMenuItem onClick={handleSignOut} className="text-red-600 focus:text-red-600">
-                      Sign Out
-                    </DropdownMenuItem>
-                  </DropdownMenuContent>
-                </DropdownMenu>
-              </>
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <button className="w-8 h-8 rounded-full bg-gray-900 text-white text-xs font-bold flex items-center justify-center hover:bg-gray-700 transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-gray-900">
+                    {initials}
+                  </button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end" className="w-48">
+                  <div className="px-2 py-1.5">
+                    <p className="text-sm font-medium text-gray-900 truncate">{user.name}</p>
+                    <p className="text-xs text-gray-500 truncate">{user.email}</p>
+                  </div>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem asChild>
+                    <Link href="/U">Dashboard</Link>
+                  </DropdownMenuItem>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem asChild>
+                    <Link href="/U/profile">Profile</Link>
+                  </DropdownMenuItem>
+                  <DropdownMenuItem asChild>
+                    <Link href="/U/settings">Settings</Link>
+                  </DropdownMenuItem>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem onClick={handleSignOut} className="text-red-600 focus:text-red-600">
+                    Sign Out
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
             ) : (
               <>
                 <Link href="/login" className="text-sm font-semibold text-gray-700 hover:text-gray-900 border border-gray-300 rounded-lg px-4 py-1.5 hover:border-gray-500 transition">
@@ -113,7 +109,6 @@ export function SiteNav({ position = "sticky", user = null }: SiteNavProps) {
       {mobileMenuOpen && (
         <div id="site-nav-mobile-menu" className="md:hidden bg-white border-t border-subtle px-6 py-4">
           <div className="flex flex-col gap-4 text-sm font-sans text-gray-600">
-            <Link href="/" onClick={close} className="py-2 hover:text-gray-900">Home</Link>
             <Link href="/product" onClick={close} className="py-2 hover:text-gray-900">Product</Link>
             <Link href="/demo" onClick={close} className="py-2 hover:text-gray-900">Demo</Link>
             <Link href="/blog" onClick={close} className="py-2 hover:text-gray-900">Blog</Link>
@@ -129,6 +124,7 @@ export function SiteNav({ position = "sticky", user = null }: SiteNavProps) {
                 <>
                   <Link href="/U" onClick={close} className="py-2 font-semibold text-gray-900 hover:text-gray-700">Dashboard</Link>
                   <Link href="/U/profile" onClick={close} className="py-2 hover:text-gray-900">Profile</Link>
+
                   <Link href="/U/settings" onClick={close} className="py-2 hover:text-gray-900">Settings</Link>
                   <button onClick={handleSignOut} className="text-left py-2 text-red-600 font-medium hover:text-red-700">
                     Sign Out
