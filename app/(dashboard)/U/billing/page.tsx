@@ -87,8 +87,8 @@ export default async function BillingPage({
 
       <p className="text-xs text-gray-400 mt-8 text-center">
         Questions about billing? Email{" "}
-        <a href="mailto:sales@synthforceai.com" className="text-[#00B2FF] hover:underline">
-          sales@synthforceai.com
+        <a href="mailto:samarth@synthforceai.com" className="text-[#00B2FF] hover:underline">
+          samarth@synthforceai.com
         </a>
         .
       </p>

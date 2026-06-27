@@ -26,7 +26,7 @@ const SECTIONS = [
       },
       {
         q: "How do I find my API key and do I need a full admin key?",
-        a: "OpenAI: Organization Settings → Billing → API Keys. Anthropic: Account Settings → API Keys. You need billing access to read usage data. But if your provider supports read-only keys, use that instead—we only read data, never write or modify anything. A read-only key is safer because we literally can't do anything harmful with it.",
+        a: "OpenAI: Organization Settings → Billing → API Keys. Anthropic: Account Settings → API Keys. You need billing access to read usage data. But if your provider supports read-only keys, use that instead. We only read data, never write or modify anything. A read-only key is safer because we literally can't do anything harmful with it.",
       },
       {
         q: "Can I connect multiple provider keys?",
@@ -44,7 +44,7 @@ const SECTIONS = [
     items: [
       {
         q: "What's in the audit and how is it different from my provider's billing page?",
-        a: "Your provider shows raw numbers. We show intelligence. You get: an efficiency score (52/100 = room to improve), role inference (what each model is doing based on token patterns—Analyst, Writer, Researcher), cost spikes flagged with context, benchmarking (how your cache rate compares to industry average), specific savings recommendations (\"Switch GPT-4 → GPT-4o-mini, save $X/month\"), burn rate forecast, and a written analysis. All in English, all your providers in one place. Your provider can't do any of that.",
+        a: "Your provider shows raw numbers. We show intelligence. You get: an efficiency score (52/100 = room to improve), role inference (what each model is doing based on token patterns, like Analyst, Writer, Researcher), cost spikes flagged with context, benchmarking (how your cache rate compares to industry average), specific savings recommendations (\"Switch GPT-4 → GPT-4o-mini, save $X/month\"), burn rate forecast, and a written analysis. All in English, all your providers in one place. Your provider can't do any of that.",
       },
       {
         q: "Is it real-time?",
@@ -70,7 +70,7 @@ const SECTIONS = [
     items: [
       {
         q: "Is my key safe and can you access it?",
-        a: "Yes, encrypted with AES-256-GCM (military-grade) instantly. We never see it in plain text. Not even our team can decrypt it without your login. If you get hacked, an attacker gets an encrypted blob—useless without your session. For extra safety, give us a read-only key (even safer—we literally can't do anything with it), or rotate your key after the audit.",
+        a: "Yes, encrypted with AES-256-GCM (military-grade) instantly. We never see it in plain text. Not even our team can decrypt it without your login. If you get hacked, an attacker gets an encrypted blob that is useless without your session. For extra safety, give us a read-only key (even safer, since we literally can't do anything with it), or rotate your key after the audit.",
       },
       {
         q: "Do you sell my data or keep it forever?",

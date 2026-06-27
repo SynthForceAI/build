@@ -5,7 +5,7 @@ import { toast } from "sonner";
 import type { SubscriptionTier } from "@prisma/client";
 import { PLANS, isUpgrade, type Plan } from "@/lib/billing/plans";
 
-const SALES_EMAIL = "sales@synthforceai.com";
+const SALES_EMAIL = "samarth@synthforceai.com";
 
 function CheckIcon() {
   return (
