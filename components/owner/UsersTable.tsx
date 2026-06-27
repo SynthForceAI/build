@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from "react";
 import { formatDistanceToNow } from "date-fns";
 
 interface UserRow {
@@ -17,6 +18,51 @@ const TIER_STYLES: Record<string, string> = {
   team: "bg-violet-50 text-violet-600",
   enterprise: "bg-amber-50 text-amber-600",
 };
+
+function TierCell({ userId, initialTier }: { userId: string; initialTier: string }) {
+  const [tier, setTier] = useState(initialTier);
+  const [loading, setLoading] = useState(false);
+
+  async function promote(newTier: string) {
+    setLoading(true);
+    try {
+      const res = await fetch(`/api/owner/users/${userId}/tier`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ tier: newTier }),
+      });
+      if (res.ok) setTier(newTier);
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  return (
+    <div className="flex items-center gap-2">
+      <span className={`text-xs font-medium px-2 py-0.5 rounded-full capitalize ${TIER_STYLES[tier] ?? TIER_STYLES.free}`}>
+        {tier}
+      </span>
+      {tier === "free" && (
+        <button
+          onClick={() => promote("starter")}
+          disabled={loading}
+          className="text-xs text-[#00B2FF] hover:underline disabled:opacity-40 transition"
+        >
+          {loading ? "..." : "Set Starter"}
+        </button>
+      )}
+      {tier === "starter" && (
+        <button
+          onClick={() => promote("free")}
+          disabled={loading}
+          className="text-xs text-gray-400 hover:text-gray-600 hover:underline disabled:opacity-40 transition"
+        >
+          {loading ? "..." : "Revoke"}
+        </button>
+      )}
+    </div>
+  );
+}
 
 export function UsersTable({ rows }: { rows: UserRow[] }) {
   return (
@@ -37,15 +83,13 @@ export function UsersTable({ rows }: { rows: UserRow[] }) {
               <tr key={u.id} className="hover:bg-gray-50 transition-colors">
                 <td className="px-5 py-3 font-medium text-gray-900">{u.email}</td>
                 <td className="px-5 py-3">
-                  <span className={`text-xs font-medium px-2 py-0.5 rounded-full capitalize ${TIER_STYLES[u.tier] ?? TIER_STYLES.free}`}>
-                    {u.tier}
-                  </span>
+                  <TierCell userId={u.id} initialTier={u.tier} />
                 </td>
                 <td className="px-5 py-3">
                   {u.auditCount > 0 ? (
                     <span className="font-semibold text-gray-900">{u.auditCount}</span>
                   ) : (
-                    <span className="text-gray-300">—</span>
+                    <span className="text-gray-300">0</span>
                   )}
                 </td>
                 <td className="px-5 py-3 text-gray-500">
