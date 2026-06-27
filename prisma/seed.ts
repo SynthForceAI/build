@@ -98,11 +98,11 @@ async function main() {
   // ── Company ────────────────────────────────────
   const company = await prisma.company.upsert({
     where: { slug: "demo-corp" },
-    update: {},
+    update: { subscriptionTier: "free" },
     create: {
       name: "Demo Corp",
       slug: "demo-corp",
-      subscriptionTier: "team",
+      subscriptionTier: "free",
     },
   });
   console.log(`  ✓ Company: ${company.name}`);
