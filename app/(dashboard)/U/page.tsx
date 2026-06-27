@@ -19,12 +19,14 @@
 
 import Link from "next/link";
 import { redirect } from "next/navigation";
+import { cookies } from "next/headers";
 import { requireUser } from "@/lib/auth";
 import { ApiError } from "@/lib/api-errors";
 import { prisma } from "@/lib/db";
 import { AgentGrid, type AgentCardData } from "./components/AgentGrid";
 import { TopAgentsTable } from "./components/TopAgentsTable";
 import { SpendTrendChart } from "./components/SpendTrendChart";
+import { IntroAnimation } from "@/components/IntroAnimation";
 
 // ── Types ──────────────────────────────────────────────────────────────────
 
@@ -205,13 +207,18 @@ function fmtNumber(n: number): string {
 
 export default async function DashboardPage() {
   let companyId: string;
+  let userId: string;
   try {
     const { user } = await requireUser();
     companyId = user.companyId;
+    userId = user.id;
   } catch (err) {
     if (err instanceof ApiError && err.status === 401) redirect("/login");
     throw err;
   }
+
+  const cookieStore = await cookies();
+  const skipIntro = cookieStore.get("synthforce-skip-intro")?.value === "1";
 
   let data: Summary = EMPTY;
   try {
@@ -224,6 +231,7 @@ export default async function DashboardPage() {
   const month = new Date().toLocaleString("en-US", { month: "long", year: "numeric" });
 
   return (
+    <IntroAnimation userId={userId} skip={skipIntro}>
     <div>
 
       {/* ── Page header ─────────────────────────────────── */}
@@ -351,6 +359,7 @@ export default async function DashboardPage() {
       )}
 
     </div>
+    </IntroAnimation>
   );
 }
 
