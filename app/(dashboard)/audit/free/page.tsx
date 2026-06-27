@@ -3,6 +3,7 @@ import Link from "next/link";
 import { requireUser } from "@/lib/auth";
 import { ApiError } from "@/lib/api-errors";
 import { prisma } from "@/lib/db";
+import { getAuditQuota } from "@/lib/audit/quota";
 import { ShareButton } from "./ShareButton";
 import { RerunButton } from "./RerunButton";
 import { BurnRateCard } from "./BurnRateCard";
@@ -322,6 +323,9 @@ export default async function FreeAuditPage({
 
   const colorClass = efficiencyColor(score);
 
+  // One-free-audit moat: gate the re-run control on the company's quota.
+  const quota = await getAuditQuota(companyId);
+
   return (
     <div className="max-w-3xl mx-auto space-y-6">
 
@@ -333,7 +337,19 @@ export default async function FreeAuditPage({
         </div>
         <div className="flex gap-3 items-start">
           <ShareButton text={shareText} />
-          <RerunButton auditId={id as string} />
+          {quota.canRun ? (
+            <RerunButton auditId={id as string} />
+          ) : (
+            <div className="flex flex-col items-start gap-1">
+              <Link
+                href="/U/billing"
+                className="px-4 py-2 text-sm font-medium bg-[#00B2FF] text-white rounded-lg hover:bg-[#00B2FF]/90 transition inline-flex items-center gap-2"
+              >
+                Upgrade to re-run →
+              </Link>
+              <span className="text-xs text-gray-400">Free audit used</span>
+            </div>
+          )}
         </div>
       </div>
 
@@ -688,13 +704,15 @@ export default async function FreeAuditPage({
       <div className="bg-gradient-to-r from-[#00B2FF]/10 to-blue-50 border border-blue-100 rounded-2xl p-6">
         <h2 className="text-base font-semibold text-gray-900 mb-1">Ready to go deeper?</h2>
         <p className="text-sm text-gray-600 mb-4">
-          Track individual agents, set budgets, and get real-time alerts when spend spikes.
+          {quota.canRun
+            ? "Track individual agents, set budgets, and get real-time alerts when spend spikes."
+            : "This was your free audit. Upgrade to re-run anytime, track individual agents, set budgets, and get real-time alerts when spend spikes."}
         </p>
         <Link
-          href="/U/onboard"
+          href={quota.canRun ? "/U/onboard" : "/U/billing"}
           className="inline-flex items-center px-5 py-2.5 text-sm font-medium bg-[#00B2FF] text-white rounded-lg hover:bg-[#00B2FF]/90 transition"
         >
-          Track per-agent spend →
+          {quota.canRun ? "Track per-agent spend →" : "View upgrade options →"}
         </Link>
       </div>
 

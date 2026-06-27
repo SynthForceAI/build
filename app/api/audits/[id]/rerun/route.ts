@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
 import { requireUser } from "@/lib/auth";
 import { runAudit } from "@/lib/audit/run";
+import { assertCanRunAudit } from "@/lib/audit/quota";
 import { handleApiError, ApiError } from "@/lib/api-errors";
 
 export async function POST(
@@ -32,6 +33,10 @@ export async function POST(
         detail: "The API key for this audit has been revoked. Go to Profile > Providers to add a new key.",
       });
     }
+
+    // One-free-audit moat: free-tier companies can't re-run (the existing
+    // audit already consumed their single free run). Paid tiers are unlimited.
+    await assertCanRunAudit(user.companyId);
 
     const newAudit = await prisma.audit.create({
       data: {
