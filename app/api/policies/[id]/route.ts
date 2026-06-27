@@ -8,6 +8,7 @@ import { prisma } from "@/lib/db";
 import { requireUser, requireRole } from "@/lib/auth";
 import { handleApiError, ApiError } from "@/lib/api-errors";
 import { PolicyUpdateSchema, Uuid } from "@/lib/validators";
+import { assertDepartmentInCompany } from "@/lib/tenant-scope";
 
 export const dynamic = "force-dynamic";
 
@@ -42,6 +43,13 @@ export async function PATCH(request: Request, { params }: Ctx) {
     Uuid.parse(id);
     await loadPolicy(id, user.companyId);
     const data = PolicyUpdateSchema.parse(await request.json());
+
+    // Cross-tenant safety: a department-scoped policy may only target a
+    // department in the caller's own company (mirrors POST /api/policies).
+    if (data.scopeDepartmentId) {
+      await assertDepartmentInCompany(data.scopeDepartmentId, user.companyId);
+    }
+
     const policy = await prisma.policy.update({ where: { id }, data });
     return NextResponse.json({ policy });
   } catch (err) {

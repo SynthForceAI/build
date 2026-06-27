@@ -7,6 +7,7 @@ import { prisma } from "@/lib/db";
 import { requireUser, requireRole } from "@/lib/auth";
 import { handleApiError } from "@/lib/api-errors";
 import { PolicyCreateSchema } from "@/lib/validators";
+import { assertDepartmentInCompany } from "@/lib/tenant-scope";
 export const dynamic = "force-dynamic";
 
 export async function GET() {
@@ -33,12 +34,9 @@ export async function POST(request: Request) {
     const data = PolicyCreateSchema.parse(await request.json());
 
     // If scope is department-bound, ensure the department belongs to us.
+    // Shared with the PATCH handler via lib/tenant-scope so the two can't drift.
     if (data.scopeDepartmentId) {
-      const ok = await prisma.department.findFirst({
-        where: { id: data.scopeDepartmentId, companyId: user.companyId },
-        select: { id: true },
-      });
-      if (!ok) return NextResponse.json({ error: { code: "department_not_found" } }, { status: 400 });
+      await assertDepartmentInCompany(data.scopeDepartmentId, user.companyId);
     }
 
     const policy = await prisma.policy.create({
