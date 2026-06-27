@@ -1,8 +1,7 @@
 /**
  * Root layout - the HTML shell applied to every page in the app.
  *
- * This is intentionally minimal: fonts, global styles, analytics, and the
- * Tally embed script. That's it.
+ * This is intentionally minimal: fonts, global styles, and analytics.
  *
  * WHY no Footer here?
  * The Footer belongs on marketing pages but NOT on authenticated dashboard
@@ -11,7 +10,6 @@
  *   - app/(dashboard)/layout.tsx  adds the sidebar shell for product pages
  */
 import type { Metadata } from "next";
-import Script from "next/script";
 import { inter } from "@/lib/fonts";
 import "./globals.css";
 import React from "react";
@@ -35,8 +33,6 @@ export default function RootLayout({
       <body suppressHydrationWarning>
         {children}
         <Analytics />
-        {/* Tally embed - needed by WaitlistTrigger on marketing pages */}
-        <Script src="https://tally.so/widgets/embed.js" strategy="afterInteractive" />
       </body>
     </html>
   );
