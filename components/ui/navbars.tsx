@@ -9,6 +9,7 @@ export function OriginalNavbar() {
             <Link href="/demo" className="hover:text-gray-900">Demo</Link>
             <Link href="/blog" className="hover:text-gray-900">Blog</Link>
             <Link href="/about" className="hover:text-gray-900">About</Link>
+            <Link href="/faq" className="hover:text-gray-900">FAQ</Link>
             <Link href="/hard-truth" className="font-semibold text-red-600 hover:text-red-700">The Hard Truth</Link>
             <WaitlistTrigger className="text-gray-900 hover:underline decoration-1 underline-offset-4 cursor-pointer">
                 Waitlist →
