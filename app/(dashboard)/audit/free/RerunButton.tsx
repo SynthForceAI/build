@@ -13,9 +13,12 @@ export function RerunButton({ auditId }: { auditId: string }) {
     setError(null);
     try {
       const res = await fetch(`/api/audits/${auditId}/rerun`, { method: "POST" });
-      const data = await res.json() as { auditId?: string; error?: string };
+      const data = await res.json() as {
+        auditId?: string;
+        error?: { code?: string; message?: string; detail?: string };
+      };
       if (!res.ok) {
-        setError(data.error ?? "Re-run failed. Try again.");
+        setError(data.error?.detail ?? data.error?.message ?? "Re-run failed. Try again.");
         setLoading(false);
         return;
       }

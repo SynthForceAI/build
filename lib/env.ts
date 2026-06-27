@@ -39,6 +39,14 @@ const ServerEnvSchema = z.object({
   // workflow at .github/workflows/sync-provider-usage.yml sends it as a
   // Bearer token; the job route fails closed if it is absent.
   SYNC_JOB_SECRET: z.string().min(16).optional(),
+
+  // Billing / Stripe. All optional: when STRIPE_SECRET_KEY is absent the app
+  // runs in "request upgrade" mode (no payments). Setting these turns on the
+  // Stripe checkout path — see lib/billing/. Price IDs map to PAID tiers.
+  STRIPE_SECRET_KEY:      z.string().min(10).optional(),
+  STRIPE_WEBHOOK_SECRET:  z.string().min(10).optional(),
+  STRIPE_PRICE_STARTER:   z.string().min(1).optional(),
+  STRIPE_PRICE_TEAM:      z.string().min(1).optional(),
 });
 
 export type ServerEnv = z.infer<typeof ServerEnvSchema>;
