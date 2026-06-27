@@ -44,11 +44,12 @@ export async function startUpgrade(user: User, tier: PaidTier): Promise<UpgradeR
 
 /** Logs the customer's interest so the team can reach out and provision. */
 async function recordUpgradeRequest(user: User, tier: PaidTier): Promise<void> {
-  await prisma.activityLog.create({
+  await prisma.upgradeRequest.create({
     data: {
       userId: user.id,
-      action: "upgrade_requested",
-      metadata: { tier, companyId: user.companyId },
+      companyId: user.companyId,
+      email: user.email,
+      tier,
     },
   });
 }

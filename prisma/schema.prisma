@@ -41,6 +41,7 @@ model Company {
   connectedAgents ConnectedAgent[]
   connectedAgentUsage ConnectedAgentUsageLog[]
   providerAdminKeys   ProviderAdminKey[]
+  upgradeRequests     UpgradeRequest[]
 
   @@map("companies")
 }
@@ -75,6 +76,7 @@ model User {
   acknowledgedAlerts BudgetAlert[] @relation("AlertAcknowledger")
   initiatedAudits    Audit[]       @relation("AuditInitiator")
   activityLogs       ActivityLog[]
+  upgradeRequests    UpgradeRequest[]
 
   @@unique([companyId, email])
   @@index([companyId])
@@ -539,6 +541,38 @@ model WaitlistSignup {
 
   @@index([createdAt(sort: Desc)])
   @@map("waitlist_signups")
+}
+
+// ---------------------------------------------------------------------------
+// Upgrade Requests — logged when a user clicks "Request Upgrade" on the
+// billing page before Stripe is wired. Team uses this table to follow up
+// manually and flip subscriptionTier once payment is confirmed.
+// ---------------------------------------------------------------------------
+
+model UpgradeRequest {
+  id        String              @id @default(uuid()) @db.Uuid
+  userId    String              @map("user_id") @db.Uuid
+  companyId String              @map("company_id") @db.Uuid
+  email     String              @db.VarChar(255)
+  tier      SubscriptionTier
+  status    UpgradeRequestStatus @default(pending)
+  createdAt DateTime            @default(now()) @map("created_at") @db.Timestamptz(6)
+
+  user    User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  company Company @relation(fields: [companyId], references: [id], onDelete: Cascade)
+
+  @@index([companyId])
+  @@index([status, createdAt(sort: Desc)])
+  @@map("upgrade_requests")
+}
+
+enum UpgradeRequestStatus {
+  pending
+  contacted
+  converted
+  closed
+
+  @@map("upgrade_request_status")
 }
 
 // ---------------------------------------------------------------------------
