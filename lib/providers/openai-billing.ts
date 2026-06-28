@@ -37,6 +37,26 @@ export type ProviderUsageReport = {
   }>;
   /** Raw responses kept for auditing reproducibility. */
   rawResponses:     Array<{ source: string; body: unknown }>;
+  /** Advanced telemetry: per-project spend with MoM comparison (OpenAI only). */
+  projectSpend?: Array<{
+    projectId:     string;
+    projectName?:  string;
+    costCents:     number;
+    prevCostCents: number;
+    calls:         number;
+  }>;
+  /** Advanced telemetry: batch vs realtime breakdown (OpenAI only). */
+  batchVsRealtime?: Array<{
+    isBatch:   boolean;
+    costCents: number;
+    calls:     number;
+  }>;
+  /** Advanced telemetry: per API key activity (OpenAI only). */
+  apiKeyActivity?: Array<{
+    apiKeyId:  string;
+    calls:     number;
+    costCents: number;
+  }>;
 };
 
 export class OpenAIPullerError extends Error {

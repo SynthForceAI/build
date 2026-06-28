@@ -108,8 +108,9 @@ export async function runAudit({ auditId, deleteKeyOnDone, periodDays = 30 }: Ru
           totalTokensOut:         BigInt(Math.round(analysis.totalTokensOut)),
           reportSummary,
           reportData: {
-            byModel:        usage.byModel,
+            byModel:         usage.byModel,
             dailySpendCents: usage.dailySpendCents,
+            telemetry:       analysis.telemetry,
           } as object,
         },
       }),

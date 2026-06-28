@@ -8,6 +8,11 @@ import { ShareButton } from "./ShareButton";
 import { RerunButton } from "./RerunButton";
 import { BurnRateCard } from "./BurnRateCard";
 import { InfoTip } from "./InfoTip";
+import type {
+  TelemetryInsights,
+  HighVolumeProject,
+  ModelMismatchCandidate,
+} from "@/lib/audit/telemetry";
 
 // ---------------------------------------------------------------------------
 // Types
@@ -26,6 +31,12 @@ type DailySpend = {
   date: string;
   costCents: number;
   calls: number;
+};
+
+type ReportData = {
+  byModel?:        ModelRow[];
+  dailySpendCents?: DailySpend[];
+  telemetry?:      TelemetryInsights;
 };
 
 // ---------------------------------------------------------------------------
@@ -76,10 +87,8 @@ function formatPeriod(start: Date | null, end: Date | null): string {
 }
 
 function formatModelName(raw: string): string {
-  // OpenAI style: base-YYYY-MM-DD  →  base v.YYYY
   const m1 = raw.match(/^(.+?)-(\d{4})-\d{2}-\d{2}$/);
   if (m1) return `${m1[1]} v.${m1[2]}`;
-  // Anthropic style: base-YYYYMMDD  →  base v.YYYY  (year must be 2020-2039)
   const m2 = raw.match(/^(.+?)-(20[2-3]\d)\d{4}$/);
   if (m2) return `${m2[1]} v.${m2[2]}`;
   return raw;
@@ -138,6 +147,489 @@ function cacheInfo(m: ModelRow): { ratePct: number; opportunity: boolean } | nul
   if (!m.tokensInCached || m.tokensIn === 0) return null;
   const ratePct = Math.round(Math.min(100, (m.tokensInCached / m.tokensIn) * 100));
   return { ratePct, opportunity: ratePct < 30 && m.tokensIn > 20000 };
+}
+
+// ---------------------------------------------------------------------------
+// Telemetry insight section components (server-side, inline)
+// ---------------------------------------------------------------------------
+
+function NoDataPlaceholder({ message }: { message: string }) {
+  return (
+    <p className="text-sm text-gray-500 bg-gray-50 rounded-xl p-4 border border-gray-200">
+      {message}
+    </p>
+  );
+}
+
+function InsightCard({
+  id,
+  title,
+  finding,
+  whyItMatters,
+  recommendation,
+  estimatedImpactCents,
+  children,
+}: {
+  id: string;
+  title: string;
+  finding: string;
+  whyItMatters: string;
+  recommendation: string;
+  estimatedImpactCents?: number;
+  children?: React.ReactNode;
+}) {
+  return (
+    <div id={id} className="bg-white rounded-2xl border border-gray-200 shadow-sm p-6 scroll-mt-20">
+      <h2 className="text-sm font-semibold text-gray-900 mb-4">{title}</h2>
+      <div className="space-y-3 mb-4">
+        <div>
+          <span className="text-xs font-medium text-gray-500 uppercase tracking-wide">Finding</span>
+          <p className="text-sm text-gray-800 mt-0.5">{finding}</p>
+        </div>
+        <div>
+          <span className="text-xs font-medium text-gray-500 uppercase tracking-wide">Why it matters</span>
+          <p className="text-sm text-gray-800 mt-0.5">{whyItMatters}</p>
+        </div>
+        <div>
+          <span className="text-xs font-medium text-gray-500 uppercase tracking-wide">Recommendation</span>
+          <p className="text-sm text-gray-800 mt-0.5">{recommendation}</p>
+        </div>
+        {estimatedImpactCents !== undefined && estimatedImpactCents > 0 && (
+          <div className="inline-flex items-center gap-1.5 bg-green-50 border border-green-200 rounded-lg px-3 py-1.5">
+            <span className="text-xs font-medium text-gray-500 uppercase tracking-wide">Estimated impact</span>
+            <span className="text-sm font-bold text-green-700">{fmtDollars(estimatedImpactCents)}/month</span>
+          </div>
+        )}
+      </div>
+      {children}
+    </div>
+  );
+}
+
+function HighVolumeProjectsSection({ projects }: { projects: HighVolumeProject[] | null | undefined }) {
+  if (projects === undefined) {
+    return (
+      <div id="high-volume-projects" className="bg-white rounded-2xl border border-gray-200 shadow-sm p-6 scroll-mt-20">
+        <h2 className="text-sm font-semibold text-gray-900 mb-3">High-Volume Projects</h2>
+        <NoDataPlaceholder message="Run a new audit to see this insight." />
+      </div>
+    );
+  }
+
+  if (projects === null || projects.length === 0) {
+    return (
+      <div id="high-volume-projects" className="bg-white rounded-2xl border border-gray-200 shadow-sm p-6 scroll-mt-20">
+        <h2 className="text-sm font-semibold text-gray-900 mb-3">High-Volume Projects</h2>
+        <NoDataPlaceholder message="No project-level data available. Your API key may need 'Read usage data' permission in the OpenAI dashboard." />
+      </div>
+    );
+  }
+
+  const totalSpend = projects.reduce((s, p) => s + p.costCents, 0);
+  const outliers = projects.filter((p) => p.isOutlier);
+  const totalSavingsHint = outliers.length > 0
+    ? `${outliers.length} project${outliers.length > 1 ? "s are" : " is"} consuming a disproportionate share of spend. Reviewing their workloads could uncover optimization opportunities.`
+    : "Spend looks well-distributed across projects.";
+
+  return (
+    <InsightCard
+      id="high-volume-projects"
+      title="High-Volume Projects"
+      finding={`${projects.length} project${projects.length !== 1 ? "s" : ""} detected. ${outliers.length > 0 ? `${outliers.length} flagged as spend outliers.` : "No outliers detected."}`}
+      whyItMatters="Projects with disproportionate spend often contain redundant calls, over-provisioned models, or runaway loops that haven't been caught yet."
+      recommendation="Review the flagged projects for unnecessary model upgrades or retry storms. Consider setting per-project spend alerts."
+      estimatedImpactCents={outliers.reduce((s, p) => s + Math.round(p.costCents * 0.3), 0)}
+    >
+      <div className="overflow-x-auto">
+        <table className="w-full text-xs">
+          <thead>
+            <tr className="border-b border-gray-100">
+              <th className="text-left py-2 text-gray-500 font-medium">Project ID</th>
+              <th className="text-right py-2 text-gray-500 font-medium">Spend</th>
+              <th className="text-right py-2 text-gray-500 font-medium">Share</th>
+              <th className="text-right py-2 text-gray-500 font-medium">MoM</th>
+              <th className="text-right py-2 text-gray-500 font-medium">Calls</th>
+            </tr>
+          </thead>
+          <tbody>
+            {projects.slice(0, 10).map((p) => (
+              <tr key={p.projectId} className="border-b border-gray-50 last:border-0">
+                <td className="py-2 text-gray-700 font-mono truncate max-w-[160px]">
+                  {p.projectId.slice(0, 20)}{p.projectId.length > 20 ? "…" : ""}
+                  {p.isOutlier && (
+                    <span className="ml-2 px-1.5 py-0.5 bg-red-50 text-red-700 border border-red-200 rounded-full font-sans font-medium">
+                      outlier
+                    </span>
+                  )}
+                </td>
+                <td className="py-2 text-right text-gray-900 font-medium">{fmtDollars(p.costCents)}</td>
+                <td className="py-2 text-right text-gray-600">{p.spendSharePct.toFixed(1)}%</td>
+                <td className="py-2 text-right">
+                  {p.prevCostCents > 0 ? (
+                    <span className={p.momChangePct > 10 ? "text-red-600 font-medium" : p.momChangePct < -5 ? "text-green-600 font-medium" : "text-gray-600"}>
+                      {p.momChangePct > 0 ? "+" : ""}{p.momChangePct.toFixed(1)}%
+                    </span>
+                  ) : (
+                    <span className="text-gray-400">—</span>
+                  )}
+                </td>
+                <td className="py-2 text-right text-gray-600">{p.calls > 0 ? p.calls.toLocaleString() : "—"}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+      {totalSpend > 0 && (
+        <p className="text-xs text-gray-400 mt-3 pt-3 border-t border-gray-100">{totalSavingsHint}</p>
+      )}
+    </InsightCard>
+  );
+}
+
+function ModelMismatchSection({ mismatch }: { mismatch: TelemetryInsights["modelMismatch"] | undefined }) {
+  if (mismatch === undefined) {
+    return (
+      <div id="model-mismatch" className="bg-white rounded-2xl border border-gray-200 shadow-sm p-6 scroll-mt-20">
+        <h2 className="text-sm font-semibold text-gray-900 mb-3">Right Tool for the Job</h2>
+        <NoDataPlaceholder message="Run a new audit to see this insight." />
+      </div>
+    );
+  }
+
+  if (!mismatch || mismatch.candidates.length === 0) {
+    return (
+      <div id="model-mismatch" className="bg-white rounded-2xl border border-gray-200 shadow-sm p-6 scroll-mt-20">
+        <h2 className="text-sm font-semibold text-gray-900 mb-3">Right Tool for the Job</h2>
+        <div className="flex items-start gap-3 bg-green-50 rounded-xl p-4 border border-green-200">
+          <svg className="w-4 h-4 text-green-600 mt-0.5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+          </svg>
+          <p className="text-sm text-green-800">All models look well-matched to their tasks. No overkill patterns detected.</p>
+        </div>
+      </div>
+    );
+  }
+
+  const totalSavings = mismatch.candidates.reduce((s, c) => s + c.estimatedSavingsCents, 0);
+
+  return (
+    <InsightCard
+      id="model-mismatch"
+      title="Right Tool for the Job"
+      finding={`${mismatch.candidates.length} model${mismatch.candidates.length !== 1 ? "s" : ""} may be over-specified for the work they are doing.`}
+      whyItMatters="Using flagship models for short, simple outputs is the single fastest way to overspend on AI. Switching to a smaller model for these tasks has no meaningful quality impact at low output lengths."
+      recommendation="Test each flagged model with a smaller alternative on a 5% traffic sample. If quality holds, roll it out fully."
+      estimatedImpactCents={totalSavings}
+    >
+      <div className="space-y-3">
+        {mismatch.candidates.map((c: ModelMismatchCandidate) => (
+          <div key={c.model} className="border border-gray-100 rounded-xl p-4">
+            <div className="flex flex-wrap items-center justify-between gap-2 mb-2">
+              <div className="flex items-center gap-2 min-w-0">
+                <span className="text-xs font-medium text-gray-700 truncate">{formatModelName(c.model)}</span>
+                <svg className="w-3.5 h-3.5 text-gray-400 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                </svg>
+                <span className="text-xs font-medium text-[#00B2FF] shrink-0">{c.suggestedModel}</span>
+              </div>
+              <span className={`text-xs px-2 py-0.5 rounded-full border font-medium shrink-0 ${
+                c.confidence === "high" ? "bg-green-50 text-green-700 border-green-200" :
+                c.confidence === "medium" ? "bg-yellow-50 text-yellow-700 border-yellow-200" :
+                "bg-gray-50 text-gray-600 border-gray-200"
+              }`}>
+                {c.confidence} confidence
+              </span>
+            </div>
+            <div className="grid grid-cols-3 gap-3 text-xs text-gray-500">
+              <div>
+                <div className="font-medium text-gray-900 text-sm">{c.avgOutputTokens.toLocaleString()}</div>
+                <div>avg output tokens/call</div>
+              </div>
+              <div>
+                <div className="font-medium text-gray-900 text-sm">{c.callCount.toLocaleString()}</div>
+                <div>calls this period</div>
+              </div>
+              <div>
+                <div className="font-medium text-green-700 text-sm">{fmtDollars(c.estimatedSavingsCents)}/mo</div>
+                <div>est. savings</div>
+              </div>
+            </div>
+          </div>
+        ))}
+      </div>
+    </InsightCard>
+  );
+}
+
+function CacheEfficiencySection({ cache }: { cache: TelemetryInsights["cacheEfficiency"] | undefined }) {
+  if (cache === undefined) {
+    return (
+      <div id="cache-efficiency" className="bg-white rounded-2xl border border-gray-200 shadow-sm p-6 scroll-mt-20">
+        <h2 className="text-sm font-semibold text-gray-900 mb-3">Cache Efficiency</h2>
+        <NoDataPlaceholder message="Run a new audit to see this insight." />
+      </div>
+    );
+  }
+
+  if (!cache) return null;
+
+  const aboveBenchmark = cache.cacheHitRatePct >= cache.benchmarkPct;
+
+  return (
+    <InsightCard
+      id="cache-efficiency"
+      title="Cache Efficiency"
+      finding={`Your cache hit rate is ${cache.cacheHitRatePct.toFixed(1)}% — ${aboveBenchmark ? "above" : "below"} the ${cache.benchmarkPct}% industry benchmark.`}
+      whyItMatters="Anthropic charges up to 90% less for cached input tokens. A low cache rate means you are paying full price for content your system has already processed before."
+      recommendation={cache.recommendation}
+      estimatedImpactCents={aboveBenchmark ? undefined : cache.potentialSavingsCents}
+    >
+      {/* Progress bar with benchmark marker */}
+      <div className="mt-2">
+        <div className="flex justify-between text-xs text-gray-500 mb-1">
+          <span>0%</span>
+          <span className="text-gray-700 font-medium">{cache.cacheHitRatePct.toFixed(1)}% current</span>
+          <span>100%</span>
+        </div>
+        <div className="relative h-3 bg-gray-100 rounded-full overflow-hidden">
+          <div
+            className={`h-full rounded-full ${aboveBenchmark ? "bg-green-500" : cache.cacheHitRatePct >= 50 ? "bg-yellow-400" : "bg-orange-400"}`}
+            style={{ width: `${Math.min(100, cache.cacheHitRatePct)}%` }}
+          />
+          {/* Benchmark marker at 70% */}
+          <div
+            className="absolute top-0 bottom-0 w-0.5 bg-blue-500"
+            style={{ left: `${cache.benchmarkPct}%` }}
+            title={`${cache.benchmarkPct}% benchmark`}
+          />
+        </div>
+        <div className="flex justify-end mt-1">
+          <span className="text-xs text-blue-600">{cache.benchmarkPct}% benchmark</span>
+        </div>
+        <div className="grid grid-cols-2 gap-3 mt-3 text-xs text-gray-500">
+          <div>
+            <div className="font-medium text-gray-900 text-sm">{(cache.cachedTokens / 1_000_000).toFixed(1)}M</div>
+            <div>cached tokens</div>
+          </div>
+          <div>
+            <div className="font-medium text-gray-900 text-sm">{(cache.totalInputTokens / 1_000_000).toFixed(1)}M</div>
+            <div>total input tokens</div>
+          </div>
+        </div>
+        {aboveBenchmark && (
+          <div className="mt-3 flex items-center gap-2 bg-green-50 rounded-lg p-3 border border-green-200">
+            <svg className="w-4 h-4 text-green-600 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+            </svg>
+            <p className="text-xs text-green-800">You are above the industry benchmark. Your caching strategy is working well.</p>
+          </div>
+        )}
+      </div>
+    </InsightCard>
+  );
+}
+
+function ReasoningEfficiencySection({ reasoning }: { reasoning: TelemetryInsights["reasoningEfficiency"] | undefined }) {
+  if (!reasoning) return null;
+
+  const overthinkingModels = reasoning.models.filter((m) => m.ratio > 10);
+
+  return (
+    <InsightCard
+      id="reasoning-efficiency"
+      title="Reasoning Efficiency"
+      finding={`${reasoning.models.length} reasoning model${reasoning.models.length !== 1 ? "s" : ""} detected. ${overthinkingModels.length > 0 ? `${overthinkingModels.length} show${overthinkingModels.length === 1 ? "s" : ""} a high reasoning-to-output token ratio.` : "Ratios look proportionate."}`}
+      whyItMatters="o1 and o3 models burn extra tokens on internal reasoning before producing output. A very high reasoning-to-output ratio often means the model is overthinking tasks that a simpler model could handle."
+      recommendation={overthinkingModels.length > 0 ? "Consider routing straightforward tasks to GPT-4o to avoid unnecessary reasoning overhead." : "Continue monitoring as usage grows."}
+    >
+      <div className="space-y-2">
+        {reasoning.models.map((m) => (
+          <div key={m.model} className={`border rounded-xl p-4 ${m.ratio > 10 ? "border-orange-200 bg-orange-50" : "border-gray-100"}`}>
+            <div className="flex flex-wrap items-center justify-between gap-2 mb-2">
+              <span className="text-xs font-medium text-gray-700">{formatModelName(m.model)}</span>
+              <span className={`text-xs px-2 py-0.5 rounded-full border font-medium ${
+                m.ratio > 10 ? "bg-orange-50 text-orange-700 border-orange-200" : "bg-gray-50 text-gray-600 border-gray-200"
+              }`}>
+                {m.ratio}x ratio
+              </span>
+            </div>
+            <div className="grid grid-cols-3 gap-3 text-xs text-gray-500 mb-2">
+              <div>
+                <div className="font-medium text-gray-900 text-sm">{m.avgReasoningTokensPerCall.toLocaleString()}</div>
+                <div>avg reasoning tokens</div>
+              </div>
+              <div>
+                <div className="font-medium text-gray-900 text-sm">{m.avgOutputTokensPerCall.toLocaleString()}</div>
+                <div>avg output tokens</div>
+              </div>
+              <div>
+                <div className="font-medium text-gray-900 text-sm">{fmtDollars(m.costCents)}</div>
+                <div>period cost</div>
+              </div>
+            </div>
+            {m.ratio > 10 && (
+              <p className="text-xs text-orange-700 mt-1">{m.recommendation}</p>
+            )}
+          </div>
+        ))}
+      </div>
+    </InsightCard>
+  );
+}
+
+function BatchOpportunitySection({ batch }: { batch: TelemetryInsights["batchOpportunity"] | undefined }) {
+  if (batch === undefined) {
+    return (
+      <div id="batch-opportunity" className="bg-white rounded-2xl border border-gray-200 shadow-sm p-6 scroll-mt-20">
+        <h2 className="text-sm font-semibold text-gray-900 mb-3">Batch Opportunity</h2>
+        <NoDataPlaceholder message="Run a new audit to see this insight." />
+      </div>
+    );
+  }
+
+  if (!batch) return null;
+
+  if (!batch.eligible) {
+    return (
+      <div id="batch-opportunity" className="bg-white rounded-2xl border border-gray-200 shadow-sm p-6 scroll-mt-20">
+        <h2 className="text-sm font-semibold text-gray-900 mb-3">Batch Opportunity</h2>
+        <NoDataPlaceholder message="Your call volume is below the threshold where batching makes a meaningful difference (500+ calls, $5+/period)." />
+      </div>
+    );
+  }
+
+  return (
+    <InsightCard
+      id="batch-opportunity"
+      title="Batch Opportunity"
+      finding={`${batch.realtimeCalls.toLocaleString()} realtime calls this period (${fmtDollars(batch.realtimeCostCents)}). Up to 60% may be eligible for the Batch API.`}
+      whyItMatters="OpenAI's Batch API gives a 50% discount on any request that can wait up to 24 hours for a response. For background processing, data enrichment, or offline analysis, this is free money."
+      recommendation="Identify non-urgent workflows and route them through the Batch API. Start with any pipeline that runs overnight or processes data in bulk."
+      estimatedImpactCents={batch.estimatedSavingsCents}
+    >
+      <a
+        href="https://platform.openai.com/docs/api-reference/batch"
+        target="_blank"
+        rel="noopener noreferrer"
+        className="inline-flex items-center gap-1.5 text-xs text-[#00B2FF] hover:underline mt-1"
+      >
+        OpenAI Batch API docs
+        <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+        </svg>
+      </a>
+    </InsightCard>
+  );
+}
+
+function UnusedKeysSection({ keys }: { keys: TelemetryInsights["unusedKeys"] | undefined }) {
+  if (keys === undefined) {
+    return (
+      <div id="unused-keys" className="bg-white rounded-2xl border border-gray-200 shadow-sm p-6 scroll-mt-20">
+        <h2 className="text-sm font-semibold text-gray-900 mb-3">Unused API Keys</h2>
+        <NoDataPlaceholder message="Run a new audit to see this insight." />
+      </div>
+    );
+  }
+
+  if (keys === null) {
+    return (
+      <div id="unused-keys" className="bg-white rounded-2xl border border-gray-200 shadow-sm p-6 scroll-mt-20">
+        <h2 className="text-sm font-semibold text-gray-900 mb-3">Unused API Keys</h2>
+        <NoDataPlaceholder message="Enable 'Read usage data' permission on your admin key to see key-level activity." />
+      </div>
+    );
+  }
+
+  const unusedKeys = keys.filter((k) => k.isUnused);
+  const activeKeys = keys.filter((k) => !k.isUnused);
+
+  return (
+    <div id="unused-keys" className="bg-white rounded-2xl border border-gray-200 shadow-sm p-6 scroll-mt-20">
+      <h2 className="text-sm font-semibold text-gray-900 mb-3">Unused API Keys</h2>
+      <div className="space-y-3 mb-4">
+        <div>
+          <span className="text-xs font-medium text-gray-500 uppercase tracking-wide">Finding</span>
+          <p className="text-sm text-gray-800 mt-0.5">
+            {unusedKeys.length > 0
+              ? `${unusedKeys.length} API key${unusedKeys.length !== 1 ? "s" : ""} generated zero traffic this period.`
+              : `All ${keys.length} keys were active this period.`}
+          </p>
+        </div>
+        {unusedKeys.length > 0 && (
+          <>
+            <div>
+              <span className="text-xs font-medium text-gray-500 uppercase tracking-wide">Why it matters</span>
+              <p className="text-sm text-gray-800 mt-0.5">Dormant keys are a standing credential risk. If leaked, an attacker could generate spend or exfiltrate data before you notice.</p>
+            </div>
+            <div>
+              <span className="text-xs font-medium text-gray-500 uppercase tracking-wide">Recommendation</span>
+              <p className="text-sm text-gray-800 mt-0.5">Revoke any key that has not generated traffic in 30 days. Only keep keys that are actively in use.</p>
+            </div>
+          </>
+        )}
+      </div>
+      {keys.length > 0 && (
+        <div className="space-y-2">
+          {unusedKeys.length > 0 && (
+            <div>
+              <p className="text-xs font-medium text-red-600 mb-2">Inactive keys (zero calls)</p>
+              {unusedKeys.map((k) => (
+                <div key={k.apiKeyId} className="flex items-center justify-between text-xs py-2 border-b border-gray-50 last:border-0">
+                  <span className="font-mono text-gray-700 bg-red-50 px-2 py-0.5 rounded border border-red-100">
+                    …{k.apiKeyId.slice(-4)}
+                  </span>
+                  <span className="text-red-600 font-medium">0 calls — revoke recommended</span>
+                </div>
+              ))}
+            </div>
+          )}
+          {activeKeys.length > 0 && (
+            <div className="mt-3">
+              <p className="text-xs font-medium text-gray-500 mb-2">Active keys</p>
+              {activeKeys.map((k) => (
+                <div key={k.apiKeyId} className="flex items-center justify-between text-xs py-2 border-b border-gray-50 last:border-0">
+                  <span className="font-mono text-gray-700 bg-gray-50 px-2 py-0.5 rounded border border-gray-100">
+                    …{k.apiKeyId.slice(-4)}
+                  </span>
+                  <span className="text-gray-600">{k.calls.toLocaleString()} calls · {fmtDollars(k.costCents)}</span>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      )}
+    </div>
+  );
+}
+
+// ---------------------------------------------------------------------------
+// Sidebar nav
+// ---------------------------------------------------------------------------
+
+type NavSection = {
+  id:    string;
+  label: string;
+};
+
+// Mobile-only horizontal scrollable tab bar (desktop sidebar is rendered inline in the layout)
+function MobileTabBar({ sections }: { sections: NavSection[] }) {
+  return (
+    <nav className="lg:hidden overflow-x-auto pb-2 mb-2 -mx-4 px-4">
+      <ul className="flex gap-2 whitespace-nowrap">
+        {sections.map((s) => (
+          <li key={s.id}>
+            <a
+              href={`#${s.id}`}
+              className="inline-block text-xs text-gray-600 hover:text-[#00B2FF] bg-gray-100 hover:bg-blue-50 px-3 py-1.5 rounded-full transition-colors"
+            >
+              {s.label}
+            </a>
+          </li>
+        ))}
+      </ul>
+    </nav>
+  );
 }
 
 // ---------------------------------------------------------------------------
@@ -232,10 +724,7 @@ export default async function FreeAuditPage({
   const score = Math.round(Number(audit.efficiencyScore ?? 100));
   const period = formatPeriod(audit.dataPeriodStart, audit.dataPeriodEnd);
 
-  const reportData = audit.reportData as {
-    byModel?: ModelRow[];
-    dailySpendCents?: DailySpend[];
-  } | null;
+  const reportData = audit.reportData as ReportData | null;
 
   const byModel: ModelRow[] = reportData?.byModel ?? [];
   const totalModelSpend = byModel.reduce((s, m) => s + m.costCents, 0);
@@ -248,6 +737,10 @@ export default async function FreeAuditPage({
   const overtime = detectOvertime(dailySpend);
   const avgModelCost = byModel.length > 1 ? totalModelSpend / byModel.length : 0;
 
+  // Extract telemetry (null on old audits)
+  const telemetry = reportData?.telemetry ?? null;
+  const provider = telemetry?.provider ?? null;
+
   // Insight 5: spend trend first-half vs second-half
   const spendTrend = (() => {
     if (dailySpend.length < 14) return null;
@@ -257,7 +750,6 @@ export default async function FreeAuditPage({
     const secondAvg = sorted.slice(half).reduce((s, d) => s + d.costCents, 0) / (sorted.length - half);
     if (firstAvg === 0) return null;
     const pct = Math.round(((secondAvg - firstAvg) / firstAvg) * 100);
-    // Per-model context load (tokens per call) for models with call data
     const modelContext = byModel
       .filter((m) => m.calls > 0 && m.tokensIn > 0)
       .map((m) => {
@@ -326,11 +818,35 @@ export default async function FreeAuditPage({
   // One-free-audit moat: gate the re-run control on the company's quota.
   const quota = await getAuditQuota(companyId);
 
-  return (
-    <div className="max-w-3xl mx-auto space-y-6">
+  // Build sidebar sections conditionally
+  const navSections: NavSection[] = [
+    { id: "overview", label: "Overview" },
+  ];
 
+  // High-volume projects: show if telemetry available and provider is openai
+  if (provider === "openai") {
+    navSections.push({ id: "high-volume-projects", label: "High-Volume Projects" });
+  }
+
+  navSections.push({ id: "model-mismatch", label: "Right Tool for the Job" });
+
+  if (provider === "anthropic") {
+    navSections.push({ id: "cache-efficiency", label: "Cache Efficiency" });
+  }
+
+  if (provider === "openai" && telemetry?.reasoningEfficiency) {
+    navSections.push({ id: "reasoning-efficiency", label: "Reasoning Efficiency" });
+  }
+
+  if (provider === "openai") {
+    navSections.push({ id: "batch-opportunity", label: "Batch Opportunity" });
+    navSections.push({ id: "unused-keys", label: "Unused Keys" });
+  }
+
+  return (
+    <div className="max-w-5xl mx-auto">
       {/* ── Header ──────────────────────────────────────────────────────── */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
         <div>
           <h1 className="text-xl font-bold text-gray-900">Audit Report</h1>
           <p className="text-sm text-gray-500 mt-0.5">{period}</p>
@@ -353,369 +869,424 @@ export default async function FreeAuditPage({
         </div>
       </div>
 
-      {/* ── Summary cards ────────────────────────────────────────────────── */}
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-        <div className="bg-purple-50 rounded-xl p-5">
-          <div className="text-2xl font-bold text-gray-900">{fmtDollars(audit.totalMonthlySpendCents)}</div>
-          <div className="text-sm text-gray-600 mt-0.5">Total Spend</div>
-        </div>
-        <div className={`rounded-xl p-5 border ${colorClass}`}>
-          <div className="text-2xl font-bold">{score}<span className="text-sm font-normal ml-1">/100</span></div>
-          <div className="text-sm mt-0.5 flex items-center gap-1">
-            Efficiency: {efficiencyLabel(score)}
-            <InfoTip text="A 0 to 100 score based on how much of your spend SynthForce estimates could be reduced through model swaps, caching, or workload changes. 80 and above is good. 60 to 79 is fair. Below 60 needs attention." />
-          </div>
-        </div>
-        <div className="bg-green-50 rounded-xl p-5">
-          <div className="text-2xl font-bold text-gray-900">{fmtDollars(wasteCents > 0 ? wasteCents : 0)}</div>
-          <div className="text-sm text-gray-600 mt-0.5">Potential Monthly Savings</div>
-        </div>
-      </div>
+      {/* Mobile nav tabs (desktop sidebar rendered below inside the flex layout) */}
+      <MobileTabBar sections={navSections} />
 
-      {/* ── Synthetic Workforce (Insights 1, 2, 4, 7) ───────────────────── */}
-      {byModel.length > 0 && (
-        <div className="bg-white rounded-2xl border border-gray-200 shadow-sm p-6">
-          <div className="flex items-start justify-between mb-1">
-            <h2 className="text-sm font-semibold text-gray-900">Your Synthetic Workforce</h2>
-            <span className="text-xs text-gray-500 bg-gray-100 px-2.5 py-1 rounded-full shrink-0 ml-3">
-              {byModel.length} model{byModel.length !== 1 ? "s" : ""} active
-            </span>
-          </div>
-          <p className="text-xs text-gray-500 mb-5">
-            Each model in your billing data represents a role in your AI fleet. Role labels are inferred from token patterns.
-          </p>
-          <div className="space-y-4">
-            {byModel.map((m) => {
-              const role = inferRole(m);
-              const pct = totalModelSpend > 0 ? (m.costCents / totalModelSpend) * 100 : 0;
-              const isOutlier = avgModelCost > 0 && m.costCents > avgModelCost * 3 && byModel.length > 1;
-              const flagship = isFlagshipModel(m.model);
-              return (
-                <div key={m.model} className="border border-gray-100 rounded-xl p-4">
-                  <div className="flex flex-wrap items-start justify-between gap-2 mb-2">
-                    <div className="min-w-0 flex-1">
-                      <div className="flex flex-wrap items-center gap-2">
-                        <span className="text-sm font-medium text-gray-900 truncate">{formatModelName(m.model)}</span>
-                        {isOutlier && (
-                          <span className="text-xs px-2 py-0.5 rounded-full bg-red-50 text-red-700 border border-red-200 font-medium shrink-0">
-                            Compensation outlier
-                          </span>
-                        )}
-                        {flagship && !isOutlier && (
-                          <span className="text-xs px-2 py-0.5 rounded-full bg-amber-50 text-amber-700 border border-amber-200 font-medium shrink-0">
-                            Flagship tier
-                          </span>
-                        )}
-                      </div>
-                      <span className={`mt-1.5 inline-block text-xs px-2 py-0.5 rounded-full border font-medium ${role.colorClass}`}>
-                        {role.label}
-                      </span>
-                      <p className="text-xs text-gray-500 mt-1">{role.description}</p>
-                      {flagship && m.calls > 500 && (
-                        <p className="text-xs text-amber-600 mt-2">
-                          {m.calls.toLocaleString()} calls on a flagship model. Simple tasks may qualify for a mini-tier model at up to 97% lower cost. Est. savings: {fmtDollars(Math.round(m.costCents * 0.90))}/mo if workload qualifies.
-                        </p>
-                      )}
-                    </div>
-                    <div className="text-right shrink-0">
-                      <div className="text-sm font-bold text-gray-900">{fmtDollars(m.costCents)}</div>
-                      <div className="text-xs text-gray-500">salary / period</div>
-                    </div>
-                  </div>
-                  <div className="mt-3">
-                    <div className="flex justify-between text-xs text-gray-400 mb-1">
-                      <span>{Math.round(pct)}% of payroll</span>
-                      <span>{m.calls.toLocaleString()} calls</span>
-                    </div>
-                    <div className="h-1.5 bg-gray-100 rounded-full overflow-hidden">
-                      <div className="h-full bg-[#00B2FF] rounded-full" style={{ width: `${pct}%` }} />
-                    </div>
-                  </div>
-                  {(() => {
-                    const cache = cacheInfo(m);
-                    if (!cache) return null;
-                    return (
-                      <div className="mt-3 pt-3 border-t border-gray-100">
-                        <div className="flex items-center justify-between mb-1">
-                          <span className="text-xs text-gray-500 flex items-center gap-0.5">
-                            Cache rate
-                            <InfoTip text="The share of your input tokens served from the provider's prompt cache. Cached tokens cost up to 90% less than uncached ones. A low rate means your fleet is paying full price for content it has already seen before." />
-                          </span>
-                          <span className={`text-xs font-medium ${cache.ratePct >= 50 ? "text-green-600" : cache.ratePct >= 30 ? "text-yellow-600" : "text-orange-600"}`}>
-                            {cache.ratePct}%
-                            {cache.ratePct < 50 && <span className="text-gray-400 font-normal"> vs 74% benchmark</span>}
-                          </span>
-                        </div>
-                        <div className="h-1 bg-gray-100 rounded-full overflow-hidden">
-                          <div
-                            className={`h-full rounded-full ${cache.ratePct >= 50 ? "bg-green-500" : cache.ratePct >= 30 ? "bg-yellow-400" : "bg-orange-400"}`}
-                            style={{ width: `${cache.ratePct}%` }}
-                          />
-                        </div>
-                        {cache.opportunity && (
-                          <p className="text-xs text-orange-600 mt-1.5">
-                            Low cache rate. Moving static content into your cached prefix could significantly reduce input token costs.
-                          </p>
-                        )}
-                      </div>
-                    );
-                  })()}
+      {/* ── Two-column layout ─────────────────────────────────────────── */}
+      <div className="flex gap-8 items-start">
+
+        {/* Desktop sidebar (hidden on mobile — mobile tabs are rendered above) */}
+        <aside className="hidden lg:block sticky top-6 self-start w-48 shrink-0">
+          <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-3 px-1">Sections</p>
+          <ul className="space-y-0.5">
+            {navSections.map((s) => (
+              <li key={s.id}>
+                <a
+                  href={`#${s.id}`}
+                  className="block text-sm text-gray-600 hover:text-[#00B2FF] px-2 py-1.5 rounded-lg hover:bg-blue-50 transition-colors"
+                >
+                  {s.label}
+                </a>
+              </li>
+            ))}
+          </ul>
+        </aside>
+
+        {/* ── Main content ──────────────────────────────────────────────── */}
+        <div className="flex-1 min-w-0 space-y-6">
+
+          {/* ── Overview section ─────────────────────────────────────────── */}
+          <div id="overview" className="space-y-6 scroll-mt-20">
+
+            {/* Summary cards */}
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+              <div className="bg-purple-50 rounded-xl p-5">
+                <div className="text-2xl font-bold text-gray-900">{fmtDollars(audit.totalMonthlySpendCents)}</div>
+                <div className="text-sm text-gray-600 mt-0.5">Total Spend</div>
+              </div>
+              <div className={`rounded-xl p-5 border ${colorClass}`}>
+                <div className="text-2xl font-bold">{score}<span className="text-sm font-normal ml-1">/100</span></div>
+                <div className="text-sm mt-0.5 flex items-center gap-1">
+                  Efficiency: {efficiencyLabel(score)}
+                  <InfoTip text="A 0 to 100 score based on how much of your spend SynthForce estimates could be reduced through model swaps, caching, or workload changes. 80 and above is good. 60 to 79 is fair. Below 60 needs attention." />
                 </div>
-              );
-            })}
-          </div>
-          {byModel.length > 1 && avgModelCost > 0 && (
-            <p className="text-xs text-gray-400 mt-4 pt-4 border-t border-gray-100">
-              Average model salary this period: {fmtDollars(Math.round(avgModelCost))}
-            </p>
-          )}
-        </div>
-      )}
-
-      {/* ── Fleet Utilization (Insight 3) ────────────────────────────────── */}
-      {totalDays > 0 && (
-        <div className="bg-white rounded-2xl border border-gray-200 shadow-sm p-6">
-          <h2 className="text-sm font-semibold text-gray-900 mb-4 flex items-center gap-1">
-            Fleet Utilization
-            <InfoTip text="The percentage of days in the audit period where your fleet logged at least one API call. A healthy fleet runs between 70% and 85% of days. Below 30% suggests idle models sitting on your payroll. Above 85% is worth watching for unintended always-on spend." />
-          </h2>
-          <div className="flex items-center justify-between mb-2">
-            <span className="text-xs text-gray-500">{activeDays} of {totalDays} days active</span>
-            <span className={`text-sm font-bold ${utilBand.colorClass}`}>
-              {Math.round(utilization * 100)}% — {utilBand.label}
-            </span>
-          </div>
-          <div className="h-3 bg-gray-100 rounded-full overflow-hidden mb-3">
-            <div className={`h-full ${utilBand.barColor} rounded-full`} style={{ width: `${Math.round(utilization * 100)}%` }} />
-          </div>
-          <p className="text-xs text-gray-500">
-            Healthy utilization is 70–85%.
-            {utilization < 0.30 && " Your fleet is largely idle. Consider retiring unused models to reduce payroll."}
-            {utilization >= 0.30 && utilization < 0.70 && " Your fleet runs on a moderate schedule."}
-            {utilization >= 0.70 && utilization <= 0.85 && " Your fleet is running at a healthy rate."}
-            {utilization > 0.85 && " Your fleet runs nearly every day. Watch for runaway loops or unintended always-on spend."}
-          </p>
-        </div>
-      )}
-
-      {/* ── Fleet Performance Review (Insight 5) ─────────────────────────── */}
-      {spendTrend && (
-        <div className="bg-white rounded-2xl border border-gray-200 shadow-sm p-6">
-          <h2 className="text-sm font-semibold text-gray-900 mb-4">Fleet Performance Review</h2>
-
-          {/* Spend trend verdict */}
-          <div className={`rounded-xl p-4 mb-4 border ${
-            spendTrend.pct < -10 ? "bg-green-50 border-green-200" :
-            spendTrend.pct >  10 ? "bg-orange-50 border-orange-200" :
-            "bg-gray-50 border-gray-200"
-          }`}>
-            <div className="flex items-center justify-between">
-              <span className="text-sm font-medium text-gray-900">Overall fleet verdict</span>
-              <span className={`text-sm font-bold ${
-                spendTrend.pct < -10 ? "text-green-700" :
-                spendTrend.pct >  10 ? "text-orange-600" :
-                "text-gray-700"
-              }`}>
-                {spendTrend.pct < -10 ? "Exceeds Expectations" :
-                 spendTrend.pct >  10 ? "Needs Improvement" :
-                 "Meets Expectations"}
-              </span>
-            </div>
-            <p className="text-xs text-gray-500 mt-1">
-              {spendTrend.pct < -10
-                ? `Daily spend is down ${Math.abs(spendTrend.pct)}% in the second half of the period. Efficiency is improving.`
-                : spendTrend.pct > 10
-                ? `Daily spend is up ${spendTrend.pct}% in the second half of the period. Context bloat or increased load.`
-                : "Daily spend is stable across the period."}
-            </p>
-          </div>
-
-          {/* Per-model context load */}
-          {spendTrend.modelContext.length > 0 && (
-            <div>
-              <p className="text-xs font-medium text-gray-500 mb-2">Context load per request</p>
-              <div className="space-y-2">
-                {spendTrend.modelContext.map((mc) => (
-                  <div key={mc.model} className="flex items-center justify-between text-xs py-1.5 border-b border-gray-100 last:border-0">
-                    <span className="text-gray-700 truncate max-w-[55%]">{formatModelName(mc.model)}</span>
-                    <div className="flex items-center gap-2 shrink-0">
-                      <span className="text-gray-500">{mc.tpc.toLocaleString()} tokens/call</span>
-                      <span className={`px-2 py-0.5 rounded-full font-medium ${
-                        mc.heavy ? "bg-orange-50 text-orange-700 border border-orange-200" :
-                        "bg-gray-100 text-gray-600"
-                      }`}>
-                        {mc.label}
-                      </span>
-                    </div>
-                  </div>
-                ))}
+              </div>
+              <div className="bg-green-50 rounded-xl p-5">
+                <div className="text-2xl font-bold text-gray-900">{fmtDollars(wasteCents > 0 ? wasteCents : 0)}</div>
+                <div className="text-sm text-gray-600 mt-0.5">Potential Monthly Savings</div>
               </div>
             </div>
-          )}
-        </div>
-      )}
 
-      {/* ── Burnout / Overtime (Insight 6) ───────────────────────────────── */}
-      {overtime && (
-        <div className="bg-white rounded-2xl border border-orange-200 shadow-sm p-6">
-          <div className="flex items-start gap-3">
-            <span className="text-xl mt-0.5" aria-hidden="true">🔥</span>
-            <div>
-              <h2 className="text-sm font-semibold text-gray-900 mb-1">Sustained High Spend Detected</h2>
-              <p className="text-sm text-gray-600 mb-2">
-                {overtime.highDays} of the last 7 days ran at {overtime.avgMultiple}x the period baseline. Sustained elevated spend is a warning sign for runaway agents or unintended always-on workloads.
-              </p>
-              <p className="text-xs text-gray-400">
-                Real-time runaway detection requires the SynthForce proxy layer. Billing data can only flag the pattern after the fact.
-              </p>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* ── Batch Eligibility (Insight 9) ────────────────────────────────── */}
-      {batchCandidates.length > 0 && (
-        <div className="bg-white rounded-2xl border border-gray-200 shadow-sm p-6">
-          <div className="flex items-start justify-between mb-1">
-            <h2 className="text-sm font-semibold text-gray-900">Batch Eligibility</h2>
-            {batchSavingsEstimateCents > 0 && (
-              <span className="text-xs text-green-700 bg-green-50 border border-green-200 px-2.5 py-1 rounded-full shrink-0 ml-3">
-                Est. save {fmtDollars(batchSavingsEstimateCents)}/mo
-              </span>
-            )}
-          </div>
-          <p className="text-xs text-gray-500 mb-4">
-            OpenAI and Anthropic both offer a 50% discount via their Batch API for non-urgent requests. These models have high call volumes that may qualify.
-          </p>
-          <div className="space-y-2">
-            {batchCandidates.map((m) => (
-              <div key={m.model} className="flex items-center justify-between text-xs py-2 border-b border-gray-100 last:border-0">
-                <span className="text-gray-700 truncate max-w-[55%]">{formatModelName(m.model)}</span>
-                <div className="flex items-center gap-3 shrink-0">
-                  <span className="text-gray-500">{m.calls.toLocaleString()} calls</span>
-                  <span className="text-green-700 font-medium">
-                    Save {fmtDollars(Math.round(m.costCents * 0.25))}/mo if 50% moves to batch
+            {/* Synthetic Workforce */}
+            {byModel.length > 0 && (
+              <div className="bg-white rounded-2xl border border-gray-200 shadow-sm p-6">
+                <div className="flex items-start justify-between mb-1">
+                  <h2 className="text-sm font-semibold text-gray-900">Your Synthetic Workforce</h2>
+                  <span className="text-xs text-gray-500 bg-gray-100 px-2.5 py-1 rounded-full shrink-0 ml-3">
+                    {byModel.length} model{byModel.length !== 1 ? "s" : ""} active
                   </span>
                 </div>
+                <p className="text-xs text-gray-500 mb-5">
+                  Each model in your billing data represents a role in your AI fleet. Role labels are inferred from token patterns.
+                </p>
+                <div className="space-y-4">
+                  {byModel.map((m) => {
+                    const role = inferRole(m);
+                    const pct = totalModelSpend > 0 ? (m.costCents / totalModelSpend) * 100 : 0;
+                    const isOutlier = avgModelCost > 0 && m.costCents > avgModelCost * 3 && byModel.length > 1;
+                    const flagship = isFlagshipModel(m.model);
+                    return (
+                      <div key={m.model} className="border border-gray-100 rounded-xl p-4">
+                        <div className="flex flex-wrap items-start justify-between gap-2 mb-2">
+                          <div className="min-w-0 flex-1">
+                            <div className="flex flex-wrap items-center gap-2">
+                              <span className="text-sm font-medium text-gray-900 truncate">{formatModelName(m.model)}</span>
+                              {isOutlier && (
+                                <span className="text-xs px-2 py-0.5 rounded-full bg-red-50 text-red-700 border border-red-200 font-medium shrink-0">
+                                  Compensation outlier
+                                </span>
+                              )}
+                              {flagship && !isOutlier && (
+                                <span className="text-xs px-2 py-0.5 rounded-full bg-amber-50 text-amber-700 border border-amber-200 font-medium shrink-0">
+                                  Flagship tier
+                                </span>
+                              )}
+                            </div>
+                            <span className={`mt-1.5 inline-block text-xs px-2 py-0.5 rounded-full border font-medium ${role.colorClass}`}>
+                              {role.label}
+                            </span>
+                            <p className="text-xs text-gray-500 mt-1">{role.description}</p>
+                            {flagship && m.calls > 500 && (
+                              <p className="text-xs text-amber-600 mt-2">
+                                {m.calls.toLocaleString()} calls on a flagship model. Simple tasks may qualify for a mini-tier model at up to 97% lower cost. Est. savings: {fmtDollars(Math.round(m.costCents * 0.90))}/mo if workload qualifies.
+                              </p>
+                            )}
+                          </div>
+                          <div className="text-right shrink-0">
+                            <div className="text-sm font-bold text-gray-900">{fmtDollars(m.costCents)}</div>
+                            <div className="text-xs text-gray-500">salary / period</div>
+                          </div>
+                        </div>
+                        <div className="mt-3">
+                          <div className="flex justify-between text-xs text-gray-400 mb-1">
+                            <span>{Math.round(pct)}% of payroll</span>
+                            <span>{m.calls.toLocaleString()} calls</span>
+                          </div>
+                          <div className="h-1.5 bg-gray-100 rounded-full overflow-hidden">
+                            <div className="h-full bg-[#00B2FF] rounded-full" style={{ width: `${pct}%` }} />
+                          </div>
+                        </div>
+                        {(() => {
+                          const cache = cacheInfo(m);
+                          if (!cache) return null;
+                          return (
+                            <div className="mt-3 pt-3 border-t border-gray-100">
+                              <div className="flex items-center justify-between mb-1">
+                                <span className="text-xs text-gray-500 flex items-center gap-0.5">
+                                  Cache rate
+                                  <InfoTip text="The share of your input tokens served from the provider's prompt cache. Cached tokens cost up to 90% less than uncached ones. A low rate means your fleet is paying full price for content it has already seen before." />
+                                </span>
+                                <span className={`text-xs font-medium ${cache.ratePct >= 50 ? "text-green-600" : cache.ratePct >= 30 ? "text-yellow-600" : "text-orange-600"}`}>
+                                  {cache.ratePct}%
+                                  {cache.ratePct < 50 && <span className="text-gray-400 font-normal"> vs 74% benchmark</span>}
+                                </span>
+                              </div>
+                              <div className="h-1 bg-gray-100 rounded-full overflow-hidden">
+                                <div
+                                  className={`h-full rounded-full ${cache.ratePct >= 50 ? "bg-green-500" : cache.ratePct >= 30 ? "bg-yellow-400" : "bg-orange-400"}`}
+                                  style={{ width: `${cache.ratePct}%` }}
+                                />
+                              </div>
+                              {cache.opportunity && (
+                                <p className="text-xs text-orange-600 mt-1.5">
+                                  Low cache rate. Moving static content into your cached prefix could significantly reduce input token costs.
+                                </p>
+                              )}
+                            </div>
+                          );
+                        })()}
+                      </div>
+                    );
+                  })}
+                </div>
+                {byModel.length > 1 && avgModelCost > 0 && (
+                  <p className="text-xs text-gray-400 mt-4 pt-4 border-t border-gray-100">
+                    Average model salary this period: {fmtDollars(Math.round(avgModelCost))}
+                  </p>
+                )}
               </div>
-            ))}
-          </div>
-          <p className="text-xs text-gray-400 mt-4">
-            Estimate assumes 50% of calls are non-time-sensitive and a 50% batch discount. Actual savings depend on your workload.
-          </p>
-        </div>
-      )}
+            )}
 
-      {/* ── Findings ─────────────────────────────────────────────────────── */}
-      {topFindings.length > 0 && (
-        <div className="bg-white rounded-2xl border border-gray-200 shadow-sm p-6">
-          <h2 className="text-sm font-semibold text-gray-900 mb-4">Key Findings</h2>
-          <div className="space-y-4">
-            {topFindings.map((f) => (
-              <div key={f.id} className="flex gap-3">
-                <div className={`shrink-0 mt-1.5 w-2 h-2 rounded-full ${severityDot(f.severity)}`} aria-hidden="true" />
-                <div className="flex-1 min-w-0">
-                  <div className="flex flex-wrap items-center gap-2 mb-1">
-                    <span className="text-sm font-medium text-gray-900">{f.title}</span>
-                    <span className={`text-xs px-2 py-0.5 rounded-full border font-medium ${severityBadge(f.severity)}`}>
-                      {f.severity}
+            {/* Fleet Utilization */}
+            {totalDays > 0 && (
+              <div className="bg-white rounded-2xl border border-gray-200 shadow-sm p-6">
+                <h2 className="text-sm font-semibold text-gray-900 mb-4 flex items-center gap-1">
+                  Fleet Utilization
+                  <InfoTip text="The percentage of days in the audit period where your fleet logged at least one API call. A healthy fleet runs between 70% and 85% of days. Below 30% suggests idle models sitting on your payroll. Above 85% is worth watching for unintended always-on spend." />
+                </h2>
+                <div className="flex items-center justify-between mb-2">
+                  <span className="text-xs text-gray-500">{activeDays} of {totalDays} days active</span>
+                  <span className={`text-sm font-bold ${utilBand.colorClass}`}>
+                    {Math.round(utilization * 100)}% — {utilBand.label}
+                  </span>
+                </div>
+                <div className="h-3 bg-gray-100 rounded-full overflow-hidden mb-3">
+                  <div className={`h-full ${utilBand.barColor} rounded-full`} style={{ width: `${Math.round(utilization * 100)}%` }} />
+                </div>
+                <p className="text-xs text-gray-500">
+                  Healthy utilization is 70–85%.
+                  {utilization < 0.30 && " Your fleet is largely idle. Consider retiring unused models to reduce payroll."}
+                  {utilization >= 0.30 && utilization < 0.70 && " Your fleet runs on a moderate schedule."}
+                  {utilization >= 0.70 && utilization <= 0.85 && " Your fleet is running at a healthy rate."}
+                  {utilization > 0.85 && " Your fleet runs nearly every day. Watch for runaway loops or unintended always-on spend."}
+                </p>
+              </div>
+            )}
+
+            {/* Fleet Performance Review */}
+            {spendTrend && (
+              <div className="bg-white rounded-2xl border border-gray-200 shadow-sm p-6">
+                <h2 className="text-sm font-semibold text-gray-900 mb-4">Fleet Performance Review</h2>
+                <div className={`rounded-xl p-4 mb-4 border ${
+                  spendTrend.pct < -10 ? "bg-green-50 border-green-200" :
+                  spendTrend.pct >  10 ? "bg-orange-50 border-orange-200" :
+                  "bg-gray-50 border-gray-200"
+                }`}>
+                  <div className="flex items-center justify-between">
+                    <span className="text-sm font-medium text-gray-900">Overall fleet verdict</span>
+                    <span className={`text-sm font-bold ${
+                      spendTrend.pct < -10 ? "text-green-700" :
+                      spendTrend.pct >  10 ? "text-orange-600" :
+                      "text-gray-700"
+                    }`}>
+                      {spendTrend.pct < -10 ? "Exceeds Expectations" :
+                       spendTrend.pct >  10 ? "Needs Improvement" :
+                       "Meets Expectations"}
                     </span>
-                    {f.potentialSavingsCents && Number(f.potentialSavingsCents) > 0 && (
-                      <span className="text-xs text-green-700 bg-green-50 border border-green-200 px-2 py-0.5 rounded-full font-medium">
-                        Save {fmtDollars(Number(f.potentialSavingsCents))}/mo
-                      </span>
-                    )}
                   </div>
-                  <p className="text-sm text-gray-600 leading-relaxed">{f.description}</p>
+                  <p className="text-xs text-gray-500 mt-1">
+                    {spendTrend.pct < -10
+                      ? `Daily spend is down ${Math.abs(spendTrend.pct)}% in the second half of the period. Efficiency is improving.`
+                      : spendTrend.pct > 10
+                      ? `Daily spend is up ${spendTrend.pct}% in the second half of the period. Context bloat or increased load.`
+                      : "Daily spend is stable across the period."}
+                  </p>
+                </div>
+                {spendTrend.modelContext.length > 0 && (
+                  <div>
+                    <p className="text-xs font-medium text-gray-500 mb-2">Context load per request</p>
+                    <div className="space-y-2">
+                      {spendTrend.modelContext.map((mc) => (
+                        <div key={mc.model} className="flex items-center justify-between text-xs py-1.5 border-b border-gray-100 last:border-0">
+                          <span className="text-gray-700 truncate max-w-[55%]">{formatModelName(mc.model)}</span>
+                          <div className="flex items-center gap-2 shrink-0">
+                            <span className="text-gray-500">{mc.tpc.toLocaleString()} tokens/call</span>
+                            <span className={`px-2 py-0.5 rounded-full font-medium ${
+                              mc.heavy ? "bg-orange-50 text-orange-700 border border-orange-200" :
+                              "bg-gray-100 text-gray-600"
+                            }`}>
+                              {mc.label}
+                            </span>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </div>
+            )}
+
+            {/* Burnout / Overtime */}
+            {overtime && (
+              <div className="bg-white rounded-2xl border border-orange-200 shadow-sm p-6">
+                <div className="flex items-start gap-3">
+                  <span className="text-xl mt-0.5" aria-hidden="true">🔥</span>
+                  <div>
+                    <h2 className="text-sm font-semibold text-gray-900 mb-1">Sustained High Spend Detected</h2>
+                    <p className="text-sm text-gray-600 mb-2">
+                      {overtime.highDays} of the last 7 days ran at {overtime.avgMultiple}x the period baseline. Sustained elevated spend is a warning sign for runaway agents or unintended always-on workloads.
+                    </p>
+                    <p className="text-xs text-gray-400">
+                      Real-time runaway detection requires the SynthForce proxy layer. Billing data can only flag the pattern after the fact.
+                    </p>
+                  </div>
                 </div>
               </div>
-            ))}
-          </div>
-        </div>
-      )}
+            )}
 
-      {/* ── AI-generated report summary ──────────────────────────────────── */}
-      {audit.reportSummary && (
-        <div className="bg-blue-50 border border-blue-100 rounded-2xl p-6">
-          <div className="flex items-center gap-2 mb-3">
-            <svg className="w-4 h-4 text-[#00B2FF]" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.347.347A3.001 3.001 0 0112 21a3 3 0 01-2.121-.879l-.347-.347z" />
-            </svg>
-            <h2 className="text-sm font-semibold text-gray-900">Analysis</h2>
-          </div>
-          <p className="text-sm text-gray-700 leading-relaxed whitespace-pre-line">{audit.reportSummary}</p>
-        </div>
-      )}
-
-      {/* ── Benchmarking (placeholder until data moat builds) ────────────── */}
-      <div className="bg-white rounded-2xl border border-gray-200 shadow-sm p-6">
-        <div className="flex items-center justify-between mb-3">
-          <h2 className="text-sm font-semibold text-gray-900">Peer Benchmarking</h2>
-          <span className="text-xs text-gray-400 bg-gray-100 px-2.5 py-1 rounded-full">Coming soon</span>
-        </div>
-        <p className="text-sm text-gray-500">
-          See how your spend compares to similar-sized companies. Available once we have enough anonymized data to calculate reliable percentiles.
-        </p>
-      </div>
-
-      {/* ── What This Audit Cannot Tell You Yet (Insights 12, 13) ─────────── */}
-      <div className="bg-white rounded-2xl border border-gray-200 shadow-sm p-6 space-y-4">
-        <h2 className="text-sm font-semibold text-gray-900">What This Audit Cannot Tell You Yet</h2>
-
-        {/* Insight 12: Attribution gap */}
-        <div className="bg-gray-50 rounded-xl p-4 border border-gray-200">
-          <div className="flex items-start gap-3">
-            <span className="text-base mt-0.5" aria-hidden="true">🕳️</span>
-            <div>
-              <p className="text-sm font-medium text-gray-900 mb-1">Attribution gap</p>
-              <p className="text-sm text-gray-600">
-                100% of your spend is visible by API key and model. 0% is traceable to a task, customer, or outcome. Billing data shows you the invoice. It cannot show you what produced it.
-              </p>
-              <p className="text-xs text-gray-400 mt-2">Install the SynthForce proxy layer to close the gap.</p>
-            </div>
-          </div>
-        </div>
-
-        {/* Insight 13: Spike forensics */}
-        {spike && (
-          <div className="bg-orange-50 rounded-xl p-4 border border-orange-200">
-            <div className="flex items-start gap-3">
-              <span className="text-base mt-0.5" aria-hidden="true">🚨</span>
-              <div>
-                <p className="text-sm font-medium text-gray-900 mb-1">Spend spike detected</p>
-                <p className="text-sm text-gray-600">
-                  Spend on {new Date(spike.spikeDate + "T12:00:00").toLocaleDateString("en-US", { month: "short", day: "numeric" })} ran at {spike.multiple}x the period baseline. Bug or feature? Billing data cannot say which.
+            {/* Batch Eligibility (existing overview card) */}
+            {batchCandidates.length > 0 && (
+              <div className="bg-white rounded-2xl border border-gray-200 shadow-sm p-6">
+                <div className="flex items-start justify-between mb-1">
+                  <h2 className="text-sm font-semibold text-gray-900">Batch Eligibility</h2>
+                  {batchSavingsEstimateCents > 0 && (
+                    <span className="text-xs text-green-700 bg-green-50 border border-green-200 px-2.5 py-1 rounded-full shrink-0 ml-3">
+                      Est. save {fmtDollars(batchSavingsEstimateCents)}/mo
+                    </span>
+                  )}
+                </div>
+                <p className="text-xs text-gray-500 mb-4">
+                  OpenAI and Anthropic both offer a 50% discount via their Batch API for non-urgent requests. These models have high call volumes that may qualify.
                 </p>
-                <p className="text-xs text-gray-400 mt-2">Upgrade for per-request root cause.</p>
+                <div className="space-y-2">
+                  {batchCandidates.map((m) => (
+                    <div key={m.model} className="flex items-center justify-between text-xs py-2 border-b border-gray-100 last:border-0">
+                      <span className="text-gray-700 truncate max-w-[55%]">{formatModelName(m.model)}</span>
+                      <div className="flex items-center gap-3 shrink-0">
+                        <span className="text-gray-500">{m.calls.toLocaleString()} calls</span>
+                        <span className="text-green-700 font-medium">
+                          Save {fmtDollars(Math.round(m.costCents * 0.25))}/mo if 50% moves to batch
+                        </span>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+                <p className="text-xs text-gray-400 mt-4">
+                  Estimate assumes 50% of calls are non-time-sensitive and a 50% batch discount. Actual savings depend on your workload.
+                </p>
               </div>
+            )}
+
+            {/* Key Findings */}
+            {topFindings.length > 0 && (
+              <div className="bg-white rounded-2xl border border-gray-200 shadow-sm p-6">
+                <h2 className="text-sm font-semibold text-gray-900 mb-4">Key Findings</h2>
+                <div className="space-y-4">
+                  {topFindings.map((f) => (
+                    <div key={f.id} className="flex gap-3">
+                      <div className={`shrink-0 mt-1.5 w-2 h-2 rounded-full ${severityDot(f.severity)}`} aria-hidden="true" />
+                      <div className="flex-1 min-w-0">
+                        <div className="flex flex-wrap items-center gap-2 mb-1">
+                          <span className="text-sm font-medium text-gray-900">{f.title}</span>
+                          <span className={`text-xs px-2 py-0.5 rounded-full border font-medium ${severityBadge(f.severity)}`}>
+                            {f.severity}
+                          </span>
+                          {f.potentialSavingsCents && Number(f.potentialSavingsCents) > 0 && (
+                            <span className="text-xs text-green-700 bg-green-50 border border-green-200 px-2 py-0.5 rounded-full font-medium">
+                              Save {fmtDollars(Number(f.potentialSavingsCents))}/mo
+                            </span>
+                          )}
+                        </div>
+                        <p className="text-sm text-gray-600 leading-relaxed">{f.description}</p>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* AI-generated report summary */}
+            {audit.reportSummary && (
+              <div className="bg-blue-50 border border-blue-100 rounded-2xl p-6">
+                <div className="flex items-center gap-2 mb-3">
+                  <svg className="w-4 h-4 text-[#00B2FF]" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.347.347A3.001 3.001 0 0112 21a3 3 0 01-2.121-.879l-.347-.347z" />
+                  </svg>
+                  <h2 className="text-sm font-semibold text-gray-900">Analysis</h2>
+                </div>
+                <p className="text-sm text-gray-700 leading-relaxed whitespace-pre-line">{audit.reportSummary}</p>
+              </div>
+            )}
+
+            {/* Benchmarking placeholder */}
+            <div className="bg-white rounded-2xl border border-gray-200 shadow-sm p-6">
+              <div className="flex items-center justify-between mb-3">
+                <h2 className="text-sm font-semibold text-gray-900">Peer Benchmarking</h2>
+                <span className="text-xs text-gray-400 bg-gray-100 px-2.5 py-1 rounded-full">Coming soon</span>
+              </div>
+              <p className="text-sm text-gray-500">
+                See how your spend compares to similar-sized companies. Available once we have enough anonymized data to calculate reliable percentiles.
+              </p>
             </div>
-          </div>
-        )}
-      </div>
 
-      {/* ── Burn Rate Forecast (Insight 11) ──────────────────────────────── */}
-      <BurnRateCard
-        dailyRateCents={burnRate?.dailyRateCents ?? null}
-        weeklyRateCents={burnRate?.weeklyRateCents ?? null}
-        trendPct={burnRate?.trendPct ?? null}
-      />
+            {/* What This Audit Cannot Tell You Yet */}
+            <div className="bg-white rounded-2xl border border-gray-200 shadow-sm p-6 space-y-4">
+              <h2 className="text-sm font-semibold text-gray-900">What This Audit Cannot Tell You Yet</h2>
+              <div className="bg-gray-50 rounded-xl p-4 border border-gray-200">
+                <div className="flex items-start gap-3">
+                  <span className="text-base mt-0.5" aria-hidden="true">🕳️</span>
+                  <div>
+                    <p className="text-sm font-medium text-gray-900 mb-1">Attribution gap</p>
+                    <p className="text-sm text-gray-600">
+                      100% of your spend is visible by API key and model. 0% is traceable to a task, customer, or outcome. Billing data shows you the invoice. It cannot show you what produced it.
+                    </p>
+                    <p className="text-xs text-gray-400 mt-2">Install the SynthForce proxy layer to close the gap.</p>
+                  </div>
+                </div>
+              </div>
+              {spike && (
+                <div className="bg-orange-50 rounded-xl p-4 border border-orange-200">
+                  <div className="flex items-start gap-3">
+                    <span className="text-base mt-0.5" aria-hidden="true">🚨</span>
+                    <div>
+                      <p className="text-sm font-medium text-gray-900 mb-1">Spend spike detected</p>
+                      <p className="text-sm text-gray-600">
+                        Spend on {new Date(spike.spikeDate + "T12:00:00").toLocaleDateString("en-US", { month: "short", day: "numeric" })} ran at {spike.multiple}x the period baseline. Bug or feature? Billing data cannot say which.
+                      </p>
+                      <p className="text-xs text-gray-400 mt-2">Upgrade for per-request root cause.</p>
+                    </div>
+                  </div>
+                </div>
+              )}
+            </div>
 
-      {/* ── Upgrade CTA ──────────────────────────────────────────────────── */}
-      <div className="bg-gradient-to-r from-[#00B2FF]/10 to-blue-50 border border-blue-100 rounded-2xl p-6">
-        <h2 className="text-base font-semibold text-gray-900 mb-1">Ready to go deeper?</h2>
-        <p className="text-sm text-gray-600 mb-4">
-          {quota.canRun
-            ? "Track individual agents, set budgets, and get real-time alerts when spend spikes."
-            : "This was your free audit. Upgrade to re-run anytime, track individual agents, set budgets, and get real-time alerts when spend spikes."}
-        </p>
-        <Link
-          href={quota.canRun ? "/U/onboard" : "/U/billing"}
-          className="inline-flex items-center px-5 py-2.5 text-sm font-medium bg-[#00B2FF] text-white rounded-lg hover:bg-[#00B2FF]/90 transition"
-        >
-          {quota.canRun ? "Track per-agent spend →" : "View upgrade options →"}
-        </Link>
-      </div>
+            {/* Burn Rate Forecast */}
+            <BurnRateCard
+              dailyRateCents={burnRate?.dailyRateCents ?? null}
+              weeklyRateCents={burnRate?.weeklyRateCents ?? null}
+              trendPct={burnRate?.trendPct ?? null}
+            />
 
+            {/* Upgrade CTA */}
+            <div className="bg-gradient-to-r from-[#00B2FF]/10 to-blue-50 border border-blue-100 rounded-2xl p-6">
+              <h2 className="text-base font-semibold text-gray-900 mb-1">Ready to go deeper?</h2>
+              <p className="text-sm text-gray-600 mb-4">
+                {quota.canRun
+                  ? "Track individual agents, set budgets, and get real-time alerts when spend spikes."
+                  : "This was your free audit. Upgrade to re-run anytime, track individual agents, set budgets, and get real-time alerts when spend spikes."}
+              </p>
+              <Link
+                href={quota.canRun ? "/U/onboard" : "/U/billing"}
+                className="inline-flex items-center px-5 py-2.5 text-sm font-medium bg-[#00B2FF] text-white rounded-lg hover:bg-[#00B2FF]/90 transition"
+              >
+                {quota.canRun ? "Track per-agent spend →" : "View upgrade options →"}
+              </Link>
+            </div>
+
+          </div>{/* end #overview */}
+
+          {/* ── Advanced Telemetry Sections ──────────────────────────────── */}
+
+          {/* High-Volume Projects (OpenAI only) */}
+          {provider === "openai" && (
+            <HighVolumeProjectsSection projects={telemetry?.highVolumeProjects} />
+          )}
+
+          {/* Right Tool for the Job (both providers) */}
+          <ModelMismatchSection mismatch={telemetry?.modelMismatch} />
+
+          {/* Cache Efficiency (Anthropic only) */}
+          {provider === "anthropic" && (
+            <CacheEfficiencySection cache={telemetry?.cacheEfficiency} />
+          )}
+
+          {/* Reasoning Efficiency (OpenAI o1 only) */}
+          {provider === "openai" && telemetry?.reasoningEfficiency && (
+            <ReasoningEfficiencySection reasoning={telemetry.reasoningEfficiency} />
+          )}
+
+          {/* Batch Opportunity (OpenAI only) */}
+          {provider === "openai" && (
+            <BatchOpportunitySection batch={telemetry?.batchOpportunity} />
+          )}
+
+          {/* Unused Keys (OpenAI only) */}
+          {provider === "openai" && (
+            <UnusedKeysSection keys={telemetry?.unusedKeys} />
+          )}
+
+        </div>{/* end main content */}
+      </div>{/* end two-column layout */}
     </div>
   );
 }

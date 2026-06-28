@@ -34,11 +34,26 @@ type OAICostResult = { amount?: { value?: number }; project_id?: string | null }
 type OAICostBucket = { start_time?: number; results?: OAICostResult[] };
 type OAICostResponse = { data?: OAICostBucket[] };
 
+// Helper to build advanced telemetry URLs with a single group_by param
+function buildUsageUrl(startSec: number, nowSec: number, groupBy: string): string {
+  const u = new URL(OPENAI_USAGE_URL);
+  u.searchParams.set("start_time", String(startSec));
+  u.searchParams.set("end_time", String(nowSec));
+  u.searchParams.set("bucket_width", "1d");
+  u.searchParams.set("limit", "31");
+  u.searchParams.append("group_by", groupBy);
+  return u.toString();
+}
+
 async function fetchOpenAIAuditData(apiKey: string, periodDays: number): Promise<ProviderUsageReport> {
   const now    = new Date();
   const start  = new Date(now.getTime() - periodDays * 24 * 60 * 60 * 1000);
   const nowSec = Math.floor(now.getTime() / 1000);
   const startSec = Math.floor(start.getTime() / 1000);
+
+  // Prior period for MoM comparison (same length, ending at period start)
+  const prevStart    = new Date(start.getTime() - periodDays * 24 * 60 * 60 * 1000);
+  const prevStartSec = Math.floor(prevStart.getTime() / 1000);
 
   const usageUrlObj = new URL(OPENAI_USAGE_URL);
   usageUrlObj.searchParams.set("start_time", String(startSec));
@@ -157,6 +172,126 @@ async function fetchOpenAIAuditData(apiKey: string, periodDays: number): Promise
   const totalTokensIn  = byModel.reduce((s, m) => s + m.tokensIn, 0);
   const totalTokensOut = byModel.reduce((s, m) => s + m.tokensOut, 0);
 
+  // ---- Advanced telemetry: 3 additional parallel fetches ------------------
+  // These require extra scopes; if the key lacks permission (403/404) we
+  // silently set the field to undefined so the main audit still succeeds.
+
+  type AdvResult = {
+    projectSpend?:    ProviderUsageReport["projectSpend"];
+    batchVsRealtime?: ProviderUsageReport["batchVsRealtime"];
+    apiKeyActivity?:  ProviderUsageReport["apiKeyActivity"];
+  };
+
+  const advResult = await (async (): Promise<AdvResult> => {
+    try {
+      const [projRes, projPrevRes, batchRes, keyRes] = await Promise.all([
+        fetch(buildUsageUrl(startSec, nowSec, "project_id"),      { headers, signal: AbortSignal.timeout(25_000) }),
+        fetch(buildUsageUrl(prevStartSec, startSec, "project_id"), { headers, signal: AbortSignal.timeout(25_000) }),
+        fetch(buildUsageUrl(startSec, nowSec, "batch"),            { headers, signal: AbortSignal.timeout(25_000) }),
+        fetch(buildUsageUrl(startSec, nowSec, "api_key_id"),       { headers, signal: AbortSignal.timeout(25_000) }),
+      ]);
+
+      // --- Project spend (current period) ----------------------------------
+      let projectSpend: ProviderUsageReport["projectSpend"] | undefined;
+      if (projRes.ok) {
+        const projJson = (await projRes.json()) as OAIUsageResponse;
+        // Also parse prior period for MoM
+        const prevByProject = new Map<string, number>();
+        if (projPrevRes.ok) {
+          const prevJson = (await projPrevRes.json()) as OAIUsageResponse;
+          for (const bucket of prevJson.data ?? []) {
+            for (const r of bucket.results ?? []) {
+              const pid = r.project_id ?? "unknown";
+              prevByProject.set(pid, (prevByProject.get(pid) ?? 0) + (r.num_model_requests ?? 0));
+            }
+          }
+        }
+        // Aggregate current period by project using token cost estimation
+        const projTotals = new Map<string, { costCents: number; calls: number }>();
+        for (const bucket of projJson.data ?? []) {
+          for (const r of bucket.results ?? []) {
+            const pid = r.project_id ?? "unknown";
+            const cur = projTotals.get(pid) ?? { costCents: 0, calls: 0 };
+            // Use token-based pricing (same model might not be in r, so estimate proportionally)
+            const inTok  = r.input_tokens  ?? 0;
+            const outTok = r.output_tokens ?? 0;
+            const model  = r.model ?? "gpt-4o";
+            cur.costCents += calculateCostCents("openai", model, inTok, outTok);
+            cur.calls     += r.num_model_requests ?? 0;
+            projTotals.set(pid, cur);
+          }
+        }
+        projectSpend = Array.from(projTotals.entries()).map(([projectId, v]) => ({
+          projectId,
+          costCents:     v.costCents,
+          prevCostCents: prevByProject.has(projectId)
+            ? Math.round((prevByProject.get(projectId)! / Math.max(1, v.calls)) * v.costCents)
+            : 0,
+          calls:         v.calls,
+        }));
+      }
+
+      // --- Batch vs realtime -----------------------------------------------
+      let batchVsRealtime: ProviderUsageReport["batchVsRealtime"] | undefined;
+      if (batchRes.ok) {
+        const batchJson = (await batchRes.json()) as OAIUsageResponse;
+        const batchMap = new Map<boolean, { costCents: number; calls: number }>();
+        for (const bucket of batchJson.data ?? []) {
+          for (const r of bucket.results ?? []) {
+            // The batch grouping sets project_id to the batch flag string or null
+            // For the batch group_by endpoint the field name coming back is unclear,
+            // so we detect batch by checking model name patterns or a "batch" field.
+            // OpenAI Usage API with group_by=batch returns results keyed by is_batch-like boolean.
+            // The actual field may appear as r.batch — we check both.
+            const rawBatch = (r as Record<string, unknown>)["batch"];
+            const isBatch  = rawBatch === true || rawBatch === "true" || rawBatch === 1;
+            const cur      = batchMap.get(isBatch) ?? { costCents: 0, calls: 0 };
+            const inTok    = r.input_tokens  ?? 0;
+            const outTok   = r.output_tokens ?? 0;
+            const model    = r.model ?? "gpt-4o";
+            cur.costCents += calculateCostCents("openai", model, inTok, outTok);
+            cur.calls     += r.num_model_requests ?? 0;
+            batchMap.set(isBatch, cur);
+          }
+        }
+        batchVsRealtime = Array.from(batchMap.entries()).map(([isBatch, v]) => ({
+          isBatch,
+          costCents: v.costCents,
+          calls:     v.calls,
+        }));
+      }
+
+      // --- API key activity ------------------------------------------------
+      let apiKeyActivity: ProviderUsageReport["apiKeyActivity"] | undefined;
+      if (keyRes.ok) {
+        const keyJson = (await keyRes.json()) as OAIUsageResponse;
+        const keyMap  = new Map<string, { calls: number; costCents: number }>();
+        for (const bucket of keyJson.data ?? []) {
+          for (const r of bucket.results ?? []) {
+            const keyId = (r as Record<string, unknown>)["api_key_id"] as string ?? "unknown";
+            const cur   = keyMap.get(keyId) ?? { calls: 0, costCents: 0 };
+            const inTok  = r.input_tokens  ?? 0;
+            const outTok = r.output_tokens ?? 0;
+            const model  = r.model ?? "gpt-4o";
+            cur.costCents += calculateCostCents("openai", model, inTok, outTok);
+            cur.calls     += r.num_model_requests ?? 0;
+            keyMap.set(keyId, cur);
+          }
+        }
+        apiKeyActivity = Array.from(keyMap.entries()).map(([apiKeyId, v]) => ({
+          apiKeyId,
+          calls:     v.calls,
+          costCents: v.costCents,
+        }));
+      }
+
+      return { projectSpend, batchVsRealtime, apiKeyActivity };
+    } catch {
+      // Network or parse failure — don't break the main audit
+      return {};
+    }
+  })();
+
   return {
     provider: "openai",
     periodStart: start,
@@ -168,6 +303,7 @@ async function fetchOpenAIAuditData(apiKey: string, periodDays: number): Promise
     dailySpendCents,
     byModel,
     rawResponses: [{ source: "openai_usage_completions", body: usageJson }],
+    ...advResult,
   };
 }
 

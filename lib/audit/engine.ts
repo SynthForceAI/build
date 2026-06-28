@@ -10,6 +10,7 @@
  * the prose summary.
  */
 import type { ProviderUsageReport } from "../providers/openai-billing";
+import { calculateTelemetry, type TelemetryInsights } from "./telemetry";
 
 export type FindingSeed = {
   type:                  "model_optimization" | "idle_cost" | "cost_spike" | "provider_comparison" | "benchmark" | "spend_trend" | "underuse";
@@ -42,6 +43,7 @@ export type AuditAnalysis = {
   totalTokensOut:         number;
   findings:               FindingSeed[];
   discoveredAgents:       DiscoveredAgentSeed[];
+  telemetry:              TelemetryInsights;
 };
 
 // ---------------------------------------------------------------------------
@@ -176,6 +178,9 @@ export function analyze(report: ProviderUsageReport): AuditAnalysis {
     ? Math.max(0, Math.min(100, 100 - (estimatedWasteCents / totalMonthlySpendCents) * 100))
     : 100;
 
+  // ---- Advanced telemetry ------------------------------------------------
+  const telemetry = calculateTelemetry(report);
+
   return {
     totalMonthlySpendCents,
     estimatedWasteCents,
@@ -185,6 +190,7 @@ export function analyze(report: ProviderUsageReport): AuditAnalysis {
     totalTokensOut: report.totalTokensOut,
     findings,
     discoveredAgents,
+    telemetry,
   };
 }
 
