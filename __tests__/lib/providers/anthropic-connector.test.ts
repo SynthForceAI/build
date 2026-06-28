@@ -36,14 +36,19 @@ describe("verifyAnthropicKey", () => {
 });
 
 describe("verifyAnthropicAdminKey", () => {
-  it("should return empty array on a valid admin key", async () => {
+  it("should return the known current model list on a valid admin key", async () => {
     vi.mocked(fetch).mockResolvedValueOnce(
       new Response(null, { status: 200 })
     );
 
     const result = await verifyAnthropicAdminKey("sk-ant-admin-validkey");
 
-    expect(result).toEqual([]);
+    // Admin keys 403 on /v1/models, so the connector returns a hardcoded
+    // current-model list rather than an empty array (see PR #63).
+    expect(Array.isArray(result)).toBe(true);
+    expect(result.length).toBeGreaterThan(0);
+    expect(result.every((m) => typeof m === "string" && m.startsWith("claude"))).toBe(true);
+    expect(result).toContain("claude-opus-4-8");
   });
 
   it("should throw on a 403 response (key lacks org access)", async () => {
