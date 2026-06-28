@@ -7,7 +7,6 @@ export function OriginalNavbar() {
             <Link href="/product" className="hover:text-gray-900">Product</Link>
             <Link href="/demo" className="hover:text-gray-900">Demo</Link>
             <Link href="/blog" className="hover:text-gray-900">Blog</Link>
-            <Link href="/about" className="hover:text-gray-900">About</Link>
             <Link href="/faq" className="hover:text-gray-900">FAQ</Link>
             <Link href="/hard-truth" className="font-semibold text-red-600 hover:text-red-700">The Hard Truth</Link>
             <WaitlistTrigger className="text-gray-900 hover:underline decoration-1 underline-offset-4 cursor-pointer">
@@ -35,7 +34,6 @@ export function DemoPageNavbar() {
                     <a href="/product" className="hover:text-gray-900">Product</a>
                     <a href="/demo" className="hover:text-gray-900">Demo</a>
                     <a href="/blog" className="hover:text-gray-900">Blog</a>
-                    <a href="/about" className="hover:text-gray-900">About</a>
                     <WaitlistTrigger className="text-gray-900 hover:underline decoration-1 underline-offset-4 cursor-pointer">Waitlist
                         →</WaitlistTrigger>
                 </div>
@@ -53,7 +51,6 @@ export function DemoPageNavbar() {
                     <a href="/product" className="py-2 hover:text-gray-900">Product</a>
                     <a href="/demo" className="py-2 hover:text-gray-900">Demo</a>
                     <a href="/blog" className="py-2 hover:text-gray-900">Blog</a>
-                    <a href="/about" className="py-2 hover:text-gray-900">About</a>
                     <WaitlistTrigger className="py-2 text-gray-900 font-medium cursor-pointer">Waitlist →</WaitlistTrigger>
                 </div>
             </div>

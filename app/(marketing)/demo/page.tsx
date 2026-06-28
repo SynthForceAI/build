@@ -127,7 +127,7 @@ export default function DemoPage() {
         <div className="container mx-auto flex flex-col sm:flex-row items-center justify-between gap-3">
           <div>
             <p className="text-sm font-semibold text-blue-900">
-              This is our vision for SynthForce — we&rsquo;re still building it.
+              This is our vision for SynthForce. We&rsquo;re still building it.
             </p>
             <p className="text-xs text-blue-700 mt-0.5">
               You can already test what we have today: make an account and run a free AI audit.

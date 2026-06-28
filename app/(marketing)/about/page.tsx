@@ -1,4 +1,7 @@
+import { redirect } from "next/navigation";
+
 export default function AboutPage() {
+  redirect("/");
   return (
     <main className="pt-16 pb-20 container mx-auto px-6">
         <div className="max-w-5xl mx-auto">
