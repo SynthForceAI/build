@@ -629,7 +629,7 @@ type NavSection = {
 export default async function FreeAuditPage({
   searchParams,
 }: {
-  searchParams: Promise<{ id?: string; section?: string }>;
+  searchParams: Promise<{ id?: string; section?: string; sections?: string }>;
 }) {
   // Auth
   let companyId: string;
@@ -641,7 +641,7 @@ export default async function FreeAuditPage({
     throw err;
   }
 
-  const { id, section } = await searchParams;
+  const { id, section, sections: urlSections } = await searchParams;
   const activeSection = section ?? "overview";
   if (!id) notFound();
 
@@ -832,6 +832,12 @@ export default async function FreeAuditPage({
   if (provider === "openai") {
     navSections.push({ id: "batch-opportunity", label: "Batch Opportunity" });
     navSections.push({ id: "unused-keys", label: "Unused Keys" });
+  }
+
+  // Sync applicable sections to URL so the sidebar can filter its links
+  const sectionIds = navSections.map((s) => s.id).join(",");
+  if (urlSections !== sectionIds) {
+    redirect(`/audit/free?id=${id}&section=${activeSection}&sections=${sectionIds}`);
   }
 
   return (

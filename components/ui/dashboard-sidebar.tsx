@@ -66,6 +66,8 @@ export function DashboardSidebar({ userName, userEmail, userRole, isPlatformOwne
   const isAuditPage  = pathname === "/audit/free";
   const auditId      = searchParams.get("id");
   const activeSection = searchParams.get("section") ?? "overview";
+  const sectionsParam = searchParams.get("sections");
+  const applicableSections = sectionsParam ? sectionsParam.split(",") : null;
 
   async function handleLogout() {
     try {
@@ -188,7 +190,7 @@ export function DashboardSidebar({ userName, userEmail, userRole, isPlatformOwne
                   {/* Audit subsections — only visible when viewing an audit report */}
                   {isDashboard && isAuditPage && auditId && (
                     <div className="ml-3 mt-1 mb-1 border-l-2 border-gray-100 pl-2 flex flex-col gap-0.5">
-                      {AUDIT_SUBSECTIONS.map((s) => (
+                      {AUDIT_SUBSECTIONS.filter((s) => !applicableSections || applicableSections.includes(s.id)).map((s) => (
                         <Link
                           key={s.id}
                           href={`/audit/free?id=${auditId}&section=${s.id}`}
