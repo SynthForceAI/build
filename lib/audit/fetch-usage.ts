@@ -46,53 +46,69 @@ function buildUsageUrl(startSec: number, nowSec: number, groupBy: string): strin
 }
 
 async function fetchOpenAIAuditData(apiKey: string, periodDays: number): Promise<ProviderUsageReport> {
-  const now    = new Date();
-  const start  = new Date(now.getTime() - periodDays * 24 * 60 * 60 * 1000);
-  const nowSec = Math.floor(now.getTime() / 1000);
-  const startSec = Math.floor(start.getTime() / 1000);
+  const now   = new Date();
+  const start = new Date(now.getTime() - periodDays * 86_400_000);
+  const nowSec    = Math.floor(now.getTime() / 1000);
+  const startSec  = Math.floor(start.getTime() / 1000);
 
   // Prior period for MoM comparison (same length, ending at period start)
-  const prevStart    = new Date(start.getTime() - periodDays * 24 * 60 * 60 * 1000);
+  const prevStart    = new Date(start.getTime() - periodDays * 86_400_000);
   const prevStartSec = Math.floor(prevStart.getTime() / 1000);
 
-  const usageUrlObj = new URL(OPENAI_USAGE_URL);
-  usageUrlObj.searchParams.set("start_time", String(startSec));
-  usageUrlObj.searchParams.set("end_time", String(nowSec));
-  usageUrlObj.searchParams.set("bucket_width", "1d");
-  usageUrlObj.searchParams.set("limit", String(periodDays + 1));
-  usageUrlObj.searchParams.append("group_by", "model");
-  const usageUrl = usageUrlObj.toString();
-
-  const costsUrlObj = new URL(OPENAI_COSTS_URL);
-  costsUrlObj.searchParams.set("start_time", String(startSec));
-  costsUrlObj.searchParams.set("end_time", String(nowSec));
-  costsUrlObj.searchParams.set("bucket_width", "1d");
-  costsUrlObj.searchParams.set("limit", String(periodDays + 1));
-  costsUrlObj.searchParams.append("group_by", "project_id");
-  const costsUrl = costsUrlObj.toString();
-
-  const headers = { Authorization: `Bearer ${apiKey}`, "Content-Type": "application/json" };
-  const signal  = AbortSignal.timeout(25_000);
-
-  const [usageRes, costsRes] = await Promise.all([
-    fetch(usageUrl, { headers, signal }),
-    fetch(costsUrl, { headers, signal: AbortSignal.timeout(25_000) }),
-  ]);
-
-  if (usageRes.status === 401) throw new Error("OpenAI rejected the admin key (401). Use an sk-admin- key with usage read access.");
-  if (usageRes.status === 403) throw new Error("This key lacks usage API access (403). Ensure the admin key has 'Read usage data' scope in the OpenAI dashboard.");
-  if (usageRes.status === 429) throw new Error("OpenAI rate-limited the request (429). Try again in a minute.");
-  if (!usageRes.ok) {
-    const body = await usageRes.text().catch(() => "");
-    throw new Error(`OpenAI usage endpoint returned ${usageRes.status}. ${body}`.trim());
+  // OpenAI hard-caps at 31 buckets per request with bucket_width=1d.
+  // Split the full period into ≤31-day chunks and fetch them in parallel.
+  const CHUNK_DAYS = 31;
+  const chunks: Array<{ s: number; e: number }> = [];
+  {
+    let t = now;
+    while (t > start) {
+      const cs = new Date(Math.max(t.getTime() - CHUNK_DAYS * 86_400_000, start.getTime()));
+      chunks.unshift({ s: Math.floor(cs.getTime() / 1000), e: Math.floor(t.getTime() / 1000) });
+      t = cs;
+    }
   }
 
-  const usageJson = (await usageRes.json()) as OAIUsageResponse;
+  const headers = { Authorization: `Bearer ${apiKey}`, "Content-Type": "application/json" };
 
-  // Aggregate actual costs per day (across all projects).
+  type RawChunk = { usageJson: OAIUsageResponse; costsJson: OAICostResponse | null };
+
+  const rawChunks = await Promise.all(chunks.map(async ({ s, e }): Promise<RawChunk> => {
+    const usageU = new URL(OPENAI_USAGE_URL);
+    usageU.searchParams.set("start_time", String(s));
+    usageU.searchParams.set("end_time",   String(e));
+    usageU.searchParams.set("bucket_width", "1d");
+    usageU.searchParams.set("limit", "32");
+    usageU.searchParams.append("group_by", "model");
+
+    const costsU = new URL(OPENAI_COSTS_URL);
+    costsU.searchParams.set("start_time", String(s));
+    costsU.searchParams.set("end_time",   String(e));
+    costsU.searchParams.set("bucket_width", "1d");
+    costsU.searchParams.set("limit", "32");
+    costsU.searchParams.append("group_by", "project_id");
+
+    const [uRes, cRes] = await Promise.all([
+      fetch(usageU.toString(), { headers, signal: AbortSignal.timeout(25_000) }),
+      fetch(costsU.toString(), { headers, signal: AbortSignal.timeout(25_000) }),
+    ]);
+
+    if (uRes.status === 401) throw new Error("OpenAI rejected the admin key (401). Use an sk-admin- key with usage read access.");
+    if (uRes.status === 403) throw new Error("This key lacks usage API access (403). Ensure the admin key has 'Read usage data' scope in the OpenAI dashboard.");
+    if (uRes.status === 429) throw new Error("OpenAI rate-limited the request (429). Try again in a minute.");
+    if (!uRes.ok) {
+      const body = await uRes.text().catch(() => "");
+      throw new Error(`OpenAI usage endpoint returned ${uRes.status}. ${body}`.trim());
+    }
+
+    const usageJson = (await uRes.json()) as OAIUsageResponse;
+    const costsJson = cRes.ok ? (await cRes.json()) as OAICostResponse : null;
+    return { usageJson, costsJson };
+  }));
+
+  // Merge all chunks into shared aggregation maps.
   const dailyCostCents = new Map<number, number>();
-  if (costsRes.ok) {
-    const costsJson = (await costsRes.json()) as OAICostResponse;
+  for (const { costsJson } of rawChunks) {
+    if (!costsJson) continue;
     for (const bucket of costsJson.data ?? []) {
       const day = bucket.start_time ?? 0;
       const cents = (bucket.results ?? []).reduce(
@@ -102,25 +118,26 @@ async function fetchOpenAIAuditData(apiKey: string, periodDays: number): Promise
     }
   }
 
-  // Aggregate tokens per (day, model).
   type DayModel = { tokensIn: number; tokensOut: number; requests: number; tokensInCached: number };
-  const byDayModel = new Map<string, DayModel>();
+  const byDayModel    = new Map<string, DayModel>();
   const dayTokenTotals = new Map<number, number>();
 
-  for (const bucket of usageJson.data ?? []) {
-    const day = bucket.start_time ?? 0;
-    for (const r of bucket.results ?? []) {
-      const tokensIn  = r.input_tokens ?? 0;
-      const tokensOut = r.output_tokens ?? 0;
-      if (tokensIn === 0 && tokensOut === 0) continue;
-      const key = `${day}:${r.model ?? "unknown"}`;
-      const cur = byDayModel.get(key) ?? { tokensIn: 0, tokensOut: 0, requests: 0, tokensInCached: 0 };
-      cur.tokensIn       += tokensIn;
-      cur.tokensOut      += tokensOut;
-      cur.requests       += r.num_model_requests ?? 0;
-      cur.tokensInCached += r.input_cached_tokens ?? 0;
-      byDayModel.set(key, cur);
-      dayTokenTotals.set(day, (dayTokenTotals.get(day) ?? 0) + tokensIn + tokensOut);
+  for (const { usageJson } of rawChunks) {
+    for (const bucket of usageJson.data ?? []) {
+      const day = bucket.start_time ?? 0;
+      for (const r of bucket.results ?? []) {
+        const tokensIn  = r.input_tokens ?? 0;
+        const tokensOut = r.output_tokens ?? 0;
+        if (tokensIn === 0 && tokensOut === 0) continue;
+        const key = `${day}:${r.model ?? "unknown"}`;
+        const cur = byDayModel.get(key) ?? { tokensIn: 0, tokensOut: 0, requests: 0, tokensInCached: 0 };
+        cur.tokensIn       += tokensIn;
+        cur.tokensOut      += tokensOut;
+        cur.requests       += r.num_model_requests ?? 0;
+        cur.tokensInCached += r.input_cached_tokens ?? 0;
+        byDayModel.set(key, cur);
+        dayTokenTotals.set(day, (dayTokenTotals.get(day) ?? 0) + tokensIn + tokensOut);
+      }
     }
   }
 
@@ -302,7 +319,7 @@ async function fetchOpenAIAuditData(apiKey: string, periodDays: number): Promise
     totalTokensOut,
     dailySpendCents,
     byModel,
-    rawResponses: [{ source: "openai_usage_completions", body: usageJson }],
+    rawResponses: [{ source: "openai_usage_completions", body: rawChunks[0]?.usageJson ?? {} }],
     ...advResult,
   };
 }
