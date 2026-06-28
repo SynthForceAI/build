@@ -26,7 +26,7 @@
  */
 
 import { redirect } from "next/navigation";
-import { requireUser } from "@/lib/auth";
+import { requireUser, isOwner } from "@/lib/auth";
 import { ApiError } from "@/lib/api-errors";
 import { DashboardShell } from "@/components/ui/dashboard-shell";
 import { Toaster } from "@/components/ui/sonner";
@@ -67,7 +67,7 @@ export default async function DashboardLayout({
         userName={user.name ?? ""}
         userEmail={user.email}
         userRole={user.role}
-        isPlatformOwner={user.isPlatformOwner}
+        isPlatformOwner={isOwner(user.email, user.isPlatformOwner)}
       >
         {children}
       </DashboardShell>
