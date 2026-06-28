@@ -164,6 +164,7 @@ function NoDataPlaceholder({ message }: { message: string }) {
 function InsightCard({
   id,
   title,
+  titleTip,
   finding,
   whyItMatters,
   recommendation,
@@ -172,6 +173,7 @@ function InsightCard({
 }: {
   id: string;
   title: string;
+  titleTip?: string;
   finding: string;
   whyItMatters: string;
   recommendation: string;
@@ -180,7 +182,10 @@ function InsightCard({
 }) {
   return (
     <div id={id} className="bg-white rounded-2xl border border-gray-200 shadow-sm p-6 scroll-mt-20">
-      <h2 className="text-sm font-semibold text-gray-900 mb-4">{title}</h2>
+      <h2 className="text-sm font-semibold text-gray-900 mb-4 flex items-center gap-1">
+        {title}
+        {titleTip && <InfoTip text={titleTip} />}
+      </h2>
       <div className="space-y-3 mb-4">
         <div>
           <span className="text-xs font-medium text-gray-500 uppercase tracking-wide">Finding</span>
@@ -210,7 +215,7 @@ function HighVolumeProjectsSection({ projects }: { projects: HighVolumeProject[]
   if (projects === undefined) {
     return (
       <div id="high-volume-projects" className="bg-white rounded-2xl border border-gray-200 shadow-sm p-6 scroll-mt-20">
-        <h2 className="text-sm font-semibold text-gray-900 mb-3">High-Volume Projects</h2>
+        <h2 className="text-sm font-semibold text-gray-900 mb-3 flex items-center gap-1">High-Volume Projects <InfoTip text="Projects or workspaces consuming a disproportionate share of your API spend. Outliers often contain runaway automation, retry loops, or unexpectedly heavy usage." /></h2>
         <NoDataPlaceholder message="Run a new audit to see this insight." />
       </div>
     );
@@ -219,7 +224,7 @@ function HighVolumeProjectsSection({ projects }: { projects: HighVolumeProject[]
   if (projects === null || projects.length === 0) {
     return (
       <div id="high-volume-projects" className="bg-white rounded-2xl border border-gray-200 shadow-sm p-6 scroll-mt-20">
-        <h2 className="text-sm font-semibold text-gray-900 mb-3">High-Volume Projects</h2>
+        <h2 className="text-sm font-semibold text-gray-900 mb-3 flex items-center gap-1">High-Volume Projects <InfoTip text="Projects or workspaces consuming a disproportionate share of your API spend. Outliers often contain runaway automation, retry loops, or unexpectedly heavy usage." /></h2>
         <NoDataPlaceholder message="No project-level data available. Your API key may need 'Read usage data' permission in the OpenAI dashboard." />
       </div>
     );
@@ -235,6 +240,7 @@ function HighVolumeProjectsSection({ projects }: { projects: HighVolumeProject[]
     <InsightCard
       id="high-volume-projects"
       title="High-Volume Projects"
+      titleTip="Projects or workspaces consuming a disproportionate share of your API spend. Outliers often contain runaway automation, retry loops, or unexpectedly heavy usage."
       finding={`${projects.length} project${projects.length !== 1 ? "s" : ""} detected. ${outliers.length > 0 ? `${outliers.length} flagged as spend outliers.` : "No outliers detected."}`}
       whyItMatters="Projects with disproportionate spend often contain redundant calls, over-provisioned models, or runaway loops that haven't been caught yet."
       recommendation="Review the flagged projects for unnecessary model upgrades or retry storms. Consider setting per-project spend alerts."
@@ -290,7 +296,7 @@ function ModelMismatchSection({ mismatch }: { mismatch: TelemetryInsights["model
   if (mismatch === undefined) {
     return (
       <div id="model-mismatch" className="bg-white rounded-2xl border border-gray-200 shadow-sm p-6 scroll-mt-20">
-        <h2 className="text-sm font-semibold text-gray-900 mb-3">Right Tool for the Job</h2>
+        <h2 className="text-sm font-semibold text-gray-900 mb-3 flex items-center gap-1">Right Tool for the Job <InfoTip text="Checks whether you're using expensive, high-capability AI models for simple tasks that a cheaper, smaller model would handle just as well — at 70–95% lower cost." /></h2>
         <NoDataPlaceholder message="Run a new audit to see this insight." />
       </div>
     );
@@ -299,7 +305,7 @@ function ModelMismatchSection({ mismatch }: { mismatch: TelemetryInsights["model
   if (!mismatch || mismatch.candidates.length === 0) {
     return (
       <div id="model-mismatch" className="bg-white rounded-2xl border border-gray-200 shadow-sm p-6 scroll-mt-20">
-        <h2 className="text-sm font-semibold text-gray-900 mb-3">Right Tool for the Job</h2>
+        <h2 className="text-sm font-semibold text-gray-900 mb-3 flex items-center gap-1">Right Tool for the Job <InfoTip text="Checks whether you're using expensive, high-capability AI models for simple tasks that a cheaper, smaller model would handle just as well — at 70–95% lower cost." /></h2>
         <div className="flex items-start gap-3 bg-green-50 rounded-xl p-4 border border-green-200">
           <svg className="w-4 h-4 text-green-600 mt-0.5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
@@ -316,6 +322,7 @@ function ModelMismatchSection({ mismatch }: { mismatch: TelemetryInsights["model
     <InsightCard
       id="model-mismatch"
       title="Right Tool for the Job"
+      titleTip="Checks whether you're using expensive, high-capability AI models for simple tasks that a cheaper, smaller model would handle just as well — at 70–95% lower cost."
       finding={`${mismatch.candidates.length} model${mismatch.candidates.length !== 1 ? "s" : ""} may be over-specified for the work they are doing.`}
       whyItMatters="Using flagship models for short, simple outputs is the single fastest way to overspend on AI. Switching to a smaller model for these tasks has no meaningful quality impact at low output lengths."
       recommendation="Test each flagged model with a smaller alternative on a 5% traffic sample. If quality holds, roll it out fully."
@@ -365,7 +372,7 @@ function CacheEfficiencySection({ cache }: { cache: TelemetryInsights["cacheEffi
   if (cache === undefined) {
     return (
       <div id="cache-efficiency" className="bg-white rounded-2xl border border-gray-200 shadow-sm p-6 scroll-mt-20">
-        <h2 className="text-sm font-semibold text-gray-900 mb-3">Cache Efficiency</h2>
+        <h2 className="text-sm font-semibold text-gray-900 mb-3 flex items-center gap-1">Cache Efficiency <InfoTip text="Anthropic charges up to 90% less for 'cached' input tokens — content your system prompt has already sent before. A high cache hit rate means you're getting significant discounts automatically." /></h2>
         <NoDataPlaceholder message="Run a new audit to see this insight." />
       </div>
     );
@@ -379,6 +386,7 @@ function CacheEfficiencySection({ cache }: { cache: TelemetryInsights["cacheEffi
     <InsightCard
       id="cache-efficiency"
       title="Cache Efficiency"
+      titleTip="Anthropic charges up to 90% less for 'cached' input tokens — content your system prompt has already sent before. A high cache hit rate means you're getting significant discounts automatically."
       finding={`Your cache hit rate is ${cache.cacheHitRatePct.toFixed(1)}% — ${aboveBenchmark ? "above" : "below"} the ${cache.benchmarkPct}% industry benchmark.`}
       whyItMatters="Anthropic charges up to 90% less for cached input tokens. A low cache rate means you are paying full price for content your system has already processed before."
       recommendation={cache.recommendation}
@@ -438,6 +446,7 @@ function ReasoningEfficiencySection({ reasoning }: { reasoning: TelemetryInsight
     <InsightCard
       id="reasoning-efficiency"
       title="Reasoning Efficiency"
+      titleTip="o1 and o3 models think step-by-step before producing output, consuming extra 'reasoning tokens.' A very high reasoning-to-output ratio often means the model is overthinking tasks that a simpler model could handle cheaply."
       finding={`${reasoning.models.length} reasoning model${reasoning.models.length !== 1 ? "s" : ""} detected. ${overthinkingModels.length > 0 ? `${overthinkingModels.length} show${overthinkingModels.length === 1 ? "s" : ""} a high reasoning-to-output token ratio.` : "Ratios look proportionate."}`}
       whyItMatters="o1 and o3 models burn extra tokens on internal reasoning before producing output. A very high reasoning-to-output ratio often means the model is overthinking tasks that a simpler model could handle."
       recommendation={overthinkingModels.length > 0 ? "Consider routing straightforward tasks to GPT-4o to avoid unnecessary reasoning overhead." : "Continue monitoring as usage grows."}
@@ -481,7 +490,7 @@ function BatchOpportunitySection({ batch }: { batch: TelemetryInsights["batchOpp
   if (batch === undefined) {
     return (
       <div id="batch-opportunity" className="bg-white rounded-2xl border border-gray-200 shadow-sm p-6 scroll-mt-20">
-        <h2 className="text-sm font-semibold text-gray-900 mb-3">Batch Opportunity</h2>
+        <h2 className="text-sm font-semibold text-gray-900 mb-3 flex items-center gap-1">Batch Opportunity <InfoTip text="OpenAI's Batch API lets you submit requests that don't need an instant response. OpenAI processes them within 24 hours at a 50% discount. Ideal for any background processing, data enrichment, or bulk analysis." /></h2>
         <NoDataPlaceholder message="Run a new audit to see this insight." />
       </div>
     );
@@ -492,7 +501,7 @@ function BatchOpportunitySection({ batch }: { batch: TelemetryInsights["batchOpp
   if (!batch.eligible) {
     return (
       <div id="batch-opportunity" className="bg-white rounded-2xl border border-gray-200 shadow-sm p-6 scroll-mt-20">
-        <h2 className="text-sm font-semibold text-gray-900 mb-3">Batch Opportunity</h2>
+        <h2 className="text-sm font-semibold text-gray-900 mb-3 flex items-center gap-1">Batch Opportunity <InfoTip text="OpenAI's Batch API lets you submit requests that don't need an instant response. OpenAI processes them within 24 hours at a 50% discount. Ideal for any background processing, data enrichment, or bulk analysis." /></h2>
         <NoDataPlaceholder message="Your call volume is below the threshold where batching makes a meaningful difference (500+ calls, $5+/period)." />
       </div>
     );
@@ -502,6 +511,7 @@ function BatchOpportunitySection({ batch }: { batch: TelemetryInsights["batchOpp
     <InsightCard
       id="batch-opportunity"
       title="Batch Opportunity"
+      titleTip="OpenAI's Batch API lets you submit requests that don't need an instant response. OpenAI processes them within 24 hours at a 50% discount. Ideal for any background processing, data enrichment, or bulk analysis."
       finding={`${batch.realtimeCalls.toLocaleString()} realtime calls this period (${fmtDollars(batch.realtimeCostCents)}). Up to 60% may be eligible for the Batch API.`}
       whyItMatters="OpenAI's Batch API gives a 50% discount on any request that can wait up to 24 hours for a response. For background processing, data enrichment, or offline analysis, this is free money."
       recommendation="Identify non-urgent workflows and route them through the Batch API. Start with any pipeline that runs overnight or processes data in bulk."
@@ -526,7 +536,7 @@ function UnusedKeysSection({ keys }: { keys: TelemetryInsights["unusedKeys"] | u
   if (keys === undefined) {
     return (
       <div id="unused-keys" className="bg-white rounded-2xl border border-gray-200 shadow-sm p-6 scroll-mt-20">
-        <h2 className="text-sm font-semibold text-gray-900 mb-3">Unused API Keys</h2>
+        <h2 className="text-sm font-semibold text-gray-900 mb-3 flex items-center gap-1">Unused API Keys <InfoTip text="API keys that made zero requests during the audit period. Dormant keys are a security risk — if leaked, an attacker could generate spend or access your data before you notice." /></h2>
         <NoDataPlaceholder message="Run a new audit to see this insight." />
       </div>
     );
@@ -535,7 +545,7 @@ function UnusedKeysSection({ keys }: { keys: TelemetryInsights["unusedKeys"] | u
   if (keys === null) {
     return (
       <div id="unused-keys" className="bg-white rounded-2xl border border-gray-200 shadow-sm p-6 scroll-mt-20">
-        <h2 className="text-sm font-semibold text-gray-900 mb-3">Unused API Keys</h2>
+        <h2 className="text-sm font-semibold text-gray-900 mb-3 flex items-center gap-1">Unused API Keys <InfoTip text="API keys that made zero requests during the audit period. Dormant keys are a security risk — if leaked, an attacker could generate spend or access your data before you notice." /></h2>
         <NoDataPlaceholder message="Enable 'Read usage data' permission on your admin key to see key-level activity." />
       </div>
     );
@@ -604,33 +614,13 @@ function UnusedKeysSection({ keys }: { keys: TelemetryInsights["unusedKeys"] | u
 }
 
 // ---------------------------------------------------------------------------
-// Sidebar nav
+// Section nav type
 // ---------------------------------------------------------------------------
 
 type NavSection = {
   id:    string;
   label: string;
 };
-
-// Mobile-only horizontal scrollable tab bar (desktop sidebar is rendered inline in the layout)
-function MobileTabBar({ sections }: { sections: NavSection[] }) {
-  return (
-    <nav className="lg:hidden overflow-x-auto pb-2 mb-2 -mx-4 px-4">
-      <ul className="flex gap-2 whitespace-nowrap">
-        {sections.map((s) => (
-          <li key={s.id}>
-            <a
-              href={`#${s.id}`}
-              className="inline-block text-xs text-gray-600 hover:text-[#00B2FF] bg-gray-100 hover:bg-blue-50 px-3 py-1.5 rounded-full transition-colors"
-            >
-              {s.label}
-            </a>
-          </li>
-        ))}
-      </ul>
-    </nav>
-  );
-}
 
 // ---------------------------------------------------------------------------
 // Page
@@ -639,7 +629,7 @@ function MobileTabBar({ sections }: { sections: NavSection[] }) {
 export default async function FreeAuditPage({
   searchParams,
 }: {
-  searchParams: Promise<{ id?: string }>;
+  searchParams: Promise<{ id?: string; section?: string }>;
 }) {
   // Auth
   let companyId: string;
@@ -651,7 +641,8 @@ export default async function FreeAuditPage({
     throw err;
   }
 
-  const { id } = await searchParams;
+  const { id, section } = await searchParams;
+  const activeSection = section ?? "overview";
   if (!id) notFound();
 
   const audit = await prisma.audit.findUnique({
@@ -869,34 +860,31 @@ export default async function FreeAuditPage({
         </div>
       </div>
 
-      {/* Mobile nav tabs (desktop sidebar rendered below inside the flex layout) */}
-      <MobileTabBar sections={navSections} />
+      {/* Mobile section nav (desktop uses the left sidebar) */}
+      <nav className="lg:hidden overflow-x-auto pb-2 mb-4 -mx-4 px-4">
+        <div className="flex gap-2 whitespace-nowrap">
+          {navSections.map((s) => (
+            <a
+              key={s.id}
+              href={`/audit/free?id=${id}&section=${s.id}`}
+              className={
+                activeSection === s.id
+                  ? "inline-block text-xs px-3 py-1.5 rounded-full bg-[#00B2FF] text-white"
+                  : "inline-block text-xs px-3 py-1.5 rounded-full text-gray-600 bg-gray-100 hover:bg-blue-50 hover:text-[#00B2FF] transition-colors"
+              }
+            >
+              {s.label}
+            </a>
+          ))}
+        </div>
+      </nav>
 
-      {/* ── Two-column layout ─────────────────────────────────────────── */}
-      <div className="flex gap-8 items-start">
+      {/* ── Section content ───────────────────────────────────────────── */}
+      <div className="space-y-6">
 
-        {/* Desktop sidebar (hidden on mobile — mobile tabs are rendered above) */}
-        <aside className="hidden lg:block sticky top-6 self-start w-48 shrink-0">
-          <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-3 px-1">Sections</p>
-          <ul className="space-y-0.5">
-            {navSections.map((s) => (
-              <li key={s.id}>
-                <a
-                  href={`#${s.id}`}
-                  className="block text-sm text-gray-600 hover:text-[#00B2FF] px-2 py-1.5 rounded-lg hover:bg-blue-50 transition-colors"
-                >
-                  {s.label}
-                </a>
-              </li>
-            ))}
-          </ul>
-        </aside>
-
-        {/* ── Main content ──────────────────────────────────────────────── */}
-        <div className="flex-1 min-w-0 space-y-6">
-
-          {/* ── Overview section ─────────────────────────────────────────── */}
-          <div id="overview" className="space-y-6 scroll-mt-20">
+          {/* ── Overview ──────────────────────────────────────────────────── */}
+          {activeSection === "overview" && (
+          <div className="space-y-6">
 
             {/* Summary cards */}
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
@@ -1253,40 +1241,40 @@ export default async function FreeAuditPage({
               </Link>
             </div>
 
-          </div>{/* end #overview */}
+          </div>
+          )}
 
-          {/* ── Advanced Telemetry Sections ──────────────────────────────── */}
-
-          {/* High-Volume Projects (OpenAI only) */}
-          {provider === "openai" && (
+          {/* ── High-Volume Projects (OpenAI only) ──────────────────────── */}
+          {activeSection === "high-volume-projects" && provider === "openai" && (
             <HighVolumeProjectsSection projects={telemetry?.highVolumeProjects} />
           )}
 
-          {/* Right Tool for the Job (both providers) */}
-          <ModelMismatchSection mismatch={telemetry?.modelMismatch} />
+          {/* ── Right Tool for the Job ────────────────────────────────────── */}
+          {activeSection === "model-mismatch" && (
+            <ModelMismatchSection mismatch={telemetry?.modelMismatch} />
+          )}
 
-          {/* Cache Efficiency (Anthropic only) */}
-          {provider === "anthropic" && (
+          {/* ── Cache Efficiency (Anthropic only) ────────────────────────── */}
+          {activeSection === "cache-efficiency" && provider === "anthropic" && (
             <CacheEfficiencySection cache={telemetry?.cacheEfficiency} />
           )}
 
-          {/* Reasoning Efficiency (OpenAI o1 only) */}
-          {provider === "openai" && telemetry?.reasoningEfficiency && (
-            <ReasoningEfficiencySection reasoning={telemetry.reasoningEfficiency} />
+          {/* ── Reasoning Efficiency (OpenAI o1 only) ────────────────────── */}
+          {activeSection === "reasoning-efficiency" && provider === "openai" && (
+            <ReasoningEfficiencySection reasoning={telemetry?.reasoningEfficiency} />
           )}
 
-          {/* Batch Opportunity (OpenAI only) */}
-          {provider === "openai" && (
+          {/* ── Batch Opportunity (OpenAI only) ──────────────────────────── */}
+          {activeSection === "batch-opportunity" && provider === "openai" && (
             <BatchOpportunitySection batch={telemetry?.batchOpportunity} />
           )}
 
-          {/* Unused Keys (OpenAI only) */}
-          {provider === "openai" && (
+          {/* ── Unused Keys (OpenAI only) ────────────────────────────────── */}
+          {activeSection === "unused-keys" && provider === "openai" && (
             <UnusedKeysSection keys={telemetry?.unusedKeys} />
           )}
 
-        </div>{/* end main content */}
-      </div>{/* end two-column layout */}
+      </div>
     </div>
   );
 }
