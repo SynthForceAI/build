@@ -6,12 +6,16 @@ import { assertCanRunAudit } from "@/lib/audit/quota";
 import { handleApiError, ApiError } from "@/lib/api-errors";
 
 export async function POST(
-  _req: NextRequest,
+  req: NextRequest,
   { params }: { params: Promise<{ id: string }> },
 ) {
   try {
     const { user } = await requireUser();
     const { id } = await params;
+    const body = await req.json().catch(() => ({})) as { periodDays?: number };
+    const periodDays = typeof body.periodDays === "number" && body.periodDays > 0 && body.periodDays <= 90
+      ? body.periodDays
+      : 30;
 
     const original = await prisma.audit.findUnique({
       where: { id },
@@ -48,7 +52,7 @@ export async function POST(
     });
 
     try {
-      await runAudit({ auditId: newAudit.id, deleteKeyOnDone: false, periodDays: 30 });
+      await runAudit({ auditId: newAudit.id, deleteKeyOnDone: false, periodDays });
     } catch (err) {
       console.error("[rerun] audit run failed:", err);
     }

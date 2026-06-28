@@ -182,6 +182,7 @@ export const ProviderConnectSchema = z.object({
   // "admin" keys (sk-admin-…) are also stored as ProviderAdminKey so the
   // sync job can poll org-level usage. "personal" keys are agent-only.
   keyType:      z.enum(["personal", "admin"]).default("personal"),
+  periodDays:   z.number().int().positive().max(90).optional(),
 }).strict();
 
 // ---------------------------------------------------------------------------

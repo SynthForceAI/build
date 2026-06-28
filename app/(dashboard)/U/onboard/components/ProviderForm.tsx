@@ -114,6 +114,7 @@ export function ProviderForm({ providers, departments, onSuccess }: Props) {
   const [touched, setTouched] = useState<Partial<Record<keyof FormState, boolean>>>({});
   const [loading, setLoading] = useState(false);
   const [banner, setBanner] = useState<Banner>(null);
+  const [periodDays, setPeriodDays] = useState<30 | 60 | 90>(30);
 
   const selectedProvider = providers.find((p) => p.id === form.providerId);
 
@@ -153,10 +154,11 @@ export function ProviderForm({ providers, departments, onSuccess }: Props) {
 
     setLoading(true);
     try {
-      const body: Record<string, string> = {
-        providerId: form.providerId,
-        apiKey:     form.apiKey,
-        keyType:    "admin",
+      const body: Record<string, string | number> = {
+        providerId:  form.providerId,
+        apiKey:      form.apiKey,
+        keyType:     "admin",
+        periodDays,
       };
       if (!isAdminAuditFlow && form.agentName.trim()) {
         body.agentName = form.agentName.trim();
@@ -389,9 +391,27 @@ export function ProviderForm({ providers, departments, onSuccess }: Props) {
         )}
 
         {isAdminAuditFlow && (
-          <p className="text-xs text-gray-500 bg-blue-50 border border-blue-100 rounded-lg px-4 py-3">
-            SynthForce will pull your last 30 days of usage and generate a full spend audit with no agent setup needed.
-          </p>
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">Audit period</label>
+            <div className="flex gap-2">
+              {([30, 60, 90] as const).map((d) => (
+                <button
+                  key={d}
+                  type="button"
+                  onClick={() => setPeriodDays(d)}
+                  className={
+                    "flex-1 py-2 text-sm rounded-lg border transition-colors " +
+                    (periodDays === d
+                      ? "bg-[#00B2FF] border-[#00B2FF] text-white font-medium"
+                      : "border-gray-200 text-gray-600 hover:border-[#00B2FF] hover:text-[#00B2FF]")
+                  }
+                >
+                  {d} days
+                </button>
+              ))}
+            </div>
+            <p className="text-xs text-gray-400 mt-1.5">How far back to pull usage data. Longer periods take a few extra seconds.</p>
+          </div>
         )}
 
         <button

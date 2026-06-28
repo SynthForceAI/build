@@ -150,7 +150,7 @@ export async function POST(req: NextRequest) {
       });
 
       try {
-        await runAudit({ auditId: audit.id, deleteKeyOnDone: false, periodDays: 30 });
+        await runAudit({ auditId: audit.id, deleteKeyOnDone: false, periodDays: parsed.periodDays ?? 30 });
       } catch (err) {
         // runAudit marks the audit as failed. Wipe the key material so the
         // user can retry with the same key without hitting the duplicate check.
