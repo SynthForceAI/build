@@ -75,6 +75,33 @@ async function startStripeCheckout(_user: User, _tier: PaidTier): Promise<Upgrad
 
 type BillingSettings = { stripeCustomerId?: string; stripeSubscriptionId?: string };
 
+/**
+ * Keys inside `Company.settings` that are owned by the billing system. They
+ * link a company to its Stripe customer/subscription and gate paid access, so
+ * they must never be writable through user-facing settings updates (a customer
+ * could otherwise wipe their own billing linkage or point it at someone else's
+ * Stripe customer). Only the billing seam here writes them.
+ */
+export const RESERVED_BILLING_SETTINGS_KEYS: readonly string[] = [
+  "stripeCustomerId",
+  "stripeSubscriptionId",
+];
+
+/**
+ * Return a copy of a user-supplied settings object with all billing-owned keys
+ * removed. Use before persisting settings that originate from a request body.
+ */
+export function stripReservedBillingKeys(
+  settings: Record<string, unknown>,
+): Record<string, unknown> {
+  const clean: Record<string, unknown> = {};
+  for (const [key, value] of Object.entries(settings)) {
+    if (RESERVED_BILLING_SETTINGS_KEYS.includes(key)) continue;
+    clean[key] = value;
+  }
+  return clean;
+}
+
 export async function getStripeCustomerId(companyId: string): Promise<string | null> {
   const company = await prisma.company.findUnique({
     where: { id: companyId },
