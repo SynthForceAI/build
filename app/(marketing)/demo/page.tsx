@@ -1,7 +1,6 @@
 "use client";
 
 import { useState } from "react";
-import { DemoPageNavbar } from "@/components/ui/navbars";
 
 type SectionId =
   | "dashboard"
@@ -123,7 +122,25 @@ export default function DemoPage() {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      <DemoPageNavbar />
+      {/* "Still building" notice */}
+      <div className="bg-blue-50 border-b border-blue-100 px-6 py-4">
+        <div className="container mx-auto flex flex-col sm:flex-row items-center justify-between gap-3">
+          <div>
+            <p className="text-sm font-semibold text-blue-900">
+              This is our vision for SynthForce — we&rsquo;re still building it.
+            </p>
+            <p className="text-xs text-blue-700 mt-0.5">
+              You can already test what we have today: make an account and run a free AI audit.
+            </p>
+          </div>
+          <a
+            href="/signup"
+            className="shrink-0 px-4 py-2 text-sm font-medium bg-[#00B2FF] text-white rounded-lg hover:bg-blue-500 transition whitespace-nowrap"
+          >
+            Get Started Free →
+          </a>
+        </div>
+      </div>
 
       <div className="container mx-auto px-6 py-8 flex flex-col lg:flex-row gap-8">
         {/* Mobile-only card menu (hidden on lg+) */}
