@@ -142,7 +142,7 @@ export function IntroAnimation({
             transition: "opacity 500ms",
           }}
         >
-          <h1 className="text-8xl font-bold text-white tracking-tight select-none">
+          <h1 className="text-5xl sm:text-7xl md:text-8xl font-bold text-white tracking-tight select-none">
             Welcome
           </h1>
         </div>
@@ -165,7 +165,7 @@ export function IntroAnimation({
             Spaces are encoded as non-breaking spaces ( ) so browsers
             cannot strip them as trailing whitespace on an inline-block box.
           */}
-          <p className="text-3xl sm:text-4xl md:text-5xl font-semibold text-center px-6 select-none leading-tight whitespace-nowrap">
+          <p className="text-sm sm:text-3xl md:text-4xl lg:text-5xl font-semibold text-center px-6 select-none leading-tight whitespace-nowrap">
 
             {/* "Manage Your " — blends into background on highlight */}
             <span
