@@ -14,9 +14,11 @@ export const dynamic = "force-dynamic";
 
 export default async function ProfilePage() {
   let userId: string;
+  let companyId: string;
   try {
     const { user } = await requireUser();
     userId = user.id;
+    companyId = user.companyId;
   } catch (err) {
     if (err instanceof ApiError && err.status === 401) redirect("/login");
     throw err;
@@ -34,10 +36,11 @@ export default async function ProfilePage() {
       select:  { id: true, name: true, displayName: true },
     }),
     prisma.apiKey.findMany({
-      where:   { isActive: true, deletedAt: null },
+      // Scope to the caller's company at the DB layer — never load other
+      // tenants' keys into memory and rely on a post-filter.
+      where:   { companyId, isActive: true, deletedAt: null },
       select: {
         id:            true,
-        companyId:     true,
         providerId:    true,
         label:         true,
         keyIdentifier: true,
@@ -54,7 +57,7 @@ export default async function ProfilePage() {
   };
 
   const byProvider = new Map<string, ProviderStats>();
-  for (const k of apiKeys.filter((k) => k.companyId === user.companyId)) {
+  for (const k of apiKeys) {
     const cur = byProvider.get(k.providerId) ?? { count: 0, lastUsedAt: null, keys: [] };
     cur.count += 1;
     const ts = k.verifiedAt ?? k.createdAt;

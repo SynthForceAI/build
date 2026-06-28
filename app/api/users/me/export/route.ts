@@ -16,7 +16,10 @@ export async function GET() {
             }),
             prisma.userPreferences.findUnique({ where: { userId: user.id } }),
             prisma.apiKey.findMany({
-                where: { isActive: true, deletedAt: null },
+                // MUST be scoped to the caller's company. Without companyId this
+                // returns every tenant's keys (id, label, key fragment, provider)
+                // to any authenticated user — a cross-tenant data leak.
+                where: { companyId: user.companyId, isActive: true, deletedAt: null },
                 select: {
                     id: true, label: true, keyIdentifier: true, createdAt: true,
                     provider: { select: { displayName: true } }
