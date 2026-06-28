@@ -26,9 +26,7 @@ export default async function OwnerDashboard() {
   oneWeekAgo.setDate(oneWeekAgo.getDate() - 7);
 
   const [
-    users,
-    totalUsers,
-    signupsThisWeek,
+    allUsers,
     completedAudits,
     pendingUpgrades,
     upgradeRequests,
@@ -51,8 +49,6 @@ export default async function OwnerDashboard() {
       },
       orderBy: { createdAt: "desc" },
     }),
-    prisma.user.count(),
-    prisma.user.count({ where: { createdAt: { gte: oneWeekAgo } } }),
     prisma.audit.count({ where: { status: "completed" } }),
     prisma.upgradeRequest.count({ where: { status: "pending" } }),
     prisma.upgradeRequest.findMany({
@@ -70,6 +66,22 @@ export default async function OwnerDashboard() {
       take: 60,
     }),
   ]);
+
+  // Deduplicate by email — the same person can exist in multiple companies.
+  // Keep the most recently created record per email.
+  const uniqueUsersMap = new Map<string, (typeof allUsers)[0]>();
+  for (const u of allUsers) {
+    const existing = uniqueUsersMap.get(u.email);
+    if (!existing || u.createdAt > existing.createdAt) {
+      uniqueUsersMap.set(u.email, u);
+    }
+  }
+  const users = Array.from(uniqueUsersMap.values()).sort(
+    (a, b) => b.createdAt.getTime() - a.createdAt.getTime()
+  );
+
+  const totalUsers = users.length;
+  const signupsThisWeek = users.filter((u) => u.createdAt >= oneWeekAgo).length;
 
   const stats = { totalUsers, signupsThisWeek, completedAudits, pendingUpgrades };
 
