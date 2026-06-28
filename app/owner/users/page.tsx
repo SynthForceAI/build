@@ -1,5 +1,5 @@
 import { redirect } from "next/navigation";
-import { requireUser, isOwner } from "@/lib/auth";
+import { requireUser, isOwner, isPrimaryOwner } from "@/lib/auth";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { prisma } from "@/lib/db";
 import { StatsCards } from "@/components/owner/StatsCards";
@@ -12,13 +12,15 @@ export const dynamic = "force-dynamic";
 
 export default async function OwnerDashboard() {
   let email: string | undefined;
+  let viewerIsPrimaryOwner = false;
   try {
     const { user } = await requireUser();
     email = user.email;
+    viewerIsPrimaryOwner = isPrimaryOwner(user.email);
+    if (!isOwner(user.email, user.isPlatformOwner)) redirect("/U");
   } catch {
     redirect("/login");
   }
-  if (!isOwner(email)) redirect("/U");
 
   const oneWeekAgo = new Date();
   oneWeekAgo.setDate(oneWeekAgo.getDate() - 7);
@@ -39,6 +41,7 @@ export default async function OwnerDashboard() {
         email: true,
         createdAt: true,
         lastLoginAt: true,
+        isPlatformOwner: true,
         company: {
           select: {
             subscriptionTier: true,
@@ -77,6 +80,7 @@ export default async function OwnerDashboard() {
     lastLoginAt: u.lastLoginAt?.toISOString() ?? null,
     tier: u.company?.subscriptionTier ?? "free",
     auditCount: u.company?._count.audits ?? 0,
+    isPlatformOwner: u.isPlatformOwner,
   }));
 
   const upgradeRows = upgradeRequests.map((r) => ({
@@ -160,7 +164,7 @@ export default async function OwnerDashboard() {
           <h2 className="text-sm font-semibold text-gray-500 uppercase tracking-widest mb-3">
             Users ({totalUsers})
           </h2>
-          <UsersTable rows={userRows} />
+          <UsersTable rows={userRows} viewerIsPrimaryOwner={viewerIsPrimaryOwner} />
         </section>
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">

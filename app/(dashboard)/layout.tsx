@@ -67,6 +67,7 @@ export default async function DashboardLayout({
         userName={user.name ?? ""}
         userEmail={user.email}
         userRole={user.role}
+        isPlatformOwner={user.isPlatformOwner}
       >
         {children}
       </DashboardShell>

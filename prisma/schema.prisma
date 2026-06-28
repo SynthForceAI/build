@@ -63,9 +63,10 @@ model User {
   companyId   String    @map("company_id") @db.Uuid
   email       String    @db.VarChar(255)
   name        String    @db.VarChar(255)
-  role        UserRole  @default(member)
-  avatarUrl   String?   @map("avatar_url") @db.VarChar(500)
-  lastLoginAt DateTime? @map("last_login_at") @db.Timestamptz(6)
+  role              UserRole @default(member)
+  isPlatformOwner   Boolean  @default(false) @map("is_platform_owner")
+  avatarUrl         String?  @map("avatar_url") @db.VarChar(500)
+  lastLoginAt       DateTime? @map("last_login_at") @db.Timestamptz(6)
   createdAt   DateTime  @default(now()) @map("created_at") @db.Timestamptz(6)
   updatedAt   DateTime  @updatedAt @map("updated_at") @db.Timestamptz(6)
 

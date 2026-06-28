@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { formatDistanceToNow } from "date-fns";
+import { OWNER_EMAIL } from "@/lib/constants";
 
 interface UserRow {
   id: string;
@@ -10,6 +11,7 @@ interface UserRow {
   lastLoginAt: string | null;
   tier: string;
   auditCount: number;
+  isPlatformOwner: boolean;
 }
 
 const TIER_STYLES: Record<string, string> = {
@@ -64,7 +66,80 @@ function TierCell({ userId, initialTier }: { userId: string; initialTier: string
   );
 }
 
-export function UsersTable({ rows }: { rows: UserRow[] }) {
+function OwnerCell({
+  userId,
+  email,
+  initialIsOwner,
+  viewerIsPrimaryOwner,
+}: {
+  userId: string;
+  email: string;
+  initialIsOwner: boolean;
+  viewerIsPrimaryOwner: boolean;
+}) {
+  const [isOwner, setIsOwner] = useState(initialIsOwner);
+  const [loading, setLoading] = useState(false);
+  const isPrimary = email === OWNER_EMAIL;
+
+  async function toggle(grant: boolean) {
+    setLoading(true);
+    try {
+      const res = await fetch(`/api/owner/users/${userId}/platform-owner`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ grant }),
+      });
+      if (res.ok) setIsOwner(grant);
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  if (isPrimary) {
+    return (
+      <span className="text-xs font-medium px-2 py-0.5 rounded-full bg-[#00B2FF]/10 text-[#00B2FF] border border-[#00B2FF]/20">
+        Primary Owner
+      </span>
+    );
+  }
+
+  if (isOwner) {
+    return (
+      <div className="flex items-center gap-2">
+        <span className="text-xs font-medium px-2 py-0.5 rounded-full bg-violet-50 text-violet-600 border border-violet-100">
+          Owner
+        </span>
+        {viewerIsPrimaryOwner && (
+          <button
+            onClick={() => toggle(false)}
+            disabled={loading}
+            className="text-xs text-gray-400 hover:text-red-500 hover:underline disabled:opacity-40 transition"
+          >
+            {loading ? "..." : "Revoke"}
+          </button>
+        )}
+      </div>
+    );
+  }
+
+  return (
+    <button
+      onClick={() => toggle(true)}
+      disabled={loading}
+      className="text-xs text-gray-400 hover:text-violet-600 hover:underline disabled:opacity-40 transition"
+    >
+      {loading ? "..." : "Grant Owner"}
+    </button>
+  );
+}
+
+export function UsersTable({
+  rows,
+  viewerIsPrimaryOwner,
+}: {
+  rows: UserRow[];
+  viewerIsPrimaryOwner: boolean;
+}) {
   return (
     <div className="bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden">
       <div className="overflow-x-auto">
@@ -73,6 +148,7 @@ export function UsersTable({ rows }: { rows: UserRow[] }) {
             <tr className="border-b border-gray-100 bg-gray-50">
               <th className="text-left px-5 py-3 font-medium text-gray-400 text-xs uppercase tracking-wide">Email</th>
               <th className="text-left px-5 py-3 font-medium text-gray-400 text-xs uppercase tracking-wide">Plan</th>
+              <th className="text-left px-5 py-3 font-medium text-gray-400 text-xs uppercase tracking-wide">Owner Access</th>
               <th className="text-left px-5 py-3 font-medium text-gray-400 text-xs uppercase tracking-wide">Audits</th>
               <th className="text-left px-5 py-3 font-medium text-gray-400 text-xs uppercase tracking-wide">Signed Up</th>
               <th className="text-left px-5 py-3 font-medium text-gray-400 text-xs uppercase tracking-wide">Last Login</th>
@@ -84,6 +160,14 @@ export function UsersTable({ rows }: { rows: UserRow[] }) {
                 <td className="px-5 py-3 font-medium text-gray-900">{u.email}</td>
                 <td className="px-5 py-3">
                   <TierCell userId={u.id} initialTier={u.tier} />
+                </td>
+                <td className="px-5 py-3">
+                  <OwnerCell
+                    userId={u.id}
+                    email={u.email}
+                    initialIsOwner={u.isPlatformOwner}
+                    viewerIsPrimaryOwner={viewerIsPrimaryOwner}
+                  />
                 </td>
                 <td className="px-5 py-3">
                   {u.auditCount > 0 ? (

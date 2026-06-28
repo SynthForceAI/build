@@ -39,13 +39,14 @@ function usePageLabel(): string {
 }
 
 type Props = {
-  userName:  string;
-  userEmail: string;
-  userRole:  UserRole;
-  children:  React.ReactNode;
+  userName:        string;
+  userEmail:       string;
+  userRole:        UserRole;
+  isPlatformOwner: boolean;
+  children:        React.ReactNode;
 };
 
-export function DashboardShell({ userName, userEmail, userRole, children }: Props) {
+export function DashboardShell({ userName, userEmail, userRole, isPlatformOwner, children }: Props) {
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const pageLabel = usePageLabel();
   const router = useRouter();
@@ -72,6 +73,7 @@ export function DashboardShell({ userName, userEmail, userRole, children }: Prop
         userName={userName}
         userEmail={userEmail}
         userRole={userRole}
+        isPlatformOwner={isPlatformOwner}
         isOpen={sidebarOpen}
         onClose={() => setSidebarOpen(false)}
       />

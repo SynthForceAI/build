@@ -42,14 +42,15 @@ const NAV_ITEMS: NavItem[] = [
 ];
 
 type Props = {
-  userName:  string;
-  userEmail: string;
-  userRole:  UserRole;
-  isOpen:    boolean;
-  onClose:   () => void;
+  userName:        string;
+  userEmail:       string;
+  userRole:        UserRole;
+  isPlatformOwner: boolean;
+  isOpen:          boolean;
+  onClose:         () => void;
 };
 
-export function DashboardSidebar({ userName, userEmail, userRole, isOpen, onClose }: Props) {
+export function DashboardSidebar({ userName, userEmail, userRole, isPlatformOwner, isOpen, onClose }: Props) {
   const pathname = usePathname();
   const router = useRouter();
 
@@ -208,7 +209,7 @@ export function DashboardSidebar({ userName, userEmail, userRole, isOpen, onClos
                 </span>
               </div>
             </Link>
-            {userEmail === OWNER_EMAIL && (
+            {isPlatformOwner && (
               <Link
                 href="/owner/users"
                 className="w-full flex items-center gap-2 px-3 py-2 min-h-[44px] rounded-lg text-xs font-medium text-[#00B2FF] hover:bg-blue-50 transition-colors"
