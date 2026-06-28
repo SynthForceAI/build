@@ -30,15 +30,13 @@ const NAV_ITEMS: NavItem[] = [
   { href: "/U",              label: "Dashboard",    sub: "Spend overview & audits"     },
   { href: "/U/onboard",      label: "Onboard",      sub: "Run a spending audit"         },
   { href: "/U/audit-log",    label: "Audit Log",    sub: "Spending audit history",      roles: ["owner", "admin", "member"] },
-  { href: "/U/spending",     label: "Monitor Fleet", sub: "Cost insights & savings",    disabled: true },
+  { href: "/U/billing",      label: "Billing",      sub: "Plan & usage",                roles: ["owner", "admin"] },
+  { href: "/U/settings",     label: "Settings",     sub: "Account & preferences",       roles: ["owner", "admin"] },
   { href: "/U/performance",  label: "Performance",  sub: "Tasks, errors, satisfaction", disabled: true },
   { href: "/U/compensation", label: "Compensation", sub: "API spend & ROI",             disabled: true },
   { href: "/U/policies",     label: "Policies",     sub: "Guardrails & compliance",     roles: ["owner", "admin", "member"], disabled: true },
   { href: "/U/offboarding",  label: "Offboarding",  sub: "Archive & audit",             disabled: true },
-  { href: "/U/agents",       label: "Agents",       sub: "Manage your fleet",           roles: ["owner", "admin", "member"], disabled: true },
-  { href: "/U/departments",  label: "Departments",  sub: "Teams & budgets",             roles: ["owner", "admin", "member"], disabled: true },
-  { href: "/U/billing",      label: "Billing",      sub: "Plan & usage",                roles: ["owner", "admin"] },
-  { href: "/U/settings",     label: "Settings",     sub: "Account & preferences",       roles: ["owner", "admin"] },
+  // Monitor Fleet (/U/spending), Agents, and Departments hidden — restore when ready
 ];
 
 type Props = {
