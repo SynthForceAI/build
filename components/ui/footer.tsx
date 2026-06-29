@@ -10,7 +10,7 @@ export function Footer() {
           <div className="mb-6 md:mb-0">
             <div className="flex items-center gap-3">
               <img
-                src="/assets/logo_homepage.png"
+                src="/assets/7.png"
                 className="h-8 max-h-8 w-auto object-contain"
                 alt="SynthForce Logo"
               />
@@ -32,7 +32,7 @@ export function Footer() {
           </div>
         </div>
         <div className="mt-8 pt-8 border-t border-subtle text-center text-sm text-gray-500">
-          <p>© { Year } SynthForce AI. All rights reserved. | Built at Cornell University.</p>
+          <p>© { Year } SynthForce AI. All rights reserved.</p>
         </div>
       </div>
     </footer>

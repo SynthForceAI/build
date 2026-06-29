@@ -192,7 +192,7 @@ export default function Home() {
               className="inline-flex items-center gap-2 bg-[#00B2FF]/10 border border-[#00B2FF]/20 rounded-full px-4 py-1.5 text-xs font-semibold text-[#00B2FF] mb-8 uppercase tracking-wider"
             >
               <span className="w-1.5 h-1.5 bg-[#00B2FF] rounded-full animate-pulse" />
-              Now in private beta
+              Now in Phase 1: Audit
             </motion.div>
 
             {/* Headline - word-by-word entrance */}
@@ -334,10 +334,10 @@ export default function Home() {
                     <p className="text-xl text-gray-600 mb-8">
                       Explore our demo to see how you can onboard, measure, and govern your AI workforce, no code required.
                     </p>
-                    <Link href="/demo" className="btn-primary inline-block font-semibold px-8 py-4 shadow-sm">
-                      Launch Demo
+                    <Link href="/signup" className="btn-primary inline-block font-semibold px-8 py-4 shadow-sm">
+                      Try for Free
                     </Link>
-                    <p className="mt-4 text-sm text-gray-500">Takes less than 2 minutes. No sign-up needed.</p>
+                    <p className="mt-4 text-sm text-gray-500">Takes less than 2 minutes. No credit card needed.</p>
                   </div>
 
                   {/* Carousel */}
@@ -592,8 +592,8 @@ export default function Home() {
                 ))}
               </motion.div>
               <div className="text-center mt-12">
-                <Link href="/demo" className="btn-primary px-8 py-4 font-mono font-bold tracking-widest text-sm uppercase">
-                  Explore live demo
+                <Link href="/signup" className="btn-primary px-8 py-4 font-mono font-bold tracking-widest text-sm uppercase">
+                  Try for Free
                 </Link>
               </div>
             </div>
@@ -617,8 +617,8 @@ export default function Home() {
               variants={{ hidden: {}, visible: { transition: { staggerChildren: 0.06 } } }}
             >
               {[
-                { name: 'OpenAI',       detail: 'GPT-4, GPT-4o, Assistants',  hover: 'hover:bg-blue-50',    text: 'group-hover:text-blue-600'    },
-                { name: 'Anthropic',    detail: 'Claude 3, Claude Opus',       hover: 'hover:bg-purple-50',  text: 'group-hover:text-purple-600'  },
+                { name: 'OpenAI',       detail: 'GPT-4o, o3, o4-mini',        hover: 'hover:bg-blue-50',    text: 'group-hover:text-blue-600'    },
+                { name: 'Anthropic',    detail: 'Claude Opus 4, Sonnet 4.6',   hover: 'hover:bg-purple-50',  text: 'group-hover:text-purple-600'  },
                 { name: 'Gemini',       detail: "Google’s latest models", hover: 'hover:bg-teal-50',    text: 'group-hover:text-teal-600'    },
                 { name: 'Azure AI',     detail: "Microsoft’s cloud AI",   hover: 'hover:bg-sky-50',     text: 'group-hover:text-sky-600'     },
                 { name: 'Llama',        detail: "Meta’s open models",     hover: 'hover:bg-indigo-50',  text: 'group-hover:text-indigo-600'  },
