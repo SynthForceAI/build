@@ -73,9 +73,9 @@ export function DashboardSidebar({ userName, userEmail, userRole, isPlatformOwne
     try {
       await fetch("/api/auth/logout", { method: "POST" });
       toast.success("Signed out successfully");
-      router.push("/login");
+      window.location.href = "/login";
     } catch {
-      toast.error("Logout failed . Please try again.");
+      toast.error("Logout failed. Please try again.");
     }
   }
 

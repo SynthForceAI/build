@@ -28,7 +28,7 @@ export function SiteNav({ position = "sticky", user = null }: SiteNavProps) {
 
   async function handleSignOut() {
     await fetch("/api/auth/logout", { method: "POST" });
-    router.push("/");
+    window.location.href = "/";
   }
 
   const initials = user?.name
