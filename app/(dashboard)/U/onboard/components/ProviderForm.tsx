@@ -405,9 +405,15 @@ export function ProviderForm({ providers, departments, onSuccess }: Props) {
             </svg>
           )}
           {loading
-            ? (isAdminAuditFlow ? "Running audit…" : "Connecting…")
+            ? (isAdminAuditFlow ? "Running audit…" : "Connecting & syncing history…")
             : (isAdminAuditFlow ? "Run Spending Audit" : "Connect Provider")}
         </button>
+
+        {loading && !isAdminAuditFlow && (
+          <p className="text-xs text-center text-gray-500 animate-pulse">
+            Pulling up to 30 days of usage history — this takes a few seconds…
+          </p>
+        )}
       </form>
     </div>
   );
