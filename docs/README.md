@@ -29,6 +29,17 @@ public/assets/   Logos, favicons, integration icons
 legacy-html/     Frozen pre-migration static site, for reference
 ```
 
+## Documentation
+
+| Doc | Covers |
+|-----|--------|
+| [CLAUDE.md](./CLAUDE.md) | Repo conventions, branching model, commands, gotchas. |
+| [architecture.md](./architecture.md) | Platform-wide data model and original design. |
+| [proxy-layer.md](./proxy-layer.md) | Real-time agent gateway: virtual keys, policy enforcement, usage logging. |
+| [usage-ingestion.md](./usage-ingestion.md) | How spend/token data enters the system: connect flow, admin-key polling, agent self-report. |
+| [profile-audit.md](./profile-audit.md) | Profile/account-settings feature audit. |
+| [BUILD_SUMMARY.md](./BUILD_SUMMARY.md) | Signup/login build log (historical). |
+
 ## Deployment
 
 Hosted on Vercel. Deploys are driven by Vercel's Git integration — push a branch and you get a preview URL; merge to the production branch and it ships to `synthforceai.com`. Database migrations are **not** auto-run on deploy; see CLAUDE.md → CI/CD for the manual flow.
