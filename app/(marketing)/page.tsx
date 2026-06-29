@@ -617,8 +617,8 @@ export default function Home() {
               variants={{ hidden: {}, visible: { transition: { staggerChildren: 0.06 } } }}
             >
               {[
-                { name: 'OpenAI',       detail: 'GPT-4o, o3, o4-mini',        hover: 'hover:bg-blue-50',    text: 'group-hover:text-blue-600'    },
-                { name: 'Anthropic',    detail: 'Claude Opus 4, Sonnet 4.6',   hover: 'hover:bg-purple-50',  text: 'group-hover:text-purple-600'  },
+                { name: 'OpenAI',       detail: 'GPT-5.5, GPT-5.4, GPT-5.4 mini', hover: 'hover:bg-blue-50',    text: 'group-hover:text-blue-600'    },
+                { name: 'Anthropic',    detail: 'Opus 4.8, Sonnet 4.6, Haiku 4.5', hover: 'hover:bg-purple-50',  text: 'group-hover:text-purple-600'  },
                 { name: 'Gemini',       detail: "Google’s latest models", hover: 'hover:bg-teal-50',    text: 'group-hover:text-teal-600'    },
                 { name: 'Azure AI',     detail: "Microsoft’s cloud AI",   hover: 'hover:bg-sky-50',     text: 'group-hover:text-sky-600'     },
                 { name: 'Llama',        detail: "Meta’s open models",     hover: 'hover:bg-indigo-50',  text: 'group-hover:text-indigo-600'  },
