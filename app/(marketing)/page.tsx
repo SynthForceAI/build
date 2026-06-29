@@ -230,9 +230,12 @@ export default function Home() {
               transition={{ duration: 0.5, delay: 0.95 }}
               className="flex flex-col sm:flex-row gap-4 justify-center"
             >
-              <WaitlistTrigger className="btn-primary px-9 py-4 font-semibold text-sm uppercase rounded-lg cursor-pointer inline-block">
-                Join Waitlist
-              </WaitlistTrigger>
+              <Link
+                href="/signup"
+                className="btn-primary px-9 py-4 font-semibold text-sm uppercase rounded-lg inline-block text-center"
+              >
+                Try for Free
+              </Link>
               <Link
                 href="/demo"
                 className="px-9 py-4 font-semibold text-sm uppercase border border-gray-300 rounded-lg hover:border-gray-900 hover:text-gray-900 transition text-center text-gray-600"
