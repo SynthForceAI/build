@@ -242,30 +242,21 @@ export function OnboardClient({ providers, departments, initialAgents }: Props) 
 
   return (
     <div className="p-6 lg:p-8">
-      <div className="mb-8">
-        <h1 className="text-2xl font-bold text-gray-900">Monitor Your Agent Fleet</h1>
-        <p className="text-sm text-gray-500 mt-1">
-          Connect your existing AI provider keys to see spending, trends, and savings recommendations.
-        </p>
-      </div>
-
-      <div className="bg-white rounded-md border border-gray-200 shadow-sm p-8">
-        <StepBreadcrumb current={view} />
-        {view === "choice" && (
-          <ChoiceView onSelect={(v) => setView(v)} />
-        )}
-        {view === "deploy" && (
-          <DeployView onBack={() => setView("choice")} />
-        )}
-        {view === "connect" && (
-          <ConnectView
-            providers={providers}
-            departments={departments}
-            initialAgents={initialAgents}
-            onBack={() => setView("choice")}
-          />
-        )}
-      </div>
+      <StepBreadcrumb current={view} />
+      {view === "choice" && (
+        <ChoiceView onSelect={(v) => setView(v)} />
+      )}
+      {view === "deploy" && (
+        <DeployView onBack={() => setView("choice")} />
+      )}
+      {view === "connect" && (
+        <ConnectView
+          providers={providers}
+          departments={departments}
+          initialAgents={initialAgents}
+          onBack={() => setView("choice")}
+        />
+      )}
     </div>
   );
 }
