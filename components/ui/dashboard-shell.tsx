@@ -95,9 +95,6 @@ export function DashboardShell({ userName, userEmail, userRole, isPlatformOwner,
                 </div>
               </Link>
               <DropdownMenuSeparator />
-              <DropdownMenuItem asChild>
-                <Link href="/U/settings">Settings</Link>
-              </DropdownMenuItem>
               {isPlatformOwner && (
                 <DropdownMenuItem asChild>
                   <Link href="/owner/users" className="text-[#00B2FF] focus:text-[#00B2FF]">
