@@ -103,7 +103,7 @@ function Skeleton({ className = "" }: { className?: string }) {
 
 function EmptyState() {
   return (
-    <div className="bg-white rounded-2xl border border-gray-200 shadow-sm px-8 py-16 flex flex-col items-center text-center max-w-lg mx-auto mt-10">
+    <div className="bg-white rounded-md border border-gray-200 shadow-sm px-8 py-16 flex flex-col items-center text-center max-w-lg mx-auto mt-10">
       <div className="w-16 h-16 rounded-full bg-blue-50 flex items-center justify-center mb-5">
         <svg className="w-8 h-8 text-[#00B2FF]" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5}
@@ -162,7 +162,7 @@ function SpendingCard({
   loading: boolean;
 }) {
   return (
-    <div className="bg-white rounded-2xl border border-gray-200 shadow-sm p-6">
+    <div className="bg-white rounded-md border border-gray-200 shadow-sm p-6">
       <p className="text-xs font-medium text-gray-500 uppercase tracking-wide mb-1">
         This Period ({days}d)
       </p>
@@ -222,7 +222,7 @@ function ModelBreakdown({
   }));
 
   return (
-    <div className="bg-white rounded-2xl border border-gray-200 shadow-sm p-6">
+    <div className="bg-white rounded-md border border-gray-200 shadow-sm p-6">
       <h2 className="text-sm font-semibold text-gray-900 mb-4">By Model</h2>
       {loading ? (
         <div className="space-y-3">
@@ -289,7 +289,7 @@ function SpendingTrend({
   }));
 
   return (
-    <div className="bg-white rounded-2xl border border-gray-200 shadow-sm p-6">
+    <div className="bg-white rounded-md border border-gray-200 shadow-sm p-6">
       <div className="flex items-center justify-between mb-4">
         <h2 className="text-sm font-semibold text-gray-900">Spending Trend</h2>
         <div className="flex gap-1">
@@ -360,7 +360,7 @@ function BenchmarkCard({
   loading: boolean;
 }) {
   return (
-    <div className="bg-white rounded-2xl border border-gray-200 shadow-sm p-6">
+    <div className="bg-white rounded-md border border-gray-200 shadow-sm p-6">
       <h2 className="text-sm font-semibold text-gray-900 mb-3">How You Compare</h2>
       {loading || !benchmark ? (
         <div className="space-y-2">
@@ -413,20 +413,26 @@ function RecommendationsCard({
   totalSavings: number;
   loading: boolean;
 }) {
-  const priorityBadge: Record<string, string> = {
-    high:   "bg-red-100 text-red-700",
-    medium: "bg-yellow-100 text-yellow-700",
-    low:    "bg-gray-100 text-gray-600",
+  const priorityDot: Record<string, string> = {
+    high:   "bg-red-500",
+    medium: "bg-yellow-400",
+    low:    "bg-gray-400",
+  };
+  const priorityText: Record<string, string> = {
+    high:   "text-red-700",
+    medium: "text-yellow-700",
+    low:    "text-gray-500",
   };
 
   return (
-    <div className="bg-white rounded-2xl border border-gray-200 shadow-sm p-6">
+    <div className="bg-white rounded-md border border-gray-200 shadow-sm p-6">
       <div className="flex items-center justify-between mb-4">
         <h2 className="text-sm font-semibold text-gray-900">
           {loading ? "Ways to Save" : `${recommendations.length} Ways to Save`}
         </h2>
         {!loading && totalSavings > 0 && (
-          <span className="text-xs font-medium text-green-700 bg-green-50 border border-green-200 px-2.5 py-1 rounded-full">
+          <span className="inline-flex items-center gap-1.5 text-xs font-medium text-green-700">
+            <span className="w-2 h-2 rounded-full shrink-0 bg-green-500" />
             Up to {fmtDollars(totalSavings)}/mo
           </span>
         )}
@@ -462,7 +468,8 @@ function RecommendationsCard({
               <div className="flex-1 min-w-0">
                 <div className="flex items-start justify-between gap-2">
                   <p className="text-sm font-medium text-gray-800">{rec.title}</p>
-                  <span className={`shrink-0 text-xs font-medium px-2 py-0.5 rounded-full ${priorityBadge[rec.priority]}`}>
+                  <span className={`inline-flex items-center gap-1.5 shrink-0 text-xs font-medium capitalize ${priorityText[rec.priority] ?? "text-gray-500"}`}>
+                    <span className={`w-2 h-2 rounded-full shrink-0 ${priorityDot[rec.priority] ?? "bg-gray-400"}`} />
                     {rec.priority}
                   </span>
                 </div>

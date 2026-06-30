@@ -18,11 +18,17 @@ type Policy = {
 
 type Department = { id: string; name: string };
 
-const SEVERITY_PILL: Record<string, string> = {
-  warning: "bg-yellow-100 text-yellow-800",
-  block: "bg-red-100 text-red-800",
-  flag: "bg-orange-100 text-orange-800",
-  log: "bg-gray-100 text-gray-600",
+const SEVERITY_DOT: Record<string, string> = {
+  warning: "bg-yellow-400",
+  block:   "bg-red-500",
+  flag:    "bg-orange-500",
+  log:     "bg-gray-400",
+};
+const SEVERITY_TEXT: Record<string, string> = {
+  warning: "text-yellow-700",
+  block:   "text-red-700",
+  flag:    "text-orange-700",
+  log:     "text-gray-500",
 };
 
 export function PoliciesClient({
@@ -103,7 +109,7 @@ export function PoliciesClient({
       </div>
 
       {/* Table */}
-      <div className="bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden">
+      <div className="bg-white rounded-md border border-gray-200 shadow-sm overflow-hidden">
         {filtered.length === 0 ? (
           <div className="px-6 py-16 text-center">
             <p className="text-sm text-gray-500">
@@ -148,9 +154,8 @@ export function PoliciesClient({
                     <td className="px-4 py-3 text-gray-600 max-w-xs truncate">{policy.description}</td>
                     <td className="px-4 py-3 text-gray-600 whitespace-nowrap">{policy.department ?? "-"}</td>
                     <td className="px-4 py-3">
-                      <span
-                        className={`px-2.5 py-1 rounded-full text-xs font-mono capitalize ${SEVERITY_PILL[policy.severity] ?? "bg-gray-100 text-gray-600"}`}
-                      >
+                      <span className={`inline-flex items-center gap-1.5 text-xs font-mono capitalize ${SEVERITY_TEXT[policy.severity] ?? "text-gray-500"}`}>
+                        <span className={`w-2 h-2 rounded-full shrink-0 ${SEVERITY_DOT[policy.severity] ?? "bg-gray-400"}`} />
                         {policy.severity}
                       </span>
                     </td>
@@ -180,7 +185,7 @@ export function PoliciesClient({
             className="absolute inset-0 bg-black/40 backdrop-blur-sm"
             onClick={() => setShowModal(false)}
           />
-          <div className="relative bg-white rounded-2xl shadow-xl w-full max-w-md mx-4 p-6 z-10">
+          <div className="relative bg-white rounded-xl shadow-xl w-full max-w-md mx-4 p-6 z-10">
             <div className="flex items-center justify-between mb-5">
               <h2 className="text-lg font-semibold text-gray-900">New Policy</h2>
               <button

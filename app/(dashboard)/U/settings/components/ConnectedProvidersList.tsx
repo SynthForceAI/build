@@ -85,7 +85,7 @@ export function ConnectedProvidersList() {
   return (
     <div className="space-y-6">
       {/* Connected providers section */}
-      <div className="bg-white border border-gray-200 shadow-sm rounded-2xl overflow-hidden">
+      <div className="bg-white border border-gray-200 shadow-sm rounded-md overflow-hidden">
         <div className="px-6 py-5 border-b border-gray-100 flex items-center justify-between">
           <div>
             <h2 className="text-base font-semibold text-gray-900">Connected Agent Providers</h2>
@@ -176,7 +176,7 @@ export function ConnectedProvidersList() {
       </div>
 
       {/* Other settings placeholder */}
-      <div className="bg-white border border-gray-200 shadow-sm rounded-2xl px-6 py-5">
+      <div className="bg-white border border-gray-200 shadow-sm rounded-md px-6 py-5">
         <h2 className="text-base font-semibold text-gray-900 mb-1">Account</h2>
         <p className="text-sm text-gray-400">
           Team management, billing, and notification preferences: coming soon.

@@ -66,14 +66,14 @@ function StatusBadge({ id, initialStatus }: { id: string; initialStatus: string 
 export function UpgradeRequestsTable({ rows }: { rows: UpgradeRow[] }) {
   if (rows.length === 0) {
     return (
-      <div className="bg-white rounded-2xl border border-gray-200 shadow-sm px-5 py-10 text-center text-sm text-gray-400">
+      <div className="bg-white rounded-md border border-gray-200 shadow-sm px-5 py-10 text-center text-sm text-gray-400">
         No upgrade requests yet.
       </div>
     );
   }
 
   return (
-    <div className="bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden">
+    <div className="bg-white rounded-md border border-gray-200 shadow-sm overflow-hidden">
       <div className="overflow-x-auto">
         <table className="w-full text-sm">
           <thead>

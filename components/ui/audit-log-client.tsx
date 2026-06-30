@@ -96,7 +96,7 @@ export function AuditLogClient({
       </div>
 
       {/* Table */}
-      <div className="bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden">
+      <div className="bg-white rounded-md border border-gray-200 shadow-sm overflow-hidden">
         {filtered.length === 0 ? (
           <div className="px-6 py-16 text-center">
             <p className="text-sm text-gray-500">No audits yet.</p>

@@ -57,12 +57,13 @@ export default async function BillingPage({
       )}
 
       {/* ── Current plan summary ─────────────────────────────────────────── */}
-      <div className="bg-white rounded-2xl border border-gray-200 shadow-sm p-6 mb-8">
+      <div className="bg-white rounded-md border border-gray-200 shadow-sm p-6 mb-8">
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
           <div>
             <div className="flex items-center gap-2">
               <span className="text-xs font-medium text-gray-400 uppercase tracking-wide">Current plan</span>
-              <span className="text-xs px-2 py-0.5 rounded-full bg-blue-50 text-[#00B2FF] border border-blue-100 font-medium capitalize">
+              <span className="inline-flex items-center gap-1.5 text-xs font-medium text-[#00B2FF] capitalize">
+                <span className="w-2 h-2 rounded-full shrink-0 bg-[#00B2FF]" />
                 {currentPlan.name}
               </span>
             </div>

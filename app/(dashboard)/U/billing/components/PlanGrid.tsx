@@ -56,7 +56,7 @@ function PlanCard({ plan, currentTier }: { plan: Plan; currentTier: Subscription
 
   return (
     <div
-      className={`relative flex flex-col rounded-2xl border p-6 bg-white ${
+      className={`relative flex flex-col rounded-md border p-6 bg-white ${
         plan.featured ? "border-[#00B2FF] shadow-md" : "border-gray-200 shadow-sm"
       }`}
     >

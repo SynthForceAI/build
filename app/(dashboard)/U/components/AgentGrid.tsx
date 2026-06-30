@@ -74,7 +74,7 @@ function AgentModal({
       />
       {/* Dialog */}
       <div
-        className="relative bg-white rounded-2xl shadow-xl w-full max-w-md p-6 z-10"
+        className="relative bg-white rounded-xl shadow-xl w-full max-w-md p-6 z-10"
         role="dialog"
         aria-modal="true"
         aria-label={`${agent.name} details`}
