@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { usePathname, useRouter } from "next/navigation";
+import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { DashboardSidebar } from "./dashboard-sidebar";
 import {
@@ -13,31 +13,6 @@ import {
 } from "@/components/ui/dropdown-menu";
 import type { UserRole } from "@prisma/client";
 
-const PAGE_LABELS: Record<string, string> = {
-  "/U":              "Dashboard",
-  "/U/spending":     "AI Spending",
-  "/U/onboard":      "Onboard",
-  "/U/performance":  "Performance",
-  "/U/compensation": "Compensation",
-  "/U/policies":     "Policies",
-  "/U/offboarding":  "Offboarding",
-  "/U/agents":       "Agents",
-  "/U/departments":  "Departments",
-  "/U/settings":         "Settings",
-  "/U/settings/connect": "Connect Provider",
-  "/U/profile":          "Profile",
-};
-
-function usePageLabel(): string {
-  const pathname = usePathname();
-  // Exact match first, then longest prefix
-  if (PAGE_LABELS[pathname]) return PAGE_LABELS[pathname];
-  const match = Object.keys(PAGE_LABELS)
-    .filter((k) => k !== "/U" && pathname.startsWith(k))
-    .sort((a, b) => b.length - a.length)[0];
-  return match ? PAGE_LABELS[match] : "";
-}
-
 type Props = {
   userName:        string;
   userEmail:       string;
@@ -48,7 +23,6 @@ type Props = {
 
 export function DashboardShell({ userName, userEmail, userRole, isPlatformOwner, children }: Props) {
   const [sidebarOpen, setSidebarOpen] = useState(true);
-  const pageLabel = usePageLabel();
   const router = useRouter();
 
   async function handleSignOut() {
@@ -96,7 +70,6 @@ export function DashboardShell({ userName, userEmail, userRole, isPlatformOwner,
                 <rect y="14" width="18" height="2" rx="1" />
               </svg>
             </button>
-            {pageLabel && <span className="text-sm font-semibold text-gray-900" aria-live="polite">{pageLabel}</span>}
           </div>
 
           <DropdownMenu>
