@@ -61,7 +61,7 @@ export default async function BillingPage({
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
           <div>
             <div className="flex items-center gap-2">
-              <span className="text-xs font-medium text-gray-400 uppercase tracking-wide">Current plan</span>
+              <span className="text-xs font-medium text-gray-400">Current plan</span>
               <span className="inline-flex items-center gap-1.5 text-xs font-medium text-[#00B2FF] capitalize">
                 <span className="w-2 h-2 rounded-full shrink-0 bg-[#00B2FF]" />
                 {currentPlan.name}

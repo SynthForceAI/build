@@ -139,8 +139,8 @@ export function ConnectedProvidersList() {
                 <div className="flex items-start justify-between gap-4">
                   <div className="flex items-start gap-3 flex-1 min-w-0">
                     <div className="w-10 h-10 rounded-xl bg-blue-50 flex items-center justify-center shrink-0">
-                      <span className="text-xs font-bold text-[#00B2FF] uppercase">
-                        {p.displayName.slice(0, 2)}
+                      <span className="text-xs font-bold text-[#00B2FF] font-mono">
+                        {p.displayName.slice(0, 2).toUpperCase()}
                       </span>
                     </div>
                     <div className="flex-1 min-w-0">

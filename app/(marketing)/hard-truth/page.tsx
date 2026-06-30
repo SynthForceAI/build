@@ -117,7 +117,7 @@ export default function HardTruthPage() {
           transition={{ duration: 0.6 }}
           className="max-w-3xl mx-auto"
         >
-          <div className="inline-flex items-center gap-2 bg-red-500/10 border border-red-500/20 rounded-full px-4 py-1.5 text-xs font-semibold text-red-500 mb-8 uppercase tracking-wider">
+          <div className="inline-flex items-center gap-2 bg-red-500/10 border border-red-500/20 rounded-full px-4 py-1.5 text-xs font-semibold text-red-500 mb-8">
             <span className="w-1.5 h-1.5 bg-red-500 rounded-full animate-pulse" />
             Verified data · no spin
           </div>

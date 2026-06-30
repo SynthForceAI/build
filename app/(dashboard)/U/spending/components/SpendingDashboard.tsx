@@ -163,7 +163,7 @@ function SpendingCard({
 }) {
   return (
     <div className="bg-white rounded-md border border-gray-200 shadow-sm p-6">
-      <p className="text-xs font-medium text-gray-500 uppercase tracking-wide mb-1">
+      <p className="text-xs font-medium text-gray-500 mb-1">
         This Period ({days}d)
       </p>
       {loading || !totals ? (

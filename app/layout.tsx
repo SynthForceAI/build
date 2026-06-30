@@ -10,7 +10,7 @@
  *   - app/(dashboard)/layout.tsx  adds the sidebar shell for product pages
  */
 import type { Metadata } from "next";
-import { inter } from "@/lib/fonts";
+import { geist, geistMono } from "@/lib/fonts";
 import "./globals.css";
 import React from "react";
 import { cn } from "@/lib/utils";
@@ -29,7 +29,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="en" className={cn(inter.variable, inter.className)}>
+    <html lang="en" className={cn(geist.variable, geistMono.variable, geist.className)}>
       <body suppressHydrationWarning>
         {children}
         <Analytics />

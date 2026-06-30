@@ -35,7 +35,7 @@ function usePageLabel(): string {
   const match = Object.keys(PAGE_LABELS)
     .filter((k) => k !== "/U" && pathname.startsWith(k))
     .sort((a, b) => b.length - a.length)[0];
-  return match ? PAGE_LABELS[match] : "SynthForce";
+  return match ? PAGE_LABELS[match] : "";
 }
 
 type Props = {
@@ -96,7 +96,7 @@ export function DashboardShell({ userName, userEmail, userRole, isPlatformOwner,
                 <rect y="14" width="18" height="2" rx="1" />
               </svg>
             </button>
-            <span className="text-sm font-semibold text-gray-900" aria-live="polite">{pageLabel}</span>
+            {pageLabel && <span className="text-sm font-semibold text-gray-900" aria-live="polite">{pageLabel}</span>}
           </div>
 
           <DropdownMenu>

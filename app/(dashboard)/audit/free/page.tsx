@@ -8,6 +8,7 @@ import { ShareButton } from "./ShareButton";
 import { RerunButton } from "./RerunButton";
 import { BurnRateCard } from "./BurnRateCard";
 import { InfoTip } from "./InfoTip";
+import { Flame, CircleSlash, AlertTriangle } from "lucide-react";
 import type {
   TelemetryInsights,
   HighVolumeProject,
@@ -188,20 +189,20 @@ function InsightCard({
       </h2>
       <div className="space-y-3 mb-4">
         <div>
-          <span className="text-xs font-medium text-gray-500 uppercase tracking-wide">Finding</span>
+          <span className="text-xs font-medium text-gray-500">Finding</span>
           <p className="text-sm text-gray-800 mt-0.5">{finding}</p>
         </div>
         <div>
-          <span className="text-xs font-medium text-gray-500 uppercase tracking-wide">Why it matters</span>
+          <span className="text-xs font-medium text-gray-500">Why it matters</span>
           <p className="text-sm text-gray-800 mt-0.5">{whyItMatters}</p>
         </div>
         <div>
-          <span className="text-xs font-medium text-gray-500 uppercase tracking-wide">Recommendation</span>
+          <span className="text-xs font-medium text-gray-500">Recommendation</span>
           <p className="text-sm text-gray-800 mt-0.5">{recommendation}</p>
         </div>
         {estimatedImpactCents !== undefined && estimatedImpactCents > 0 && (
           <div className="inline-flex items-center gap-1.5 bg-green-50 border border-green-200 rounded-lg px-3 py-1.5">
-            <span className="text-xs font-medium text-gray-500 uppercase tracking-wide">Estimated impact</span>
+            <span className="text-xs font-medium text-gray-500">Estimated impact</span>
             <span className="text-sm font-bold text-green-700">{fmtDollars(estimatedImpactCents)}/month</span>
           </div>
         )}
@@ -560,7 +561,7 @@ function UnusedKeysSection({ keys }: { keys: TelemetryInsights["unusedKeys"] | u
       <h2 className="text-sm font-semibold text-gray-900 mb-3">Unused API Keys</h2>
       <div className="space-y-3 mb-4">
         <div>
-          <span className="text-xs font-medium text-gray-500 uppercase tracking-wide">Finding</span>
+          <span className="text-xs font-medium text-gray-500">Finding</span>
           <p className="text-sm text-gray-800 mt-0.5">
             {unusedKeys.length > 0
               ? `${unusedKeys.length} API key${unusedKeys.length !== 1 ? "s" : ""} generated zero traffic this period.`
@@ -570,11 +571,11 @@ function UnusedKeysSection({ keys }: { keys: TelemetryInsights["unusedKeys"] | u
         {unusedKeys.length > 0 && (
           <>
             <div>
-              <span className="text-xs font-medium text-gray-500 uppercase tracking-wide">Why it matters</span>
+              <span className="text-xs font-medium text-gray-500">Why it matters</span>
               <p className="text-sm text-gray-800 mt-0.5">Dormant keys are a standing credential risk. If leaked, an attacker could generate spend or exfiltrate data before you notice.</p>
             </div>
             <div>
-              <span className="text-xs font-medium text-gray-500 uppercase tracking-wide">Recommendation</span>
+              <span className="text-xs font-medium text-gray-500">Recommendation</span>
               <p className="text-sm text-gray-800 mt-0.5">Revoke any key that has not generated traffic in 30 days. Only keep keys that are actively in use.</p>
             </div>
           </>
@@ -1098,7 +1099,7 @@ export default async function FreeAuditPage({
             {overtime && (
               <div className="bg-white rounded-md border border-orange-200 shadow-sm p-6">
                 <div className="flex items-start gap-3">
-                  <span className="text-xl mt-0.5" aria-hidden="true">🔥</span>
+                  <Flame className="w-5 h-5 mt-0.5 text-orange-500 shrink-0" aria-hidden="true" />
                   <div>
                     <h2 className="text-sm font-semibold text-gray-900 mb-1">Sustained High Spend Detected</h2>
                     <p className="text-sm text-gray-600 mb-2">
@@ -1205,7 +1206,7 @@ export default async function FreeAuditPage({
               <h2 className="text-sm font-semibold text-gray-900">What This Audit Cannot Tell You Yet</h2>
               <div className="bg-gray-50 rounded-xl p-4 border border-gray-200">
                 <div className="flex items-start gap-3">
-                  <span className="text-base mt-0.5" aria-hidden="true">🕳️</span>
+                  <CircleSlash className="w-4 h-4 mt-0.5 text-gray-400 shrink-0" aria-hidden="true" />
                   <div>
                     <p className="text-sm font-medium text-gray-900 mb-1">Attribution gap</p>
                     <p className="text-sm text-gray-600">
@@ -1218,7 +1219,7 @@ export default async function FreeAuditPage({
               {spike && (
                 <div className="bg-orange-50 rounded-xl p-4 border border-orange-200">
                   <div className="flex items-start gap-3">
-                    <span className="text-base mt-0.5" aria-hidden="true">🚨</span>
+                    <AlertTriangle className="w-4 h-4 mt-0.5 text-orange-500 shrink-0" aria-hidden="true" />
                     <div>
                       <p className="text-sm font-medium text-gray-900 mb-1">Spend spike detected</p>
                       <p className="text-sm text-gray-600">

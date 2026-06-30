@@ -129,7 +129,7 @@ export default function FAQPage() {
         <div className="flex flex-col gap-10">
           {SECTIONS.map((section) => (
             <div key={section.prefix}>
-              <h2 className="text-sm font-semibold uppercase tracking-widest text-accent mb-4">
+              <h2 className="text-sm font-semibold text-accent mb-4">
                 {section.heading}
               </h2>
               <div className="bg-white border border-subtle rounded-2xl px-6">

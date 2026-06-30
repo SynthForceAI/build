@@ -334,7 +334,7 @@ export default function DemoPage() {
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-12">
                       <div
                         onClick={() => setOnboardView("new")}
-                        className="border border-gray-200 rounded-2xl p-8 hover:border-blue-300 hover:shadow-lg transition cursor-pointer flex flex-col h-full"
+                        className="border border-gray-200 rounded-2xl p-8 hover:border-blue-300 transition cursor-pointer flex flex-col h-full"
                       >
                         <div className="text-blue-600 mb-4">
                           <svg className="w-12 h-12" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
@@ -358,7 +358,7 @@ export default function DemoPage() {
                       </div>
                       <div
                         onClick={() => setOnboardView("existing")}
-                        className="border border-gray-200 rounded-2xl p-8 hover:border-purple-300 hover:shadow-lg transition cursor-pointer flex flex-col h-full"
+                        className="border border-gray-200 rounded-2xl p-8 hover:border-blue-300 transition cursor-pointer flex flex-col h-full"
                       >
                         <div className="text-purple-600 mb-4">
                           <svg className="w-12 h-12" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">

@@ -24,7 +24,7 @@ export default function WaitlistSignupPage() {
           <p className="text-sm text-gray-500">Fill out the form below. No spam. Unsubscribe anytime.</p>
         </div>
 
-        <div className="max-w-3xl mx-auto border border-subtle rounded-2xl overflow-hidden shadow-lg">
+        <div className="max-w-3xl mx-auto border border-subtle rounded-2xl overflow-hidden">
           <WaitlistForm variant="page" />
         </div>
 

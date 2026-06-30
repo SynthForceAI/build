@@ -170,7 +170,7 @@ export function AgentGrid({ agents }: { agents: AgentCardData[] }) {
             <button
               key={agent.id}
               onClick={() => setSelected(agent)}
-              className="group bg-white border border-gray-200 rounded-xl p-6 text-left cursor-pointer hover:-translate-y-1.5 hover:shadow-lg hover:border-[#00B2FF]/25 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-[#00B2FF]"
+              className="group bg-white border border-gray-200 rounded-xl p-6 text-left cursor-pointer hover:-translate-y-1.5 hover:border-[#00B2FF]/25 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-[#00B2FF]"
             >
               <div className="flex items-center justify-between mb-4">
                 <div className="flex items-center gap-3 min-w-0">
