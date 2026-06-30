@@ -18,7 +18,7 @@ const ACTION_CONFIG: Record<string, { label: string; dot: string }> = {
 
 export function ActivityFeed({ rows }: { rows: ActivityRow[] }) {
   return (
-    <div className="bg-white rounded-2xl border border-gray-200 shadow-sm">
+    <div className="bg-white rounded-md border border-gray-200 shadow-sm">
       <div className="divide-y divide-gray-50 max-h-[480px] overflow-y-auto">
         {rows.map((r) => {
           const cfg = ACTION_CONFIG[r.action] ?? { label: r.action, dot: "bg-gray-300" };

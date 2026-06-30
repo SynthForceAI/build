@@ -59,7 +59,7 @@ export function BurnRateCard({ dailyRateCents, weeklyRateCents, trendPct }: Prop
     : "text-gray-600";
 
   return (
-    <div className={`bg-white rounded-2xl border shadow-sm p-6 ${overBudget ? "border-orange-200" : "border-gray-200"}`}>
+    <div className={`bg-white rounded-md border shadow-sm p-6 ${overBudget ? "border-orange-200" : "border-gray-200"}`}>
       <div className="flex items-center justify-between mb-4">
         <h2 className="text-sm font-semibold text-gray-900">Burn Rate Forecast</h2>
         {mounted && budget !== null && !editing && (

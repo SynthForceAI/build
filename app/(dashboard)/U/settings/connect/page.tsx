@@ -61,7 +61,7 @@ export default function ConnectProviderPage() {
         Add an admin API key to start seeing your AI spending. Takes 30 seconds.
       </p>
 
-      <div className="bg-white border border-gray-200 shadow-sm rounded-2xl p-6">
+      <div className="bg-white border border-gray-200 shadow-sm rounded-md p-6">
         <ConnectProviderForm
           onConnect={handleConnect}
           isLoading={isLoading}

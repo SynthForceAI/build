@@ -132,11 +132,17 @@ function fmtRelativeTime(iso: string): string {
 
 // ── Status pill styles ─────────────────────────────────────────────────────
 
-const STATUS_PILL: Record<string, string> = {
-  active:      "bg-green-100 text-green-800",
-  paused:      "bg-yellow-100 text-yellow-800",
-  flagged:     "bg-red-100 text-red-800",
-  deactivated: "bg-gray-100 text-gray-600",
+const STATUS_DOT: Record<string, string> = {
+  active:      "bg-green-500",
+  paused:      "bg-yellow-400",
+  flagged:     "bg-red-500",
+  deactivated: "bg-gray-400",
+};
+const STATUS_TEXT: Record<string, string> = {
+  active:      "text-green-700",
+  paused:      "text-yellow-700",
+  flagged:     "text-red-700",
+  deactivated: "text-gray-500",
 };
 
 // ── Recommendation card styles ─────────────────────────────────────────────
@@ -250,7 +256,7 @@ export default async function PerformancePage() {
       {/* ── Agent performance table ──────────────────────── */}
       <div>
         <h2 className="text-base font-semibold text-gray-900 mb-3">All Agents</h2>
-        <div className="bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden">
+        <div className="bg-white rounded-md border border-gray-200 shadow-sm overflow-hidden">
           {agents.length === 0 ? (
             <div className="px-6 py-16 text-center">
               <p className="text-sm text-gray-500">No agents yet.</p>
@@ -273,7 +279,8 @@ export default async function PerformancePage() {
                 </thead>
                 <tbody>
                   {agents.map((agent) => {
-                    const pill = STATUS_PILL[agent.status] ?? "bg-gray-100 text-gray-600";
+                    const dotClass  = STATUS_DOT[agent.status]  ?? "bg-gray-400";
+                    const textClass = STATUS_TEXT[agent.status] ?? "text-gray-500";
                     const modelLabel =
                       agent.provider && agent.model
                         ? `${agent.provider} · ${agent.model}`
@@ -292,7 +299,8 @@ export default async function PerformancePage() {
                         </td>
                         <td className="px-6 py-4 text-gray-600 whitespace-nowrap">{modelLabel}</td>
                         <td className="px-6 py-4">
-                          <span className={`px-2.5 py-1 rounded-full text-xs font-mono capitalize ${pill}`}>
+                          <span className={`inline-flex items-center gap-1.5 text-xs font-mono capitalize ${textClass}`}>
+                            <span className={`w-2 h-2 rounded-full shrink-0 ${dotClass}`} />
                             {agent.status}
                           </span>
                         </td>

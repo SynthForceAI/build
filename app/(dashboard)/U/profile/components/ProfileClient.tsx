@@ -538,7 +538,7 @@ export function ProfileClient({ data }: { data: ProfileData }) {
       {deleteOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center">
           <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" onClick={() => setDeleteOpen(false)} />
-          <div role="dialog" aria-label="Delete account" className="relative bg-white rounded-2xl shadow-xl w-full max-w-md mx-4 p-6 z-10">
+          <div role="dialog" aria-label="Delete account" className="relative bg-white rounded-xl shadow-xl w-full max-w-md mx-4 p-6 z-10">
             <h2 className="text-lg font-semibold text-gray-900 mb-2">Delete your account?</h2>
             <p className="text-sm text-gray-500 mb-6">
               This will permanently delete your account, preferences, and disconnect all API keys. Company data and agents are not affected. <strong>This cannot be undone.</strong>
@@ -604,7 +604,7 @@ function ManageKeysModal({
       <div
         role="dialog"
         aria-label={`Manage keys for ${provider.displayName}`}
-        className="relative bg-white rounded-2xl shadow-xl w-full max-w-lg mx-4 p-6 z-10"
+        className="relative bg-white rounded-xl shadow-xl w-full max-w-lg mx-4 p-6 z-10"
       >
         <div className="flex items-center justify-between mb-5">
           <div>
@@ -741,7 +741,7 @@ function PasswordModal({ email, onClose }: { email: string; onClose: () => void 
       <div
         role="dialog"
         aria-label="Update password"
-        className="relative bg-white rounded-2xl shadow-xl w-full max-w-md mx-4 p-6 z-10"
+        className="relative bg-white rounded-xl shadow-xl w-full max-w-md mx-4 p-6 z-10"
       >
         <div className="flex items-center justify-between mb-5">
           <h2 className="text-lg font-semibold text-gray-900">Update password</h2>

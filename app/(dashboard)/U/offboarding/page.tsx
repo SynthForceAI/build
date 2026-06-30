@@ -136,7 +136,7 @@ export default async function OffboardingPage() {
       {/* ── Archived agents table ─────────────────────────── */}
       <div>
         <h2 className="text-base font-semibold text-gray-900 mb-3">Archived Agents</h2>
-        <div className="bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden">
+        <div className="bg-white rounded-md border border-gray-200 shadow-sm overflow-hidden">
           {archivedAgents.length === 0 ? (
             <div className="px-6 py-16 text-center">
               <p className="text-sm text-gray-500">No archived agents.</p>
@@ -169,7 +169,8 @@ export default async function OffboardingPage() {
                         {fmtDollars(agent.finalSpendCents)}
                       </td>
                       <td className="px-4 py-3">
-                        <span className="px-2.5 py-1 rounded-full text-xs font-medium bg-gray-100 text-gray-600">
+                        <span className="inline-flex items-center gap-1.5 text-xs font-medium text-gray-500">
+                          <span className="w-2 h-2 rounded-full shrink-0 bg-gray-400" />
                           Archived
                         </span>
                       </td>
@@ -189,7 +190,7 @@ export default async function OffboardingPage() {
           Generate compliance reports for archived agents and policy events (SOC 2, ISO 27001, GDPR).
         </p>
 
-        <div className="bg-white border border-gray-200 shadow-sm rounded-2xl p-6">
+        <div className="bg-white border border-gray-200 shadow-sm rounded-md p-6">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
 
             {/* Left - report config */}

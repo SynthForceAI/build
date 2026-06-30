@@ -41,11 +41,17 @@ function fmtRelativeTime(iso: string): string {
   return `${Math.floor(diffHrs / 24)}d ago`;
 }
 
-const STATUS_PILL: Record<string, string> = {
-  active: "bg-green-100 text-green-800",
-  paused: "bg-yellow-100 text-yellow-800",
-  flagged: "bg-red-100 text-red-800",
-  deactivated: "bg-gray-100 text-gray-600",
+const STATUS_DOT: Record<string, string> = {
+  active:      "bg-green-500",
+  paused:      "bg-yellow-400",
+  flagged:     "bg-red-500",
+  deactivated: "bg-gray-400",
+};
+const STATUS_TEXT: Record<string, string> = {
+  active:      "text-green-700",
+  paused:      "text-yellow-700",
+  flagged:     "text-red-700",
+  deactivated: "text-gray-500",
 };
 
 export function AgentsClient({
@@ -142,7 +148,7 @@ export function AgentsClient({
       )}
 
       {/* ── Agent table ─────────────────────────────────── */}
-      <div className="bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden">
+      <div className="bg-white rounded-md border border-gray-200 shadow-sm overflow-hidden">
         {agents.length === 0 ? (
           <div className="px-6 py-16 flex flex-col items-center text-center">
             <div className="w-14 h-14 rounded-full bg-blue-50 flex items-center justify-center mb-4">
@@ -188,7 +194,8 @@ export function AgentsClient({
                       ? Math.round((agent.spendCents / agent.budgetCents) * 100)
                       : null;
 
-                  const pill = STATUS_PILL[agent.status] ?? "bg-gray-100 text-gray-600";
+                  const dotClass  = STATUS_DOT[agent.status]  ?? "bg-gray-400";
+                  const textClass = STATUS_TEXT[agent.status] ?? "text-gray-500";
 
                   const modelLabel =
                     agent.provider && agent.model
@@ -239,9 +246,8 @@ export function AgentsClient({
                       <td className="px-4 py-3 text-gray-600">{modelLabel}</td>
 
                       <td className="px-6 py-4">
-                        <span
-                          className={`px-2.5 py-1 rounded-full text-xs font-mono capitalize ${pill}`}
-                        >
+                        <span className={`inline-flex items-center gap-1.5 text-xs font-mono capitalize ${textClass}`}>
+                          <span className={`w-2 h-2 rounded-full shrink-0 ${dotClass}`} />
                           {agent.status}
                         </span>
                       </td>
@@ -283,7 +289,7 @@ export function AgentsClient({
             className="absolute inset-0 bg-black/40 backdrop-blur-sm"
             onClick={() => setShowModal(false)}
           />
-          <div className="relative bg-white rounded-2xl shadow-xl w-full max-w-md mx-4 p-6 z-10">
+          <div className="relative bg-white rounded-xl shadow-xl w-full max-w-md mx-4 p-6 z-10">
             <div className="flex items-center justify-between mb-5">
               <h2 className="text-lg font-semibold text-gray-900">New Agent</h2>
               <button

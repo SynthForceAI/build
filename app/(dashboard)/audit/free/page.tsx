@@ -71,13 +71,13 @@ function severityDot(severity: string): string {
   }
 }
 
-function severityBadge(severity: string): string {
+function severityText(severity: string): string {
   switch (severity) {
-    case "critical": return "bg-red-50 text-red-700 border-red-200";
-    case "high":     return "bg-orange-50 text-orange-700 border-orange-200";
-    case "medium":   return "bg-yellow-50 text-yellow-700 border-yellow-200";
-    case "low":      return "bg-blue-50 text-blue-700 border-blue-200";
-    default:         return "bg-gray-50 text-gray-600 border-gray-200";
+    case "critical": return "text-red-700";
+    case "high":     return "text-orange-700";
+    case "medium":   return "text-yellow-700";
+    case "low":      return "text-blue-600";
+    default:         return "text-gray-500";
   }
 }
 
@@ -95,13 +95,13 @@ function formatModelName(raw: string): string {
   return raw;
 }
 
-function inferRole(m: ModelRow): { label: string; description: string; colorClass: string } {
+function inferRole(m: ModelRow): { label: string; description: string; dotColor: string; textColor: string } {
   const total = m.tokensIn + m.tokensOut;
-  if (total === 0) return { label: "Unknown", description: "No token data available.", colorClass: "text-gray-500 bg-gray-50 border-gray-200" };
+  if (total === 0) return { label: "Unknown", description: "No token data available.", dotColor: "bg-gray-400", textColor: "text-gray-500" };
   const inputRatio = m.tokensIn / total;
-  if (inputRatio > 0.72) return { label: "Researcher", description: "Input-heavy. Likely retrieval, Q&A, or context processing.", colorClass: "text-blue-700 bg-blue-50 border-blue-200" };
-  if (inputRatio < 0.42) return { label: "Writer / Coder", description: "Output-heavy. Likely code generation or content creation.", colorClass: "text-purple-700 bg-purple-50 border-purple-200" };
-  return { label: "Analyst", description: "Balanced token mix. Likely reasoning or multi-step analysis.", colorClass: "text-amber-700 bg-amber-50 border-amber-200" };
+  if (inputRatio > 0.72) return { label: "Researcher", description: "Input-heavy. Likely retrieval, Q&A, or context processing.", dotColor: "bg-blue-500", textColor: "text-blue-700" };
+  if (inputRatio < 0.42) return { label: "Writer / Coder", description: "Output-heavy. Likely code generation or content creation.", dotColor: "bg-purple-500", textColor: "text-purple-700" };
+  return { label: "Analyst", description: "Balanced token mix. Likely reasoning or multi-step analysis.", dotColor: "bg-amber-500", textColor: "text-amber-700" };
 }
 
 function utilizationBand(rate: number): { label: string; colorClass: string; barColor: string } {
@@ -182,7 +182,7 @@ function InsightCard({
   children?: React.ReactNode;
 }) {
   return (
-    <div id={id} className="bg-white rounded-2xl border border-gray-200 shadow-sm p-6 scroll-mt-20">
+    <div id={id} className="bg-white rounded-md border border-gray-200 shadow-sm p-6 scroll-mt-20">
       <h2 className="text-sm font-semibold text-gray-900 mb-4 flex items-center gap-1">
         {title}
         {titleTip && <InfoTip text={titleTip} />}
@@ -215,7 +215,7 @@ function InsightCard({
 function HighVolumeProjectsSection({ projects }: { projects: HighVolumeProject[] | null | undefined }) {
   if (projects === undefined) {
     return (
-      <div id="high-volume-projects" className="bg-white rounded-2xl border border-gray-200 shadow-sm p-6 scroll-mt-20">
+      <div id="high-volume-projects" className="bg-white rounded-md border border-gray-200 shadow-sm p-6 scroll-mt-20">
         <h2 className="text-sm font-semibold text-gray-900 mb-3 flex items-center gap-1">High-Volume Projects <InfoTip text="Projects or workspaces consuming a disproportionate share of your API spend. Outliers often contain runaway automation, retry loops, or unexpectedly heavy usage." /></h2>
         <NoDataPlaceholder message="Run a new audit to see this insight." />
       </div>
@@ -224,7 +224,7 @@ function HighVolumeProjectsSection({ projects }: { projects: HighVolumeProject[]
 
   if (projects === null || projects.length === 0) {
     return (
-      <div id="high-volume-projects" className="bg-white rounded-2xl border border-gray-200 shadow-sm p-6 scroll-mt-20">
+      <div id="high-volume-projects" className="bg-white rounded-md border border-gray-200 shadow-sm p-6 scroll-mt-20">
         <h2 className="text-sm font-semibold text-gray-900 mb-3 flex items-center gap-1">High-Volume Projects <InfoTip text="Projects or workspaces consuming a disproportionate share of your API spend. Outliers often contain runaway automation, retry loops, or unexpectedly heavy usage." /></h2>
         <NoDataPlaceholder message="No project-level data available. Your API key may need 'Read usage data' permission in the OpenAI dashboard." />
       </div>
@@ -264,7 +264,8 @@ function HighVolumeProjectsSection({ projects }: { projects: HighVolumeProject[]
                 <td className="py-2 text-gray-700 font-mono truncate max-w-[160px]">
                   {p.projectId.slice(0, 20)}{p.projectId.length > 20 ? "…" : ""}
                   {p.isOutlier && (
-                    <span className="ml-2 px-1.5 py-0.5 bg-red-50 text-red-700 border border-red-200 rounded-full font-sans font-medium">
+                    <span className="ml-2 inline-flex items-center gap-1 font-sans font-medium text-red-700">
+                      <span className="w-1.5 h-1.5 rounded-full shrink-0 bg-red-500" />
                       outlier
                     </span>
                   )}
@@ -296,7 +297,7 @@ function HighVolumeProjectsSection({ projects }: { projects: HighVolumeProject[]
 function ModelMismatchSection({ mismatch }: { mismatch: TelemetryInsights["modelMismatch"] | undefined }) {
   if (mismatch === undefined) {
     return (
-      <div id="model-mismatch" className="bg-white rounded-2xl border border-gray-200 shadow-sm p-6 scroll-mt-20">
+      <div id="model-mismatch" className="bg-white rounded-md border border-gray-200 shadow-sm p-6 scroll-mt-20">
         <h2 className="text-sm font-semibold text-gray-900 mb-3 flex items-center gap-1">Right Tool for the Job <InfoTip text="Checks whether you're using expensive, high-capability AI models for simple tasks that a cheaper, smaller model would handle just as well — at 70–95% lower cost." /></h2>
         <NoDataPlaceholder message="Run a new audit to see this insight." />
       </div>
@@ -305,7 +306,7 @@ function ModelMismatchSection({ mismatch }: { mismatch: TelemetryInsights["model
 
   if (!mismatch || mismatch.candidates.length === 0) {
     return (
-      <div id="model-mismatch" className="bg-white rounded-2xl border border-gray-200 shadow-sm p-6 scroll-mt-20">
+      <div id="model-mismatch" className="bg-white rounded-md border border-gray-200 shadow-sm p-6 scroll-mt-20">
         <h2 className="text-sm font-semibold text-gray-900 mb-3 flex items-center gap-1">Right Tool for the Job <InfoTip text="Checks whether you're using expensive, high-capability AI models for simple tasks that a cheaper, smaller model would handle just as well — at 70–95% lower cost." /></h2>
         <div className="flex items-start gap-3 bg-green-50 rounded-xl p-4 border border-green-200">
           <svg className="w-4 h-4 text-green-600 mt-0.5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -372,7 +373,7 @@ function ModelMismatchSection({ mismatch }: { mismatch: TelemetryInsights["model
 function CacheEfficiencySection({ cache }: { cache: TelemetryInsights["cacheEfficiency"] | undefined }) {
   if (cache === undefined) {
     return (
-      <div id="cache-efficiency" className="bg-white rounded-2xl border border-gray-200 shadow-sm p-6 scroll-mt-20">
+      <div id="cache-efficiency" className="bg-white rounded-md border border-gray-200 shadow-sm p-6 scroll-mt-20">
         <h2 className="text-sm font-semibold text-gray-900 mb-3 flex items-center gap-1">Cache Efficiency <InfoTip text="Anthropic charges up to 90% less for 'cached' input tokens — content your system prompt has already sent before. A high cache hit rate means you're getting significant discounts automatically." /></h2>
         <NoDataPlaceholder message="Run a new audit to see this insight." />
       </div>
@@ -490,7 +491,7 @@ function ReasoningEfficiencySection({ reasoning }: { reasoning: TelemetryInsight
 function BatchOpportunitySection({ batch }: { batch: TelemetryInsights["batchOpportunity"] | undefined }) {
   if (batch === undefined) {
     return (
-      <div id="batch-opportunity" className="bg-white rounded-2xl border border-gray-200 shadow-sm p-6 scroll-mt-20">
+      <div id="batch-opportunity" className="bg-white rounded-md border border-gray-200 shadow-sm p-6 scroll-mt-20">
         <h2 className="text-sm font-semibold text-gray-900 mb-3 flex items-center gap-1">Batch Opportunity <InfoTip text="OpenAI's Batch API lets you submit requests that don't need an instant response. OpenAI processes them within 24 hours at a 50% discount. Ideal for any background processing, data enrichment, or bulk analysis." /></h2>
         <NoDataPlaceholder message="Run a new audit to see this insight." />
       </div>
@@ -501,7 +502,7 @@ function BatchOpportunitySection({ batch }: { batch: TelemetryInsights["batchOpp
 
   if (!batch.eligible) {
     return (
-      <div id="batch-opportunity" className="bg-white rounded-2xl border border-gray-200 shadow-sm p-6 scroll-mt-20">
+      <div id="batch-opportunity" className="bg-white rounded-md border border-gray-200 shadow-sm p-6 scroll-mt-20">
         <h2 className="text-sm font-semibold text-gray-900 mb-3 flex items-center gap-1">Batch Opportunity <InfoTip text="OpenAI's Batch API lets you submit requests that don't need an instant response. OpenAI processes them within 24 hours at a 50% discount. Ideal for any background processing, data enrichment, or bulk analysis." /></h2>
         <NoDataPlaceholder message="Your call volume is below the threshold where batching makes a meaningful difference (500+ calls, $5+/period)." />
       </div>
@@ -536,7 +537,7 @@ function BatchOpportunitySection({ batch }: { batch: TelemetryInsights["batchOpp
 function UnusedKeysSection({ keys }: { keys: TelemetryInsights["unusedKeys"] | undefined }) {
   if (keys === undefined) {
     return (
-      <div id="unused-keys" className="bg-white rounded-2xl border border-gray-200 shadow-sm p-6 scroll-mt-20">
+      <div id="unused-keys" className="bg-white rounded-md border border-gray-200 shadow-sm p-6 scroll-mt-20">
         <h2 className="text-sm font-semibold text-gray-900 mb-3 flex items-center gap-1">Unused API Keys <InfoTip text="API keys that made zero requests during the audit period. Dormant keys are a security risk — if leaked, an attacker could generate spend or access your data before you notice." /></h2>
         <NoDataPlaceholder message="Run a new audit to see this insight." />
       </div>
@@ -545,7 +546,7 @@ function UnusedKeysSection({ keys }: { keys: TelemetryInsights["unusedKeys"] | u
 
   if (keys === null) {
     return (
-      <div id="unused-keys" className="bg-white rounded-2xl border border-gray-200 shadow-sm p-6 scroll-mt-20">
+      <div id="unused-keys" className="bg-white rounded-md border border-gray-200 shadow-sm p-6 scroll-mt-20">
         <h2 className="text-sm font-semibold text-gray-900 mb-3 flex items-center gap-1">Unused API Keys <InfoTip text="API keys that made zero requests during the audit period. Dormant keys are a security risk — if leaked, an attacker could generate spend or access your data before you notice." /></h2>
         <NoDataPlaceholder message="Enable 'Read usage data' permission on your admin key to see key-level activity." />
       </div>
@@ -556,7 +557,7 @@ function UnusedKeysSection({ keys }: { keys: TelemetryInsights["unusedKeys"] | u
   const activeKeys = keys.filter((k) => !k.isUnused);
 
   return (
-    <div id="unused-keys" className="bg-white rounded-2xl border border-gray-200 shadow-sm p-6 scroll-mt-20">
+    <div id="unused-keys" className="bg-white rounded-md border border-gray-200 shadow-sm p-6 scroll-mt-20">
       <h2 className="text-sm font-semibold text-gray-900 mb-3">Unused API Keys</h2>
       <div className="space-y-3 mb-4">
         <div>
@@ -914,10 +915,10 @@ export default async function FreeAuditPage({
 
             {/* Synthetic Workforce */}
             {byModel.length > 0 && (
-              <div className="bg-white rounded-2xl border border-gray-200 shadow-sm p-6">
+              <div className="bg-white rounded-md border border-gray-200 shadow-sm p-6">
                 <div className="flex items-start justify-between mb-1">
                   <h2 className="text-sm font-semibold text-gray-900">Your Synthetic Workforce</h2>
-                  <span className="text-xs text-gray-500 bg-gray-100 px-2.5 py-1 rounded-full shrink-0 ml-3">
+                  <span className="text-xs text-gray-500 shrink-0 ml-3">
                     {byModel.length} model{byModel.length !== 1 ? "s" : ""} active
                   </span>
                 </div>
@@ -937,17 +938,20 @@ export default async function FreeAuditPage({
                             <div className="flex flex-wrap items-center gap-2">
                               <span className="text-sm font-medium text-gray-900 truncate">{formatModelName(m.model)}</span>
                               {isOutlier && (
-                                <span className="text-xs px-2 py-0.5 rounded-full bg-red-50 text-red-700 border border-red-200 font-medium shrink-0">
+                                <span className="inline-flex items-center gap-1 text-xs font-medium text-red-700 shrink-0">
+                                  <span className="w-1.5 h-1.5 rounded-full shrink-0 bg-red-500" />
                                   Compensation outlier
                                 </span>
                               )}
                               {flagship && !isOutlier && (
-                                <span className="text-xs px-2 py-0.5 rounded-full bg-amber-50 text-amber-700 border border-amber-200 font-medium shrink-0">
+                                <span className="inline-flex items-center gap-1 text-xs font-medium text-amber-700 shrink-0">
+                                  <span className="w-1.5 h-1.5 rounded-full shrink-0 bg-amber-500" />
                                   Flagship tier
                                 </span>
                               )}
                             </div>
-                            <span className={`mt-1.5 inline-block text-xs px-2 py-0.5 rounded-full border font-medium ${role.colorClass}`}>
+                            <span className={`mt-1.5 inline-flex items-center gap-1 text-xs font-medium ${role.textColor}`}>
+                              <span className={`w-1.5 h-1.5 rounded-full shrink-0 ${role.dotColor}`} />
                               {role.label}
                             </span>
                             <p className="text-xs text-gray-500 mt-1">{role.description}</p>
@@ -1014,7 +1018,7 @@ export default async function FreeAuditPage({
 
             {/* Fleet Utilization */}
             {totalDays > 0 && (
-              <div className="bg-white rounded-2xl border border-gray-200 shadow-sm p-6">
+              <div className="bg-white rounded-md border border-gray-200 shadow-sm p-6">
                 <h2 className="text-sm font-semibold text-gray-900 mb-4 flex items-center gap-1">
                   Fleet Utilization
                   <InfoTip text="The percentage of days in the audit period where your fleet logged at least one API call. A healthy fleet runs between 70% and 85% of days. Below 30% suggests idle models sitting on your payroll. Above 85% is worth watching for unintended always-on spend." />
@@ -1040,7 +1044,7 @@ export default async function FreeAuditPage({
 
             {/* Fleet Performance Review */}
             {spendTrend && (
-              <div className="bg-white rounded-2xl border border-gray-200 shadow-sm p-6">
+              <div className="bg-white rounded-md border border-gray-200 shadow-sm p-6">
                 <h2 className="text-sm font-semibold text-gray-900 mb-4">Fleet Performance Review</h2>
                 <div className={`rounded-xl p-4 mb-4 border ${
                   spendTrend.pct < -10 ? "bg-green-50 border-green-200" :
@@ -1093,7 +1097,7 @@ export default async function FreeAuditPage({
 
             {/* Burnout / Overtime */}
             {overtime && (
-              <div className="bg-white rounded-2xl border border-orange-200 shadow-sm p-6">
+              <div className="bg-white rounded-md border border-orange-200 shadow-sm p-6">
                 <div className="flex items-start gap-3">
                   <Flame className="w-5 h-5 mt-0.5 text-orange-500 shrink-0" aria-hidden="true" />
                   <div>
@@ -1111,11 +1115,12 @@ export default async function FreeAuditPage({
 
             {/* Batch Eligibility (existing overview card) */}
             {batchCandidates.length > 0 && (
-              <div className="bg-white rounded-2xl border border-gray-200 shadow-sm p-6">
+              <div className="bg-white rounded-md border border-gray-200 shadow-sm p-6">
                 <div className="flex items-start justify-between mb-1">
                   <h2 className="text-sm font-semibold text-gray-900">Batch Eligibility</h2>
                   {batchSavingsEstimateCents > 0 && (
-                    <span className="text-xs text-green-700 bg-green-50 border border-green-200 px-2.5 py-1 rounded-full shrink-0 ml-3">
+                    <span className="inline-flex items-center gap-1.5 text-xs font-medium text-green-700 shrink-0 ml-3">
+                      <span className="w-1.5 h-1.5 rounded-full shrink-0 bg-green-500" />
                       Est. save {fmtDollars(batchSavingsEstimateCents)}/mo
                     </span>
                   )}
@@ -1144,7 +1149,7 @@ export default async function FreeAuditPage({
 
             {/* Key Findings */}
             {topFindings.length > 0 && (
-              <div className="bg-white rounded-2xl border border-gray-200 shadow-sm p-6">
+              <div className="bg-white rounded-md border border-gray-200 shadow-sm p-6">
                 <h2 className="text-sm font-semibold text-gray-900 mb-4">Key Findings</h2>
                 <div className="space-y-4">
                   {topFindings.map((f) => (
@@ -1153,11 +1158,13 @@ export default async function FreeAuditPage({
                       <div className="flex-1 min-w-0">
                         <div className="flex flex-wrap items-center gap-2 mb-1">
                           <span className="text-sm font-medium text-gray-900">{f.title}</span>
-                          <span className={`text-xs px-2 py-0.5 rounded-full border font-medium ${severityBadge(f.severity)}`}>
+                          <span className={`inline-flex items-center gap-1 text-xs font-medium capitalize ${severityText(f.severity)}`}>
+                            <span className={`w-1.5 h-1.5 rounded-full shrink-0 ${severityDot(f.severity)}`} />
                             {f.severity}
                           </span>
                           {f.potentialSavingsCents && Number(f.potentialSavingsCents) > 0 && (
-                            <span className="text-xs text-green-700 bg-green-50 border border-green-200 px-2 py-0.5 rounded-full font-medium">
+                            <span className="inline-flex items-center gap-1 text-xs font-medium text-green-700">
+                              <span className="w-1.5 h-1.5 rounded-full shrink-0 bg-green-500" />
                               Save {fmtDollars(Number(f.potentialSavingsCents))}/mo
                             </span>
                           )}
@@ -1172,7 +1179,7 @@ export default async function FreeAuditPage({
 
             {/* AI-generated report summary */}
             {audit.reportSummary && (
-              <div className="bg-blue-50 border border-blue-100 rounded-2xl p-6">
+              <div className="bg-blue-50 border border-blue-100 rounded-md p-6">
                 <div className="flex items-center gap-2 mb-3">
                   <svg className="w-4 h-4 text-[#00B2FF]" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.347.347A3.001 3.001 0 0112 21a3 3 0 01-2.121-.879l-.347-.347z" />
@@ -1184,10 +1191,10 @@ export default async function FreeAuditPage({
             )}
 
             {/* Benchmarking placeholder */}
-            <div className="bg-white rounded-2xl border border-gray-200 shadow-sm p-6">
+            <div className="bg-white rounded-md border border-gray-200 shadow-sm p-6">
               <div className="flex items-center justify-between mb-3">
                 <h2 className="text-sm font-semibold text-gray-900">Peer Benchmarking</h2>
-                <span className="text-xs text-gray-400 bg-gray-100 px-2.5 py-1 rounded-full">Coming soon</span>
+                <span className="text-xs text-gray-400">Coming soon</span>
               </div>
               <p className="text-sm text-gray-500">
                 See how your spend compares to similar-sized companies. Available once we have enough anonymized data to calculate reliable percentiles.
@@ -1195,7 +1202,7 @@ export default async function FreeAuditPage({
             </div>
 
             {/* What This Audit Cannot Tell You Yet */}
-            <div className="bg-white rounded-2xl border border-gray-200 shadow-sm p-6 space-y-4">
+            <div className="bg-white rounded-md border border-gray-200 shadow-sm p-6 space-y-4">
               <h2 className="text-sm font-semibold text-gray-900">What This Audit Cannot Tell You Yet</h2>
               <div className="bg-gray-50 rounded-xl p-4 border border-gray-200">
                 <div className="flex items-start gap-3">
@@ -1233,7 +1240,7 @@ export default async function FreeAuditPage({
             />
 
             {/* Upgrade CTA */}
-            <div className="bg-gradient-to-r from-[#00B2FF]/10 to-blue-50 border border-blue-100 rounded-2xl p-6">
+            <div className="bg-gradient-to-r from-[#00B2FF]/10 to-blue-50 border border-blue-100 rounded-md p-6">
               <h2 className="text-base font-semibold text-gray-900 mb-1">Ready to go deeper?</h2>
               <p className="text-sm text-gray-600 mb-4">
                 {quota.canRun

@@ -91,7 +91,7 @@ export function RecentlyConnected({ initialAgents, refreshKey }: Props) {
   }
 
   return (
-    <div className="bg-white rounded-2xl border border-gray-200 shadow-sm p-6">
+    <div className="bg-white rounded-md border border-gray-200 shadow-sm p-6">
       <h2 className="text-xl font-semibold text-gray-900 mb-1">Recently Connected</h2>
       <p className="text-sm text-gray-600 mb-6">
         All provider keys connected to your account.
