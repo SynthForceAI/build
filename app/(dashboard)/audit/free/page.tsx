@@ -8,7 +8,7 @@ import { ShareButton } from "./ShareButton";
 import { RerunButton } from "./RerunButton";
 import { BurnRateCard } from "./BurnRateCard";
 import { InfoTip } from "./InfoTip";
-import { Flame, CircleSlash, AlertTriangle } from "lucide-react";
+import { Flame, AlertTriangle } from "lucide-react";
 import type {
   TelemetryInsights,
   HighVolumeProject,
@@ -1180,12 +1180,7 @@ export default async function FreeAuditPage({
             {/* AI-generated report summary */}
             {audit.reportSummary && (
               <div className="bg-blue-50 border border-blue-100 rounded-md p-6">
-                <div className="flex items-center gap-2 mb-3">
-                  <svg className="w-4 h-4 text-[#00B2FF]" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.347.347A3.001 3.001 0 0112 21a3 3 0 01-2.121-.879l-.347-.347z" />
-                  </svg>
-                  <h2 className="text-sm font-semibold text-gray-900">Analysis</h2>
-                </div>
+                <h2 className="text-sm font-semibold text-gray-900 mb-3">Analysis</h2>
                 <p className="text-sm text-gray-700 leading-relaxed whitespace-pre-line">{audit.reportSummary}</p>
               </div>
             )}
@@ -1205,16 +1200,11 @@ export default async function FreeAuditPage({
             <div className="bg-white rounded-md border border-gray-200 shadow-sm p-6 space-y-4">
               <h2 className="text-sm font-semibold text-gray-900">What This Audit Cannot Tell You Yet</h2>
               <div className="bg-gray-50 rounded-xl p-4 border border-gray-200">
-                <div className="flex items-start gap-3">
-                  <CircleSlash className="w-4 h-4 mt-0.5 text-gray-400 shrink-0" aria-hidden="true" />
-                  <div>
-                    <p className="text-sm font-medium text-gray-900 mb-1">Attribution gap</p>
-                    <p className="text-sm text-gray-600">
-                      100% of your spend is visible by API key and model. 0% is traceable to a task, customer, or outcome. Billing data shows you the invoice. It cannot show you what produced it.
-                    </p>
-                    <p className="text-xs text-gray-400 mt-2">Install the SynthForce proxy layer to close the gap.</p>
-                  </div>
-                </div>
+                <p className="text-sm font-medium text-gray-900 mb-1">Attribution gap</p>
+                <p className="text-sm text-gray-600">
+                  100% of your spend is visible by API key and model. 0% is traceable to a task, customer, or outcome. Billing data shows you the invoice. It cannot show you what produced it.
+                </p>
+                <p className="text-xs text-gray-400 mt-2">Install the SynthForce proxy layer to close the gap.</p>
               </div>
               {spike && (
                 <div className="bg-orange-50 rounded-xl p-4 border border-orange-200">

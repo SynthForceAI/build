@@ -15,10 +15,8 @@
  */
 
 import Link from "next/link";
-import { usePathname, useRouter, useSearchParams } from "next/navigation";
-import { toast } from "sonner";
+import { usePathname, useSearchParams } from "next/navigation";
 import { cn } from "@/lib/utils";
-import { OWNER_EMAIL } from "@/lib/constants";
 import type { UserRole } from "@prisma/client";
 
 type NavItem = { href: string; label: string; sub: string; roles?: UserRole[]; disabled?: boolean };
@@ -50,17 +48,13 @@ const NAV_ITEMS: NavItem[] = [
 ];
 
 type Props = {
-  userName:        string;
-  userEmail:       string;
-  userRole:        UserRole;
-  isPlatformOwner: boolean;
-  isOpen:          boolean;
-  onClose:         () => void;
+  userRole: UserRole;
+  isOpen:   boolean;
+  onClose:  () => void;
 };
 
-export function DashboardSidebar({ userName, userEmail, userRole, isPlatformOwner, isOpen, onClose }: Props) {
+export function DashboardSidebar({ userRole, isOpen, onClose }: Props) {
   const pathname = usePathname();
-  const router = useRouter();
   const searchParams = useSearchParams();
 
   const isAuditPage  = pathname === "/audit/free";
@@ -68,16 +62,6 @@ export function DashboardSidebar({ userName, userEmail, userRole, isPlatformOwne
   const activeSection = searchParams.get("section") ?? "overview";
   const sectionsParam = searchParams.get("sections");
   const applicableSections = sectionsParam ? sectionsParam.split(",") : null;
-
-  async function handleLogout() {
-    try {
-      await fetch("/api/auth/logout", { method: "POST" });
-      toast.success("Signed out successfully");
-      window.location.href = "/login";
-    } catch {
-      toast.error("Logout failed. Please try again.");
-    }
-  }
 
   return (
     <>
@@ -211,55 +195,6 @@ export function DashboardSidebar({ userName, userEmail, userRole, isPlatformOwne
               );
             })}
           </nav>
-
-          {/* ── User info + logout ────────────────────────────── */}
-          <div className="p-2 border-t border-gray-100 shrink-0 space-y-1.5">
-            <Link
-              href="/U/profile"
-              onClick={() => {
-                if (typeof window !== "undefined" && window.innerWidth < 1024) {
-                  onClose();
-                }
-              }}
-              className="group block p-3 rounded-lg border border-gray-200 bg-white hover:border-[#00B2FF] hover:shadow-sm transition-all"
-              aria-label="View profile"
-            >
-              <p className="text-sm font-medium text-gray-900 truncate">{userName}</p>
-              <p className="text-xs text-gray-400 truncate mt-0.5">{userEmail}</p>
-              <div className="mt-2 flex items-center justify-between gap-2">
-                <span className="text-xs px-2 py-0.5 rounded-full bg-gray-100 text-gray-500 capitalize">
-                  {userRole}
-                </span>
-                <span className="text-xs font-medium text-[#00B2FF] flex items-center gap-0.5 group-hover:gap-1.5 transition-all">
-                  View Profile
-                  <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                  </svg>
-                </span>
-              </div>
-            </Link>
-            {isPlatformOwner && (
-              <Link
-                href="/owner/users"
-                className="w-full flex items-center gap-2 px-3 py-2 min-h-[44px] rounded-lg text-xs font-medium text-[#00B2FF] hover:bg-blue-50 transition-colors"
-              >
-                <svg className="w-3.5 h-3.5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
-                </svg>
-                Owner Panel
-              </Link>
-            )}
-            <button
-              onClick={handleLogout}
-              className="w-full flex items-center gap-2 px-3 py-2 min-h-[44px] rounded-lg text-xs font-medium text-gray-500 hover:bg-gray-50 hover:text-gray-700 transition-colors"
-              aria-label="Sign out"
-            >
-              <svg className="w-3.5 h-3.5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
-              </svg>
-              Sign out
-            </button>
-          </div>
 
         </div>
       </aside>

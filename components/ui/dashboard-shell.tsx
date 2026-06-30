@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { usePathname, useRouter } from "next/navigation";
+import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { DashboardSidebar } from "./dashboard-sidebar";
 import {
@@ -13,31 +13,6 @@ import {
 } from "@/components/ui/dropdown-menu";
 import type { UserRole } from "@prisma/client";
 
-const PAGE_LABELS: Record<string, string> = {
-  "/U":              "Dashboard",
-  "/U/spending":     "AI Spending",
-  "/U/onboard":      "Onboard",
-  "/U/performance":  "Performance",
-  "/U/compensation": "Compensation",
-  "/U/policies":     "Policies",
-  "/U/offboarding":  "Offboarding",
-  "/U/agents":       "Agents",
-  "/U/departments":  "Departments",
-  "/U/settings":         "Settings",
-  "/U/settings/connect": "Connect Provider",
-  "/U/profile":          "Profile",
-};
-
-function usePageLabel(): string {
-  const pathname = usePathname();
-  // Exact match first, then longest prefix
-  if (PAGE_LABELS[pathname]) return PAGE_LABELS[pathname];
-  const match = Object.keys(PAGE_LABELS)
-    .filter((k) => k !== "/U" && pathname.startsWith(k))
-    .sort((a, b) => b.length - a.length)[0];
-  return match ? PAGE_LABELS[match] : "";
-}
-
 type Props = {
   userName:        string;
   userEmail:       string;
@@ -48,7 +23,6 @@ type Props = {
 
 export function DashboardShell({ userName, userEmail, userRole, isPlatformOwner, children }: Props) {
   const [sidebarOpen, setSidebarOpen] = useState(true);
-  const pageLabel = usePageLabel();
   const router = useRouter();
 
   async function handleSignOut() {
@@ -70,10 +44,7 @@ export function DashboardShell({ userName, userEmail, userRole, isPlatformOwner,
         Skip to main content
       </a>
       <DashboardSidebar
-        userName={userName}
-        userEmail={userEmail}
         userRole={userRole}
-        isPlatformOwner={isPlatformOwner}
         isOpen={sidebarOpen}
         onClose={() => setSidebarOpen(false)}
       />
@@ -96,7 +67,6 @@ export function DashboardShell({ userName, userEmail, userRole, isPlatformOwner,
                 <rect y="14" width="18" height="2" rx="1" />
               </svg>
             </button>
-            {pageLabel && <span className="text-sm font-semibold text-gray-900" aria-live="polite">{pageLabel}</span>}
           </div>
 
           <DropdownMenu>
@@ -105,18 +75,39 @@ export function DashboardShell({ userName, userEmail, userRole, isPlatformOwner,
                 {initials}
               </button>
             </DropdownMenuTrigger>
-            <DropdownMenuContent align="end" className="w-48">
-              <div className="px-2 py-1.5">
+            <DropdownMenuContent align="end" className="w-56">
+              <Link
+                href="/U/profile"
+                className="group block px-3 py-3 rounded-md border border-gray-200 bg-white hover:border-[#00B2FF] hover:shadow-sm transition-all mx-1 my-1"
+              >
                 <p className="text-sm font-medium text-gray-900 truncate">{userName}</p>
-                <p className="text-xs text-gray-500 truncate">{userEmail}</p>
-              </div>
+                <p className="text-xs text-gray-400 truncate mt-0.5">{userEmail}</p>
+                <div className="mt-2 flex items-center justify-between gap-2">
+                  <span className="text-xs px-2 py-0.5 rounded-full bg-gray-100 text-gray-500 capitalize">
+                    {userRole}
+                  </span>
+                  <span className="text-xs font-medium text-[#00B2FF] flex items-center gap-0.5 group-hover:gap-1.5 transition-all">
+                    View Profile
+                    <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                    </svg>
+                  </span>
+                </div>
+              </Link>
               <DropdownMenuSeparator />
-              <DropdownMenuItem asChild>
-                <Link href="/U/profile">Profile</Link>
-              </DropdownMenuItem>
               <DropdownMenuItem asChild>
                 <Link href="/U/settings">Settings</Link>
               </DropdownMenuItem>
+              {isPlatformOwner && (
+                <DropdownMenuItem asChild>
+                  <Link href="/owner/users" className="text-[#00B2FF] focus:text-[#00B2FF]">
+                    <svg className="w-3.5 h-3.5 shrink-0 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+                    </svg>
+                    Owner Panel
+                  </Link>
+                </DropdownMenuItem>
+              )}
               <DropdownMenuSeparator />
               <DropdownMenuItem onClick={handleSignOut} className="text-red-600 focus:text-red-600">
                 Sign Out
