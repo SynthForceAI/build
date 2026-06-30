@@ -78,7 +78,7 @@ export default async function BlogPostPage({ params }: { params: Promise<{ slug:
       <main className="pb-20">
         <div className="bg-gray-50 border-b border-subtle py-12">
           <div className="max-w-3xl mx-auto px-6 text-center">
-            <p className="text-sm uppercase tracking-widest text-gray-500 mb-4">Blog</p>
+            <p className="text-sm text-gray-500 mb-4">Blog</p>
             <h1 className="text-4xl md:text-5xl font-bold text-gray-900 mb-4 leading-tight">
               {post.title}
             </h1>
@@ -93,7 +93,7 @@ export default async function BlogPostPage({ params }: { params: Promise<{ slug:
 
           {/* Left sidebar */}
           <aside className="w-52 flex-shrink-0 sticky top-8 self-start border-r border-gray-100 pr-8">
-            <p className="text-xs font-bold uppercase tracking-wider text-gray-400 mb-5">All Posts</p>
+            <p className="text-xs font-bold text-gray-400 mb-5">All posts</p>
             <div className="space-y-5">
               {posts.map(p => (
                 <Link

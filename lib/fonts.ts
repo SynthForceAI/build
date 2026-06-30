@@ -1,8 +1,15 @@
-import { Inter } from "next/font/google";
+import { Geist, Geist_Mono } from "next/font/google";
 
-export const inter = Inter({
+export const geist = Geist({
   subsets: ["latin"],
-  weight: ["300", "400", "500", "600", "700"],
-  variable: "--font-inter",
+  weight: ["400", "500", "600"],
+  variable: "--font-geist",
+  display: "swap",
+});
+
+export const geistMono = Geist_Mono({
+  subsets: ["latin"],
+  weight: ["400"],
+  variable: "--font-geist-mono",
   display: "swap",
 });

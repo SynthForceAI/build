@@ -26,10 +26,10 @@ export function WaitlistTable({ rows }: { rows: WaitlistRow[] }) {
         <table className="w-full text-sm">
           <thead>
             <tr className="border-b border-gray-100 bg-gray-50">
-              <th className="text-left px-5 py-3 font-medium text-gray-400 text-xs uppercase tracking-wide">Email</th>
-              <th className="text-left px-5 py-3 font-medium text-gray-400 text-xs uppercase tracking-wide">Name</th>
-              <th className="text-left px-5 py-3 font-medium text-gray-400 text-xs uppercase tracking-wide">Company</th>
-              <th className="text-left px-5 py-3 font-medium text-gray-400 text-xs uppercase tracking-wide">Signed Up</th>
+              <th className="text-left px-5 py-3 font-medium text-gray-400 text-xs">Email</th>
+              <th className="text-left px-5 py-3 font-medium text-gray-400 text-xs">Name</th>
+              <th className="text-left px-5 py-3 font-medium text-gray-400 text-xs">Company</th>
+              <th className="text-left px-5 py-3 font-medium text-gray-400 text-xs">Signed Up</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-gray-50">

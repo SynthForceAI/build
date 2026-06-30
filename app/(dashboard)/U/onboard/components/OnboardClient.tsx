@@ -53,7 +53,7 @@ function ChoiceView({ onSelect }: { onSelect: (v: "deploy" | "connect") => void 
         {/* Monitor card */}
         <button
           onClick={() => onSelect("connect")}
-          className="border border-gray-200 rounded-2xl p-8 hover:border-blue-300 hover:shadow-lg transition cursor-pointer flex flex-col items-center text-center h-full"
+          className="border border-gray-200 rounded-2xl p-8 hover:border-blue-300 transition cursor-pointer flex flex-col items-center text-center h-full"
         >
           <div className="text-[#00B2FF] mb-4">
             <svg className="w-12 h-12" fill="none" stroke="currentColor" viewBox="0 0 24 24">

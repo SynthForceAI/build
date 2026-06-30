@@ -146,12 +146,12 @@ export function UsersTable({
         <table className="w-full text-sm">
           <thead>
             <tr className="border-b border-gray-100 bg-gray-50">
-              <th className="text-left px-5 py-3 font-medium text-gray-400 text-xs uppercase tracking-wide">Email</th>
-              <th className="text-left px-5 py-3 font-medium text-gray-400 text-xs uppercase tracking-wide">Plan</th>
-              <th className="text-left px-5 py-3 font-medium text-gray-400 text-xs uppercase tracking-wide">Owner Access</th>
-              <th className="text-left px-5 py-3 font-medium text-gray-400 text-xs uppercase tracking-wide">Audits</th>
-              <th className="text-left px-5 py-3 font-medium text-gray-400 text-xs uppercase tracking-wide">Signed Up</th>
-              <th className="text-left px-5 py-3 font-medium text-gray-400 text-xs uppercase tracking-wide">Last Login</th>
+              <th className="text-left px-5 py-3 font-medium text-gray-400 text-xs">Email</th>
+              <th className="text-left px-5 py-3 font-medium text-gray-400 text-xs">Plan</th>
+              <th className="text-left px-5 py-3 font-medium text-gray-400 text-xs">Owner Access</th>
+              <th className="text-left px-5 py-3 font-medium text-gray-400 text-xs">Audits</th>
+              <th className="text-left px-5 py-3 font-medium text-gray-400 text-xs">Signed Up</th>
+              <th className="text-left px-5 py-3 font-medium text-gray-400 text-xs">Last Login</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-gray-50">
