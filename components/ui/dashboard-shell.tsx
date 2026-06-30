@@ -82,10 +82,7 @@ export function DashboardShell({ userName, userEmail, userRole, isPlatformOwner,
               >
                 <p className="text-sm font-medium text-gray-900 truncate">{userName}</p>
                 <p className="text-xs text-gray-400 truncate mt-0.5">{userEmail}</p>
-                <div className="mt-2 flex items-center justify-between gap-2">
-                  <span className="text-xs px-2 py-0.5 rounded-full bg-gray-100 text-gray-500 capitalize">
-                    {userRole}
-                  </span>
+                <div className="mt-2 flex items-center justify-end">
                   <span className="text-xs font-medium text-[#00B2FF] flex items-center gap-0.5 group-hover:gap-1.5 transition-all">
                     View Profile
                     <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -95,9 +92,6 @@ export function DashboardShell({ userName, userEmail, userRole, isPlatformOwner,
                 </div>
               </Link>
               <DropdownMenuSeparator />
-              <DropdownMenuItem asChild>
-                <Link href="/U/settings">Settings</Link>
-              </DropdownMenuItem>
               {isPlatformOwner && (
                 <DropdownMenuItem asChild>
                   <Link href="/owner/users" className="text-[#00B2FF] focus:text-[#00B2FF]">
