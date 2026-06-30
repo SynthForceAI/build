@@ -17,7 +17,7 @@ export default function AboutPage() {
           <div className="flex flex-col gap-12 max-w-3xl mx-auto">
             <div className="bg-white border border-subtle rounded-2xl p-8">
               <div className="flex items-center gap-4 mb-6">
-                <div className="w-16 h-16 rounded-full bg-gradient-to-br from-blue-400 to-blue-600 flex items-center justify-center text-white text-2xl font-bold">
+                <div className="w-16 h-16 rounded-full bg-[#00B2FF] flex items-center justify-center text-white text-2xl font-bold">
                   SK
                 </div>
                 <div>
@@ -39,7 +39,7 @@ export default function AboutPage() {
 
             <div className="bg-white border border-subtle rounded-2xl p-8">
               <div className="flex items-center gap-4 mb-6">
-                <div className="w-16 h-16 rounded-full bg-gradient-to-br from-blue-400 to-blue-600 flex items-center justify-center text-white text-2xl font-bold">
+                <div className="w-16 h-16 rounded-full bg-[#00B2FF] flex items-center justify-center text-white text-2xl font-bold">
                   MG
                 </div>
                 <div>

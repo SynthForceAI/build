@@ -3,6 +3,7 @@
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import Link from "next/link";
+import { Construction } from "lucide-react";
 import { useRouter } from "next/navigation";
 
 export function DashboardPlaceholder() {
@@ -29,7 +30,10 @@ export function DashboardPlaceholder() {
       <div className="flex items-center justify-center min-h-[calc(100vh-80px)]">
         <Card className="w-full max-w-md mx-auto border-[#333333] bg-[#121212]">
           <CardHeader>
-            <CardTitle className="text-center">🚀 We're Still Building</CardTitle>
+            <CardTitle className="text-center flex items-center justify-center gap-2">
+              <Construction className="w-5 h-5 text-gray-400" />
+              We&apos;re Still Building
+            </CardTitle>
             <CardDescription className="text-center">
               The dashboard is coming soon!
             </CardDescription>

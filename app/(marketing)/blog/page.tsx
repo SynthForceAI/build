@@ -73,7 +73,7 @@ export default function BlogPage() {
       <main className="pb-20">
         <div className="bg-gray-50 border-b border-subtle py-20">
           <div className="max-w-3xl mx-auto px-6 text-center">
-            <p className="text-sm uppercase tracking-widest text-gray-500 mb-6">Blog</p>
+            <p className="text-sm text-gray-500 mb-6">Blog</p>
             <h1 className="text-5xl md:text-6xl font-bold text-gray-900 mb-6">
               Insights on Managing Your Synthetic Workforce
             </h1>
@@ -87,7 +87,7 @@ export default function BlogPage() {
 
           {/* Left sidebar - all posts */}
           <aside className="w-52 flex-shrink-0 sticky top-8 self-start border-r border-gray-100 pr-8">
-            <p className="text-xs font-bold uppercase tracking-wider text-gray-400 mb-5">All Posts</p>
+            <p className="text-xs font-bold text-gray-400 mb-5">All posts</p>
             {posts.length === 0 ? (
               <p className="text-sm text-gray-400">No posts yet.</p>
             ) : (
@@ -116,9 +116,9 @@ export default function BlogPage() {
             {latestPost ? (
               <div className="mb-12">
                 <h2 className="text-3xl font-bold text-gray-900 mb-8 text-center">Latest Post</h2>
-                <div className="bg-white border border-gray-200 rounded-2xl p-10 hover:shadow-lg transition">
+                <div className="bg-white border border-gray-200 rounded-2xl p-10 transition">
                   <div className="flex items-center gap-3 mb-4">
-                    <span className="text-xs uppercase tracking-wider text-green-600 font-semibold bg-green-50 px-3 py-1 rounded-full">
+                    <span className="text-xs text-green-600 font-semibold bg-green-50 px-3 py-1 rounded-full">
                       Published {new Date(latestPost.date).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })}
                     </span>
                   </div>
@@ -138,9 +138,9 @@ export default function BlogPage() {
             <div className="mb-12">
               <h2 className="text-3xl font-bold text-gray-900 mb-10 text-center">Upcoming Topics</h2>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                <div className="border border-gray-200 rounded-2xl p-8 hover:shadow-lg transition">
+                <div className="border border-gray-200 rounded-2xl p-8 transition">
                   <div className="flex items-center gap-3 mb-4">
-                    <span className="text-xs uppercase tracking-wider text-accent font-semibold">Coming Soon</span>
+                    <span className="text-xs text-accent font-semibold">Coming Soon</span>
                   </div>
                   <h3 className="text-2xl font-bold text-gray-900 mb-3">Why You Need an Org Chart for Your AI Agents</h3>
                   <p className="text-gray-600">
@@ -148,9 +148,9 @@ export default function BlogPage() {
                     Move beyond SLAs to actual management.
                   </p>
                 </div>
-                <div className="border border-gray-200 rounded-2xl p-8 hover:shadow-lg transition">
+                <div className="border border-gray-200 rounded-2xl p-8 transition">
                   <div className="flex items-center gap-3 mb-4">
-                    <span className="text-xs uppercase tracking-wider text-accent font-semibold">Coming Soon</span>
+                    <span className="text-xs text-accent font-semibold">Coming Soon</span>
                   </div>
                   <h3 className="text-2xl font-bold text-gray-900 mb-3">Policies Every AI Agent Needs</h3>
                   <p className="text-gray-600">
@@ -158,9 +158,9 @@ export default function BlogPage() {
                     A checklist for anyone deploying AI agents in customer-facing roles.
                   </p>
                 </div>
-                <div className="border border-gray-200 rounded-2xl p-8 hover:shadow-lg transition">
+                <div className="border border-gray-200 rounded-2xl p-8 transition">
                   <div className="flex items-center gap-3 mb-4">
-                    <span className="text-xs uppercase tracking-wider text-accent font-semibold">Coming Soon</span>
+                    <span className="text-xs text-accent font-semibold">Coming Soon</span>
                   </div>
                   <h3 className="text-2xl font-bold text-gray-900 mb-3">AI Agent ROI: A Calculator Framework</h3>
                   <p className="text-gray-600">
@@ -168,9 +168,9 @@ export default function BlogPage() {
                     A practical framework for non-technical managers.
                   </p>
                 </div>
-                <div className="border border-gray-200 rounded-2xl p-8 hover:shadow-lg transition bg-gray-50 border-dashed">
+                <div className="border border-gray-200 rounded-2xl p-8 transition bg-gray-50 border-dashed">
                   <div className="flex items-center gap-3 mb-4">
-                    <span className="text-xs uppercase tracking-wider text-gray-400 font-semibold">Future</span>
+                    <span className="text-xs text-gray-400 font-semibold">Future</span>
                   </div>
                   <h3 className="text-2xl font-bold text-gray-900 mb-3">More to come...</h3>
                   <p className="text-gray-600">
@@ -188,7 +188,7 @@ export default function BlogPage() {
                   </Link>
                 </div>
                 <div className="mb-10">
-                  <p className="text-sm uppercase tracking-widest text-gray-500 mb-4">
+                  <p className="text-sm text-gray-500 mb-4">
                     {new Date(latestPost.date).toLocaleDateString()}
                   </p>
                   <h1 className="text-4xl md:text-5xl font-bold text-gray-900 mb-6 leading-tight">

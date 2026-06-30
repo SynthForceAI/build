@@ -287,7 +287,7 @@ function HowStep({
   icon: React.ReactNode;
 }) {
   return (
-    <div className="bg-white border border-gray-200 rounded-2xl p-8 shadow-sm hover:shadow-lg transition">
+    <div className="bg-white border border-gray-200 rounded-2xl p-8 shadow-sm transition">
       <div className="flex items-start gap-6">
         <div className="flex-shrink-0 w-16 h-16 bg-[#00B2FF]/10 rounded-2xl flex items-center justify-center">
           <svg
@@ -346,7 +346,7 @@ function UseCaseCard({
   bullets: string[];
 }) {
   return (
-    <div className="border border-gray-200 rounded-2xl p-8 hover:shadow-lg transition">
+    <div className="border border-gray-200 rounded-2xl p-8 transition">
       <h3 className="text-2xl font-bold text-gray-900 mb-4">{title}</h3>
       <p className="text-xl text-gray-700 mb-6">{body}</p>
       <ul className="text-gray-600 space-y-2 text-lg">

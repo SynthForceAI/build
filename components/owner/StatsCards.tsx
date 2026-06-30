@@ -41,7 +41,7 @@ export function StatsCards({ stats }: { stats: Stats }) {
     <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
       {cards.map((c) => (
         <div key={c.label} className="bg-white rounded-2xl border border-gray-200 shadow-sm p-5">
-          <p className="text-xs font-medium text-gray-400 uppercase tracking-wide mb-2">{c.label}</p>
+          <p className="text-xs font-medium text-gray-400 mb-2">{c.label}</p>
           <p className={`text-3xl font-bold ${c.color}`}>{c.value}</p>
           <p className="text-xs text-gray-400 mt-1">{c.sub}</p>
         </div>

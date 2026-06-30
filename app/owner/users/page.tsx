@@ -166,14 +166,14 @@ export default async function OwnerDashboard() {
         <StatsCards stats={stats} />
 
         <section>
-          <h2 className="text-sm font-semibold text-gray-500 uppercase tracking-widest mb-3">
+          <h2 className="text-sm font-semibold text-gray-500 mb-3">
             Upgrade Requests
           </h2>
           <UpgradeRequestsTable rows={upgradeRows} />
         </section>
 
         <section>
-          <h2 className="text-sm font-semibold text-gray-500 uppercase tracking-widest mb-3">
+          <h2 className="text-sm font-semibold text-gray-500 mb-3">
             Users ({totalUsers})
           </h2>
           <UsersTable rows={userRows} viewerIsPrimaryOwner={viewerIsPrimaryOwner} />
@@ -181,14 +181,14 @@ export default async function OwnerDashboard() {
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
           <section>
-            <h2 className="text-sm font-semibold text-gray-500 uppercase tracking-widest mb-3">
+            <h2 className="text-sm font-semibold text-gray-500 mb-3">
               Waitlist ({waitlist.length})
             </h2>
             <WaitlistTable rows={waitlistRows} />
           </section>
 
           <section>
-            <h2 className="text-sm font-semibold text-gray-500 uppercase tracking-widest mb-3">
+            <h2 className="text-sm font-semibold text-gray-500 mb-3">
               Recent Activity
             </h2>
             <ActivityFeed rows={activityRows} />

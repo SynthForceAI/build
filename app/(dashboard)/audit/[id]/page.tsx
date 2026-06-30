@@ -7,6 +7,7 @@ import { ShareButton } from "../free/ShareButton";
 import { RerunButton } from "../free/RerunButton";
 import { BurnRateCard } from "../free/BurnRateCard";
 import { InfoTip } from "../free/InfoTip";
+import { Flame, CircleSlash, AlertTriangle } from "lucide-react";
 
 // ---------------------------------------------------------------------------
 // Types
@@ -530,7 +531,7 @@ export default async function AuditPage({
       {overtime && (
         <div className="bg-white rounded-2xl border border-orange-200 shadow-sm p-6">
           <div className="flex items-start gap-3">
-            <span className="text-xl mt-0.5" aria-hidden="true">🔥</span>
+            <Flame className="w-5 h-5 mt-0.5 text-orange-500 shrink-0" aria-hidden="true" />
             <div>
               <h2 className="text-sm font-semibold text-gray-900 mb-1">Sustained High Spend Detected</h2>
               <p className="text-sm text-gray-600 mb-2">
@@ -634,7 +635,7 @@ export default async function AuditPage({
         <h2 className="text-sm font-semibold text-gray-900">What This Audit Cannot Tell You Yet</h2>
         <div className="bg-gray-50 rounded-xl p-4 border border-gray-200">
           <div className="flex items-start gap-3">
-            <span className="text-base mt-0.5" aria-hidden="true">🕳️</span>
+            <CircleSlash className="w-4 h-4 mt-0.5 text-gray-400 shrink-0" aria-hidden="true" />
             <div>
               <p className="text-sm font-medium text-gray-900 mb-1">Attribution gap</p>
               <p className="text-sm text-gray-600">
@@ -647,7 +648,7 @@ export default async function AuditPage({
         {spike && (
           <div className="bg-orange-50 rounded-xl p-4 border border-orange-200">
             <div className="flex items-start gap-3">
-              <span className="text-base mt-0.5" aria-hidden="true">🚨</span>
+              <AlertTriangle className="w-4 h-4 mt-0.5 text-orange-500 shrink-0" aria-hidden="true" />
               <div>
                 <p className="text-sm font-medium text-gray-900 mb-1">Spend spike detected</p>
                 <p className="text-sm text-gray-600">
@@ -668,7 +669,7 @@ export default async function AuditPage({
       />
 
       {/* ── Upgrade CTA ───────────────────────────────────────────────────── */}
-      <div className="bg-gradient-to-r from-[#00B2FF]/10 to-blue-50 border border-blue-100 rounded-2xl p-6">
+      <div className="bg-blue-50/60 border border-blue-100 rounded-2xl p-6">
         <h2 className="text-base font-semibold text-gray-900 mb-1">Ready to go deeper?</h2>
         <p className="text-sm text-gray-600 mb-4">
           Track individual agents, set budgets, and get real-time alerts when spend spikes.

@@ -78,10 +78,10 @@ export function UpgradeRequestsTable({ rows }: { rows: UpgradeRow[] }) {
         <table className="w-full text-sm">
           <thead>
             <tr className="border-b border-gray-100 bg-gray-50">
-              <th className="text-left px-5 py-3 font-medium text-gray-400 text-xs uppercase tracking-wide">Email</th>
-              <th className="text-left px-5 py-3 font-medium text-gray-400 text-xs uppercase tracking-wide">Tier</th>
-              <th className="text-left px-5 py-3 font-medium text-gray-400 text-xs uppercase tracking-wide">Status</th>
-              <th className="text-left px-5 py-3 font-medium text-gray-400 text-xs uppercase tracking-wide">Requested</th>
+              <th className="text-left px-5 py-3 font-medium text-gray-400 text-xs">Email</th>
+              <th className="text-left px-5 py-3 font-medium text-gray-400 text-xs">Tier</th>
+              <th className="text-left px-5 py-3 font-medium text-gray-400 text-xs">Status</th>
+              <th className="text-left px-5 py-3 font-medium text-gray-400 text-xs">Requested</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-gray-50">

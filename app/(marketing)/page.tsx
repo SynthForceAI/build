@@ -176,7 +176,7 @@ export default function Home() {
         {/* ── Hero ─────────────────────────────────────────────── */}
         <section
           className="relative overflow-hidden -mt-24 pt-40 pb-20 px-6"
-          style={{ background: 'linear-gradient(180deg, rgba(0,178,255,0.07) 0%, rgba(0,178,255,0.02) 60%, transparent 100%)' }}
+          style={{ background: 'transparent' }}
         >
 
           {/* Mouse-following glow */}
@@ -189,7 +189,7 @@ export default function Home() {
               initial={{ opacity: 0, y: -12 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.5 }}
-              className="inline-flex items-center gap-2 bg-[#00B2FF]/10 border border-[#00B2FF]/20 rounded-full px-4 py-1.5 text-xs font-semibold text-[#00B2FF] mb-8 uppercase tracking-wider"
+              className="inline-flex items-center gap-2 bg-[#00B2FF]/10 border border-[#00B2FF]/20 rounded-full px-4 py-1.5 text-xs font-semibold text-[#00B2FF] mb-8"
             >
               <span className="w-1.5 h-1.5 bg-[#00B2FF] rounded-full animate-pulse" />
               Now in Phase 1: Audit
@@ -296,7 +296,7 @@ export default function Home() {
         <FadeIn>
           <div className="border-y border-gray-200 py-10 px-6 bg-gray-50/60">
             <div className="max-w-4xl mx-auto">
-              <p className="text-sm font-semibold text-gray-500 uppercase tracking-widest text-center mb-7">
+              <p className="text-sm font-semibold text-gray-500 text-center mb-7">
                 Works with your existing AI providers
               </p>
               <div className="flex flex-wrap items-center justify-center gap-3">
@@ -344,7 +344,7 @@ export default function Home() {
                   </div>
 
                   {/* Carousel */}
-                  <div className="bg-white border border-gray-200 rounded-3xl shadow-lg relative overflow-hidden" style={{ minHeight: '480px' }}>
+                  <div className="bg-white border border-gray-200 rounded-3xl relative overflow-hidden" style={{ minHeight: '480px' }}>
 
                     {/* Scene 0 */}
                     <div className="scene" style={sceneStyle(0)}>
@@ -356,7 +356,7 @@ export default function Home() {
                         <h3 className="text-lg md:text-xl font-bold text-gray-900 mb-2">Your support agent is struggling</h3>
                         <p className="text-sm md:text-base text-gray-600 mb-4 max-w-sm mx-auto">Customer satisfaction dropped 40% in one day. The agent is deflecting.</p>
                         <div className="bg-gray-50 border border-gray-200 rounded-xl p-3.5 text-left max-w-sm mx-auto mb-4">
-                          <div className="font-mono text-xs text-gray-500 mb-1.5 uppercase tracking-wider">support_bot_v3 &middot; Active</div>
+                          <div className="font-mono text-xs text-gray-500 mb-1.5">support_bot_v3 &middot; Active</div>
                           <div className="space-y-1.5">
                             <div className="flex justify-between text-xs"><span className="text-gray-600">Customer sat.</span><span className="text-red-500 font-semibold">58% <span className="text-red-400">(down 40%)</span></span></div>
                             <div className="flex justify-between text-xs"><span className="text-gray-600">Avg. resolution time</span><span className="text-red-500 font-semibold">12.4 min <span className="text-red-400">(up 280%)</span></span></div>
@@ -380,7 +380,7 @@ export default function Home() {
                         <h3 className="text-lg md:text-xl font-bold text-gray-900 mb-2">Open its HR record</h3>
                         <p className="text-sm md:text-base text-gray-600 mb-4 max-w-sm mx-auto">One click. The business manager opens the agent performance review like any employee record.</p>
                         <div className="bg-gray-50 border border-gray-200 rounded-xl p-3.5 text-left max-w-sm mx-auto mb-4">
-                          <div className="font-mono text-xs text-gray-500 mb-1.5 uppercase tracking-wider">Agent: support_bot_v3</div>
+                          <div className="font-mono text-xs text-gray-500 mb-1.5">Agent: support_bot_v3</div>
                           <div className="w-full bg-gray-200 rounded-full h-2 mb-1.5"><div className="bg-yellow-400 h-2 rounded-full" style={{ width: '42%' }} /></div>
                           <div className="text-xs text-gray-700 font-medium">Performance score: 42 / 100</div>
                           <div className="text-xs text-gray-500 mt-1">Last 7 days: declining</div>
@@ -402,7 +402,7 @@ export default function Home() {
                         <h3 className="text-lg md:text-xl font-bold text-gray-900 mb-2">SynthForce suggests a fix</h3>
                         <p className="text-sm md:text-base text-gray-600 mb-4 max-w-sm mx-auto">The system proposes a configuration update based on the diagnosis.</p>
                         <div className="bg-gray-50 border border-gray-200 rounded-xl p-3.5 text-left max-w-sm mx-auto mb-4">
-                          <div className="font-mono text-xs text-gray-500 mb-1.5 uppercase tracking-wider">Auto-diagnosis result</div>
+                          <div className="font-mono text-xs text-gray-500 mb-1.5">Auto-diagnosis result</div>
                           <div className="bg-green-100 text-green-800 text-xs font-medium rounded-lg p-2.5 mb-2 border border-green-200"><span className="font-bold">Root cause:</span> Escalation threshold too low. Response style mismatch.</div>
                           <div className="flex justify-between items-center">
                             <div><div className="text-xs font-semibold text-gray-900">Apply optimization</div><div className="text-xs text-gray-500">One click. No code.</div></div>
@@ -426,7 +426,7 @@ export default function Home() {
                         <h3 className="text-lg md:text-xl font-bold text-gray-900 mb-2">Agent is back on track</h3>
                         <p className="text-sm md:text-base text-gray-600 mb-4 max-w-sm mx-auto">The business owner clicked one button. The fix was applied in seconds. No developer needed.</p>
                         <div className="bg-gray-50 border border-gray-200 rounded-xl p-3.5 text-left max-w-sm mx-auto mb-4">
-                          <div className="font-mono text-xs text-gray-500 mb-1.5 uppercase tracking-wider">support_bot_v3 &middot; Healthy</div>
+                          <div className="font-mono text-xs text-gray-500 mb-1.5">support_bot_v3 &middot; Healthy</div>
                           <div className="space-y-1.5">
                             <div className="flex justify-between text-xs"><span className="text-gray-600">Customer sat.</span><span className="text-green-500 font-semibold">91% <span className="text-green-400">(up 33%)</span></span></div>
                             <div className="flex justify-between text-xs"><span className="text-gray-600">Avg. resolution time</span><span className="text-green-500 font-semibold">3.2 min <span className="text-green-400">(down 9.2 min)</span></span></div>
@@ -476,7 +476,7 @@ export default function Home() {
                 transition={{ duration: 0.6, ease: EASE }}
                 className="bg-white border border-subtle p-8 rounded-2xl shadow-sm hover:-translate-y-2 transition-transform duration-300"
               >
-                <div className="text-xs font-mono text-gray-500 mb-2 uppercase">Infrastructure-only tools</div>
+                <div className="text-xs font-mono text-gray-500 mb-2">Infrastructure-only tools</div>
                 <div className="font-mono text-sm text-gray-700 mb-4">CPU: 5%, RAM: 2GB, Latency: 200ms</div>
                 <h3 className="text-xl font-bold mb-2 text-gray-900">They see servers, not agents.</h3>
                 <p className="text-gray-600 text-sm">They track hardware metrics, not agent performance, cost, or business impact.</p>
@@ -489,7 +489,7 @@ export default function Home() {
                 className="bg-white border border-subtle p-8 rounded-2xl shadow-sm relative overflow-hidden hover:-translate-y-2 transition-transform duration-300"
               >
                 <div className="absolute top-0 right-0 bg-accent text-white text-xs font-bold px-2 py-1">SYNTHFORCE</div>
-                <div className="text-xs font-mono text-gray-500 mb-2 uppercase">HR for AI Agents</div>
+                <div className="text-xs font-mono text-gray-500 mb-2">HR for AI Agents</div>
                 <div className="font-mono text-sm text-gray-700 mb-4">Agent: sales_bot_01 | Status: Active | Cost: $0.18/task</div>
                 <h3 className="text-xl font-bold mb-2 text-gray-900">We see employees.</h3>
                 <p className="text-gray-600 text-sm">We manage agents like employees: onboarding, performance reviews, policy enforcement, and offboarding.</p>
@@ -588,7 +588,7 @@ export default function Home() {
                 ].map(({ step, label, desc, mock }) => (
                   <motion.div key={step} variants={fadeSlideUp} className="space-y-4">
                     <div className="text-7xl font-bold leading-none select-none" style={{ color: 'rgba(0,178,255,0.22)' }}>{step}</div>
-                    <div className="text-accent font-mono text-sm uppercase">{label}</div>
+                    <div className="text-accent font-mono text-sm">{label}</div>
                     <p className="text-gray-600 text-sm">{desc}</p>
                     {mock}
                   </motion.div>
@@ -666,7 +666,7 @@ export default function Home() {
               <p className="text-xl text-gray-600 mb-10">
                 Be the first to get early access and a free agent-audit report.
               </p>
-              <div className="bg-white rounded-3xl border border-subtle p-10 shadow-lg max-w-2xl mx-auto">
+              <div className="bg-white rounded-3xl border border-subtle p-10 max-w-2xl mx-auto">
                 <div className="space-y-6">
                   <div className="text-left">
                     <h3 className="text-xl font-bold text-gray-900 mb-4">What you&apos;ll get:</h3>
