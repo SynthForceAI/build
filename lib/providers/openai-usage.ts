@@ -229,7 +229,28 @@ export async function syncOpenAIUsage(companyId: string, adminKey: ProviderAdmin
 
   // Fetch actual billed costs and distribute them proportionally across
   // same-(project, day) buckets by token share.
-  const costMap = await fetchCosts(key, startUnix, nowUnix);
+  //
+  // This proportional distribution is only sound when the current fetch covers
+  // each affected day *in full*, because the denominator (`dayTokenTotals`) is
+  // built solely from the buckets returned by THIS request. The first sync
+  // backfills whole days, so its denominator is the day's complete token total.
+  //
+  // Incremental syncs fetch only a short trailing window, but the Costs API
+  // (daily buckets) still reports each day's *entire accrued* cost. Dividing the
+  // full daily cost by a partial-window token count attributes (almost) the
+  // whole day's spend to that window; and because every incremental run writes
+  // fresh, non-duplicate minute/hour buckets, the same daily cost is re-recorded
+  // on every run — inflating stored spend by roughly the number of syncs per
+  // day. That corrupts every downstream spend figure (dashboard usage summary,
+  // per-agent totals, monthly spend).
+  //
+  // So we only apply the Costs API on the first (whole-day) sync. Incremental
+  // syncs leave costCents unset and let persistBuckets fall back to per-bucket
+  // token-based estimation, which prices each bucket from its own tokens and is
+  // counted exactly once (deduped on providerApiId).
+  const costMap = isFirstSync
+    ? await fetchCosts(key, startUnix, nowUnix)
+    : new Map<string, number>();
 
   const scratchCount = scratch.length;
   console.log('[sync-debug] OpenAI usage response:', {
