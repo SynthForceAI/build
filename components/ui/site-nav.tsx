@@ -37,7 +37,7 @@ export function SiteNav({ position = "sticky", user = null }: SiteNavProps) {
     : "?";
 
   return (
-    <nav className={`${positionClass} top-0 w-full z-50 border-b border-subtle dark:border-gray-800 bg-white/80 dark:bg-black backdrop-blur-md`}>
+    <nav className={`${positionClass} top-0 w-full z-50 border-b border-subtle dark:border-slate-800 bg-white/80 dark:bg-black backdrop-blur-md`}>
       <div className="container mx-auto px-6 h-16 flex items-center justify-between">
         <div className="flex items-center gap-3">
           <Link href="/">
@@ -83,7 +83,7 @@ export function SiteNav({ position = "sticky", user = null }: SiteNavProps) {
               </DropdownMenu>
             ) : (
               <>
-                <Link href="/login" className="text-sm font-semibold text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white border border-gray-300 dark:border-gray-700 rounded-lg px-4 py-1.5 hover:border-gray-500 dark:hover:border-gray-500 transition">
+                <Link href="/login" className="text-sm font-semibold text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white border border-gray-300 dark:border-slate-700/60 rounded-lg px-4 py-1.5 hover:border-gray-500 dark:hover:border-gray-500 transition">
                   Login
                 </Link>
                 <Link href="/signup" className="text-sm font-semibold text-white bg-gray-900 hover:bg-gray-800 rounded-lg px-4 py-1.5 transition">
@@ -110,7 +110,7 @@ export function SiteNav({ position = "sticky", user = null }: SiteNavProps) {
       </div>
 
       {mobileMenuOpen && (
-        <div id="site-nav-mobile-menu" className="md:hidden bg-white dark:bg-black border-t border-subtle dark:border-gray-800 px-6 py-4">
+        <div id="site-nav-mobile-menu" className="md:hidden bg-white dark:bg-black border-t border-subtle dark:border-slate-800 px-6 py-4">
           <div className="flex flex-col gap-4 text-sm font-sans text-gray-600 dark:text-gray-300">
             <Link href="/product" onClick={close} className="py-2 hover:text-gray-900">Product</Link>
             <Link href="/demo" onClick={close} className="py-2 hover:text-gray-900">Demo</Link>

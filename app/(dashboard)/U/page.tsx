@@ -255,7 +255,7 @@ export default async function DashboardPage() {
         data.latestAudit ? (
           /* ── Audit-complete state - has audit but no tracked agents ── */
           <div className="space-y-4 max-w-lg mx-auto">
-            <div className="bg-white dark:bg-gray-800 rounded-md border border-gray-200 dark:border-gray-700 shadow-sm px-8 py-10 flex flex-col items-center text-center">
+            <div className="bg-white dark:bg-slate-800 rounded-md border border-gray-200 dark:border-slate-700/60 shadow-sm px-8 py-10 flex flex-col items-center text-center">
               <div className="w-14 h-14 rounded-full bg-green-50 dark:bg-green-950/30 flex items-center justify-center mb-4">
                 <svg className="w-7 h-7 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
@@ -283,7 +283,7 @@ export default async function DashboardPage() {
                 </Link>
                 <Link
                   href="/U/onboard"
-                  className="px-5 py-2.5 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 text-sm font-medium rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition"
+                  className="px-5 py-2.5 border border-gray-300 dark:border-slate-600/60 text-gray-700 dark:text-gray-300 text-sm font-medium rounded-lg hover:bg-gray-50 dark:hover:bg-slate-700 transition"
                 >
                   Track individual agents
                 </Link>
@@ -295,7 +295,7 @@ export default async function DashboardPage() {
           </div>
         ) : (
           /* ── First-run empty state ──────────────────────── */
-          <div className="bg-white dark:bg-gray-800 rounded-md border border-gray-200 dark:border-gray-700 shadow-sm px-8 py-16 flex flex-col items-center text-center max-w-lg mx-auto">
+          <div className="bg-white dark:bg-slate-800 rounded-md border border-gray-200 dark:border-slate-700/60 shadow-sm px-8 py-16 flex flex-col items-center text-center max-w-lg mx-auto">
             <div className="w-16 h-16 rounded-full bg-blue-50 dark:bg-blue-950/30 flex items-center justify-center mb-5">
               <svg className="w-8 h-8 text-[#00B2FF]" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
@@ -314,7 +314,7 @@ export default async function DashboardPage() {
               </Link>
               <Link
                 href="/U/agents"
-                className="px-5 py-2.5 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 text-sm font-medium rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition"
+                className="px-5 py-2.5 border border-gray-300 dark:border-slate-600/60 text-gray-700 dark:text-gray-300 text-sm font-medium rounded-lg hover:bg-gray-50 dark:hover:bg-slate-700 transition"
               >
                 Browse agents
               </Link>
@@ -336,7 +336,7 @@ export default async function DashboardPage() {
 
           {/* ── Spend trend chart ────────────────────────────── */}
           {data.spendByDay.length > 0 && (
-            <div className="bg-white dark:bg-gray-800 rounded-md border border-gray-200 dark:border-gray-700 shadow-sm px-6 py-5 mb-10">
+            <div className="bg-white dark:bg-slate-800 rounded-md border border-gray-200 dark:border-slate-700/60 shadow-sm px-6 py-5 mb-10">
               <h2 className="text-sm font-semibold text-gray-900 dark:text-gray-100 mb-1">Spend, last 7 days</h2>
               <p className="text-xs text-gray-400 dark:text-gray-500 mb-4">Daily API cost in USD</p>
               <SpendTrendChart data={data.spendByDay} />
@@ -344,8 +344,8 @@ export default async function DashboardPage() {
           )}
 
           {/* ── Top agents by spend ─────────────────────────── */}
-          <div className="bg-white dark:bg-gray-800 rounded-md border border-gray-200 dark:border-gray-700 shadow-sm overflow-hidden">
-            <div className="px-6 py-5 border-b border-gray-100 dark:border-gray-700">
+          <div className="bg-white dark:bg-slate-800 rounded-md border border-gray-200 dark:border-slate-700/60 shadow-sm overflow-hidden">
+            <div className="px-6 py-5 border-b border-gray-100 dark:border-slate-700/60">
               <h2 className="text-base font-semibold text-gray-900 dark:text-gray-100">Top Agents by Spend</h2>
               <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">Month-to-date · top 5 · click column headers to sort</p>
             </div>
@@ -368,7 +368,7 @@ export default async function DashboardPage() {
 // ── Stat card ──────────────────────────────────────────────────────────────
 function Stat({ value, label, tone }: { value: string; label: string; tone: string }) {
   return (
-    <div className={`${tone} dark:bg-gray-800 p-6 rounded-xl shadow-sm hover:shadow-md hover:-translate-y-0.5 transition-all duration-200`}>
+    <div className={`${tone} dark:bg-slate-800 p-6 rounded-xl shadow-sm hover:shadow-md hover:-translate-y-0.5 transition-all duration-200`}>
       <div className="text-3xl font-bold text-gray-900 dark:text-gray-100">{value}</div>
       <div className="text-sm text-gray-600 dark:text-gray-400 mt-1">{label}</div>
     </div>

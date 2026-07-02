@@ -4,7 +4,7 @@ import { WaitlistTrigger } from "@/components/ui/waitlist-trigger";
 
 export function Footer() {
   return (
-    <footer className="border-t border-subtle dark:border-gray-700 py-12 bg-gray-50 dark:bg-gray-900">
+    <footer className="border-t border-subtle dark:border-slate-700/60 py-12 bg-gray-50 dark:bg-slate-900">
       <div className="container mx-auto px-6">
         <div className="flex flex-col md:flex-row justify-between items-center">
           <div className="mb-6 md:mb-0">
@@ -36,7 +36,7 @@ export function Footer() {
             <a href="#" className="hover:text-gray-900 dark:hover:text-white">Terms</a>
           </div>
         </div>
-        <div className="mt-8 pt-8 border-t border-subtle dark:border-gray-700 text-center text-sm text-gray-500 dark:text-gray-500">
+        <div className="mt-8 pt-8 border-t border-subtle dark:border-slate-700/60 text-center text-sm text-gray-500 dark:text-gray-500">
           <p>© { Year } SynthForce AI. All rights reserved.</p>
         </div>
       </div>

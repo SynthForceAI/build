@@ -36,7 +36,7 @@ export function DashboardShell({ userName, userEmail, userRole, isPlatformOwner,
     : "?";
 
   return (
-    <div className="flex h-screen overflow-hidden bg-gray-50 dark:bg-gray-950">
+    <div className="flex h-screen overflow-hidden bg-gray-50 dark:bg-slate-950">
       {/* Skip-to-content link - visible on focus for keyboard/screen-reader users */}
       <a
         href="#main-content"
@@ -52,12 +52,12 @@ export function DashboardShell({ userName, userEmail, userRole, isPlatformOwner,
 
       <div className="flex flex-col flex-1 min-w-0 overflow-hidden">
 
-        <header role="banner" className="h-16 shrink-0 bg-white dark:bg-gray-900 border-b border-subtle dark:border-gray-700 flex items-center justify-between px-4 sm:px-6">
+        <header role="banner" className="h-16 shrink-0 bg-white dark:bg-slate-900 border-b border-subtle dark:border-slate-700/60 flex items-center justify-between px-4 sm:px-6">
           <div className="flex items-center gap-3">
             <button
               type="button"
               onClick={() => setSidebarOpen((o) => !o)}
-              className="p-2 rounded-md text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#00B2FF] transition-colors"
+              className="p-2 rounded-md text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 hover:bg-gray-100 dark:hover:bg-slate-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#00B2FF] transition-colors"
               aria-label={sidebarOpen ? "Collapse sidebar" : "Open sidebar"}
               aria-expanded={sidebarOpen}
               aria-controls="dashboard-sidebar"

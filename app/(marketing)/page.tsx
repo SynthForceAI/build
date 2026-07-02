@@ -13,7 +13,7 @@ const pageStyles = `
   .btn-primary:hover { background: transparent; color: #00B2FF; }
   .integration-card { background: white; border: 1px solid #e5e5e5; border-radius: 1rem; padding: 1.5rem; text-align: center; transition: all 0.3s ease; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05); }
   .integration-card:hover { transform: translateY(-4px); box-shadow: 0 12px 20px -4px rgba(0,0,0,0.1); border-color: transparent; }
-  .dark .integration-card { background: rgb(31 41 55); border-color: rgb(55 65 81); }
+  .dark .integration-card { background: rgb(30 41 59); border-color: rgb(51 65 85); }
   .scene { transition: transform 0.5s cubic-bezier(0.4,0,0.2,1), opacity 0.4s ease; }
 `;
 
@@ -169,7 +169,7 @@ export default function Home() {
   const headlineWords = "Manage your AI agents like employees.".split(" ");
 
   return (
-    <div className="min-h-screen flex flex-col relative bg-white dark:bg-gray-950 text-void font-sans">
+    <div className="min-h-screen flex flex-col relative bg-white dark:bg-slate-950 text-void font-sans">
       <style dangerouslySetInnerHTML={{ __html: pageStyles }} />
 
       <main className="grow pt-24 pb-20">
@@ -239,7 +239,7 @@ export default function Home() {
               </Link>
               <Link
                 href="/demo"
-                className="px-9 py-4 font-semibold text-sm uppercase border border-gray-300 dark:border-gray-600 rounded-lg hover:border-gray-900 dark:hover:border-gray-300 hover:text-gray-900 dark:hover:text-white transition text-center text-gray-600 dark:text-gray-300"
+                className="px-9 py-4 font-semibold text-sm uppercase border border-gray-300 dark:border-white/25 rounded-lg hover:border-gray-900 dark:hover:border-white/60 hover:text-gray-900 dark:hover:text-white transition text-center text-gray-600 dark:text-gray-300"
               >
                 See the demo →
               </Link>
@@ -256,7 +256,7 @@ export default function Home() {
             <motion.div
               animate={{ y: [0, -10, 0] }}
               transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
-              className="bg-white dark:bg-gray-800 rounded-2xl border border-gray-200 dark:border-gray-700 shadow-2xl p-5 w-80"
+              className="bg-white dark:bg-slate-800 rounded-2xl border border-gray-200 dark:border-slate-700/60 shadow-2xl dark:shadow-[0_25px_50px_rgba(0,0,0,0.5)] p-5 w-80"
             >
               <div className="flex items-center justify-between mb-4">
                 <div className="flex items-center gap-2.5">
