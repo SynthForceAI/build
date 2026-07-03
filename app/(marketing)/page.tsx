@@ -13,6 +13,7 @@ const pageStyles = `
   .btn-primary:hover { background: transparent; color: #00B2FF; }
   .integration-card { background: white; border: 1px solid #e5e5e5; border-radius: 1rem; padding: 1.5rem; text-align: center; transition: all 0.3s ease; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05); }
   .integration-card:hover { transform: translateY(-4px); box-shadow: 0 12px 20px -4px rgba(0,0,0,0.1); border-color: transparent; }
+  .dark .integration-card { background: rgb(30 41 59); border-color: rgb(51 65 85); }
   .scene { transition: transform 0.5s cubic-bezier(0.4,0,0.2,1), opacity 0.4s ease; }
 `;
 
@@ -168,7 +169,7 @@ export default function Home() {
   const headlineWords = "Manage your AI agents like employees.".split(" ");
 
   return (
-    <div className="min-h-screen flex flex-col relative bg-white text-void font-sans">
+    <div className="min-h-screen flex flex-col relative bg-white dark:bg-slate-950 text-void font-sans">
       <style dangerouslySetInnerHTML={{ __html: pageStyles }} />
 
       <main className="grow pt-24 pb-20">
@@ -197,7 +198,7 @@ export default function Home() {
 
             {/* Headline - word-by-word entrance */}
             <motion.h1
-              className="hero-title text-5xl sm:text-6xl md:text-7xl font-bold mb-6 text-gray-900"
+              className="hero-title text-5xl sm:text-6xl md:text-7xl font-bold mb-6 text-gray-900 dark:text-white"
               variants={headlineContainer}
               initial="hidden"
               animate="visible"
@@ -218,7 +219,7 @@ export default function Home() {
               initial={{ opacity: 0, y: 16 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.6, delay: 0.75, ease: "easeOut" }}
-              className="text-xl sm:text-2xl text-gray-500 mb-10 font-medium"
+              className="text-xl sm:text-2xl text-gray-500 dark:text-gray-400 mb-10 font-medium"
             >
               This isn&apos;t AI for HR. This is HR for AI.
             </motion.p>
@@ -238,7 +239,7 @@ export default function Home() {
               </Link>
               <Link
                 href="/demo"
-                className="px-9 py-4 font-semibold text-sm uppercase border border-gray-300 rounded-lg hover:border-gray-900 hover:text-gray-900 transition text-center text-gray-600"
+                className="px-9 py-4 font-semibold text-sm uppercase border border-gray-300 dark:border-white/25 rounded-lg hover:border-gray-900 dark:hover:border-white/60 hover:text-gray-900 dark:hover:text-white transition text-center text-gray-600 dark:text-gray-300"
               >
                 See the demo →
               </Link>
@@ -255,7 +256,7 @@ export default function Home() {
             <motion.div
               animate={{ y: [0, -10, 0] }}
               transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
-              className="bg-white rounded-2xl border border-gray-200 shadow-2xl p-5 w-80"
+              className="bg-white dark:bg-slate-800 rounded-2xl border border-gray-200 dark:border-slate-700/60 shadow-2xl dark:shadow-[0_25px_50px_rgba(0,0,0,0.5)] p-5 w-80"
             >
               <div className="flex items-center justify-between mb-4">
                 <div className="flex items-center gap-2.5">
@@ -263,30 +264,30 @@ export default function Home() {
                     <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-60" />
                     <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-green-500" />
                   </div>
-                  <span className="text-sm font-semibold text-gray-900">sales_bot_v2</span>
+                  <span className="text-sm font-semibold text-gray-900 dark:text-gray-100">sales_bot_v2</span>
                 </div>
                 <span className="text-xs bg-green-100 text-green-700 px-2.5 py-0.5 rounded-full font-medium">Active</span>
               </div>
               <div className="space-y-2.5 mb-3">
                 <div className="flex justify-between text-xs">
-                  <span className="text-gray-500">MTD Spend</span>
-                  <span className="font-mono text-gray-900 font-semibold">$48.20</span>
+                  <span className="text-gray-500 dark:text-gray-400">MTD Spend</span>
+                  <span className="font-mono text-gray-900 dark:text-gray-100 font-semibold">$48.20</span>
                 </div>
                 <div className="flex justify-between text-xs">
-                  <span className="text-gray-500">Tasks completed</span>
-                  <span className="font-mono text-gray-900 font-semibold">1,204</span>
+                  <span className="text-gray-500 dark:text-gray-400">Tasks completed</span>
+                  <span className="font-mono text-gray-900 dark:text-gray-100 font-semibold">1,204</span>
                 </div>
                 <div className="flex justify-between text-xs">
-                  <span className="text-gray-500">Budget used</span>
+                  <span className="text-gray-500 dark:text-gray-400">Budget used</span>
                   <span className="font-mono font-semibold" style={{ color: '#00B2FF' }}>64%</span>
                 </div>
               </div>
-              <div className="bg-gray-100 rounded-full h-1.5 overflow-hidden">
+              <div className="bg-gray-100 dark:bg-gray-700 rounded-full h-1.5 overflow-hidden">
                 <div className="h-1.5 rounded-full" style={{ width: '64%', background: '#00B2FF' }} />
               </div>
-              <div className="mt-3 pt-3 border-t border-gray-100 flex items-center justify-between">
-                <span className="text-xs text-gray-400">Department</span>
-                <span className="text-xs font-medium text-gray-600 bg-gray-100 px-2 py-0.5 rounded">Sales</span>
+              <div className="mt-3 pt-3 border-t border-gray-100 dark:border-gray-700 flex items-center justify-between">
+                <span className="text-xs text-gray-400 dark:text-gray-500">Department</span>
+                <span className="text-xs font-medium text-gray-600 dark:text-gray-300 bg-gray-100 dark:bg-gray-700 px-2 py-0.5 rounded">Sales</span>
               </div>
             </motion.div>
           </motion.div>
@@ -294,9 +295,9 @@ export default function Home() {
 
         {/* ── Social proof bar ──────────────────────────────────── */}
         <FadeIn>
-          <div className="border-y border-gray-200 py-10 px-6 bg-gray-50/60">
+          <div className="border-y border-gray-200 dark:border-gray-700 py-10 px-6 bg-gray-50/60 dark:bg-gray-900/50">
             <div className="max-w-4xl mx-auto">
-              <p className="text-sm font-semibold text-gray-500 text-center mb-7">
+              <p className="text-sm font-semibold text-gray-500 dark:text-gray-400 text-center mb-7">
                 Works with your existing AI providers
               </p>
               <div className="flex flex-wrap items-center justify-center gap-3">
@@ -311,10 +312,10 @@ export default function Home() {
                 ].map(({ name, color }) => (
                   <div
                     key={name}
-                    className="flex items-center gap-2 bg-white border border-gray-200 rounded-full px-4 py-2 hover:border-gray-400 hover:shadow-sm transition-all cursor-default select-none"
+                    className="flex items-center gap-2 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-full px-4 py-2 hover:border-gray-400 hover:shadow-sm transition-all cursor-default select-none"
                   >
                     <span className="w-2 h-2 rounded-full shrink-0" style={{ background: color }} />
-                    <span className="text-sm font-semibold text-gray-700">{name}</span>
+                    <span className="text-sm font-semibold text-gray-700 dark:text-gray-300">{name}</span>
                   </div>
                 ))}
               </div>
@@ -326,25 +327,25 @@ export default function Home() {
 
           {/* ── Interactive demo ──────────────────────────────────── */}
           <FadeUp>
-            <section className="pt-20 pb-4 bg-gray-50 -mx-6 px-6 mt-16">
+            <section className="pt-20 pb-4 bg-gray-50 dark:bg-gray-900 -mx-6 px-6 mt-16">
               <div className="container mx-auto">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-10 md:gap-16 items-center">
 
                   <div className="text-center md:text-left">
-                    <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
+                    <h2 className="text-3xl md:text-4xl font-bold text-gray-900 dark:text-white mb-4">
                       Managing your workforce shouldn&apos;t need tech knowledge
                     </h2>
-                    <p className="text-xl text-gray-600 mb-8">
+                    <p className="text-xl text-gray-600 dark:text-gray-300 mb-8">
                       Explore our demo to see how you can onboard, measure, and govern your AI workforce, no code required.
                     </p>
                     <Link href="/signup" className="btn-primary inline-block font-semibold px-8 py-4 shadow-sm">
                       Try for Free
                     </Link>
-                    <p className="mt-4 text-sm text-gray-500">Takes less than 2 minutes. No credit card needed.</p>
+                    <p className="mt-4 text-sm text-gray-500 dark:text-gray-400">Takes less than 2 minutes. No credit card needed.</p>
                   </div>
 
                   {/* Carousel */}
-                  <div className="bg-white border border-gray-200 rounded-3xl relative overflow-hidden" style={{ minHeight: '480px' }}>
+                  <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-3xl relative overflow-hidden" style={{ minHeight: '480px' }}>
 
                     {/* Scene 0 */}
                     <div className="scene" style={sceneStyle(0)}>
@@ -353,10 +354,10 @@ export default function Home() {
                           <span className="w-1.5 h-1.5 bg-red-500 rounded-full animate-pulse" />
                           Agent trouble detected
                         </div>
-                        <h3 className="text-lg md:text-xl font-bold text-gray-900 mb-2">Your support agent is struggling</h3>
-                        <p className="text-sm md:text-base text-gray-600 mb-4 max-w-sm mx-auto">Customer satisfaction dropped 40% in one day. The agent is deflecting.</p>
-                        <div className="bg-gray-50 border border-gray-200 rounded-xl p-3.5 text-left max-w-sm mx-auto mb-4">
-                          <div className="font-mono text-xs text-gray-500 mb-1.5">support_bot_v3 &middot; Active</div>
+                        <h3 className="text-lg md:text-xl font-bold text-gray-900 dark:text-white mb-2">Your support agent is struggling</h3>
+                        <p className="text-sm md:text-base text-gray-600 dark:text-gray-300 mb-4 max-w-sm mx-auto">Customer satisfaction dropped 40% in one day. The agent is deflecting.</p>
+                        <div className="bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-xl p-3.5 text-left max-w-sm mx-auto mb-4">
+                          <div className="font-mono text-xs text-gray-500 dark:text-gray-400 mb-1.5">support_bot_v3 &middot; Active</div>
                           <div className="space-y-1.5">
                             <div className="flex justify-between text-xs"><span className="text-gray-600">Customer sat.</span><span className="text-red-500 font-semibold">58% <span className="text-red-400">(down 40%)</span></span></div>
                             <div className="flex justify-between text-xs"><span className="text-gray-600">Avg. resolution time</span><span className="text-red-500 font-semibold">12.4 min <span className="text-red-400">(up 280%)</span></span></div>
@@ -377,10 +378,10 @@ export default function Home() {
                           <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" /></svg>
                           SynthForce insight
                         </div>
-                        <h3 className="text-lg md:text-xl font-bold text-gray-900 mb-2">Open its HR record</h3>
-                        <p className="text-sm md:text-base text-gray-600 mb-4 max-w-sm mx-auto">One click. The business manager opens the agent performance review like any employee record.</p>
-                        <div className="bg-gray-50 border border-gray-200 rounded-xl p-3.5 text-left max-w-sm mx-auto mb-4">
-                          <div className="font-mono text-xs text-gray-500 mb-1.5">Agent: support_bot_v3</div>
+                        <h3 className="text-lg md:text-xl font-bold text-gray-900 dark:text-white mb-2">Open its HR record</h3>
+                        <p className="text-sm md:text-base text-gray-600 dark:text-gray-300 mb-4 max-w-sm mx-auto">One click. The business manager opens the agent performance review like any employee record.</p>
+                        <div className="bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-xl p-3.5 text-left max-w-sm mx-auto mb-4">
+                          <div className="font-mono text-xs text-gray-500 dark:text-gray-400 mb-1.5">Agent: support_bot_v3</div>
                           <div className="w-full bg-gray-200 rounded-full h-2 mb-1.5"><div className="bg-yellow-400 h-2 rounded-full" style={{ width: '42%' }} /></div>
                           <div className="text-xs text-gray-700 font-medium">Performance score: 42 / 100</div>
                           <div className="text-xs text-gray-500 mt-1">Last 7 days: declining</div>
@@ -399,10 +400,10 @@ export default function Home() {
                           <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
                           Optimized automatically
                         </div>
-                        <h3 className="text-lg md:text-xl font-bold text-gray-900 mb-2">SynthForce suggests a fix</h3>
-                        <p className="text-sm md:text-base text-gray-600 mb-4 max-w-sm mx-auto">The system proposes a configuration update based on the diagnosis.</p>
-                        <div className="bg-gray-50 border border-gray-200 rounded-xl p-3.5 text-left max-w-sm mx-auto mb-4">
-                          <div className="font-mono text-xs text-gray-500 mb-1.5">Auto-diagnosis result</div>
+                        <h3 className="text-lg md:text-xl font-bold text-gray-900 dark:text-white mb-2">SynthForce suggests a fix</h3>
+                        <p className="text-sm md:text-base text-gray-600 dark:text-gray-300 mb-4 max-w-sm mx-auto">The system proposes a configuration update based on the diagnosis.</p>
+                        <div className="bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-xl p-3.5 text-left max-w-sm mx-auto mb-4">
+                          <div className="font-mono text-xs text-gray-500 dark:text-gray-400 mb-1.5">Auto-diagnosis result</div>
                           <div className="bg-green-100 text-green-800 text-xs font-medium rounded-lg p-2.5 mb-2 border border-green-200"><span className="font-bold">Root cause:</span> Escalation threshold too low. Response style mismatch.</div>
                           <div className="flex justify-between items-center">
                             <div><div className="text-xs font-semibold text-gray-900">Apply optimization</div><div className="text-xs text-gray-500">One click. No code.</div></div>
@@ -423,10 +424,10 @@ export default function Home() {
                           <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" /></svg>
                           Agent rescued
                         </div>
-                        <h3 className="text-lg md:text-xl font-bold text-gray-900 mb-2">Agent is back on track</h3>
-                        <p className="text-sm md:text-base text-gray-600 mb-4 max-w-sm mx-auto">The business owner clicked one button. The fix was applied in seconds. No developer needed.</p>
-                        <div className="bg-gray-50 border border-gray-200 rounded-xl p-3.5 text-left max-w-sm mx-auto mb-4">
-                          <div className="font-mono text-xs text-gray-500 mb-1.5">support_bot_v3 &middot; Healthy</div>
+                        <h3 className="text-lg md:text-xl font-bold text-gray-900 dark:text-white mb-2">Agent is back on track</h3>
+                        <p className="text-sm md:text-base text-gray-600 dark:text-gray-300 mb-4 max-w-sm mx-auto">The business owner clicked one button. The fix was applied in seconds. No developer needed.</p>
+                        <div className="bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-xl p-3.5 text-left max-w-sm mx-auto mb-4">
+                          <div className="font-mono text-xs text-gray-500 dark:text-gray-400 mb-1.5">support_bot_v3 &middot; Healthy</div>
                           <div className="space-y-1.5">
                             <div className="flex justify-between text-xs"><span className="text-gray-600">Customer sat.</span><span className="text-green-500 font-semibold">91% <span className="text-green-400">(up 33%)</span></span></div>
                             <div className="flex justify-between text-xs"><span className="text-gray-600">Avg. resolution time</span><span className="text-green-500 font-semibold">3.2 min <span className="text-green-400">(down 9.2 min)</span></span></div>
@@ -466,7 +467,7 @@ export default function Home() {
           {/* ── Problem ───────────────────────────────────────────── */}
           <section id="problem" className="pt-20 mb-32">
             <FadeUp>
-              <h2 className="text-center text-4xl font-bold mb-12">The Problem</h2>
+              <h2 className="text-center text-4xl font-bold mb-12 dark:text-white">The Problem</h2>
             </FadeUp>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-5xl mx-auto">
               <motion.div
@@ -474,25 +475,25 @@ export default function Home() {
                 whileInView={{ opacity: 1, x: 0 }}
                 viewport={{ once: true, margin: "-60px" }}
                 transition={{ duration: 0.6, ease: EASE }}
-                className="bg-white border border-subtle p-8 rounded-2xl shadow-sm hover:-translate-y-2 transition-transform duration-300"
+                className="bg-white dark:bg-gray-800 border border-subtle dark:border-gray-700 p-8 rounded-2xl shadow-sm hover:-translate-y-2 transition-transform duration-300"
               >
                 <div className="text-xs font-mono text-gray-500 mb-2">Infrastructure-only tools</div>
                 <div className="font-mono text-sm text-gray-700 mb-4">CPU: 5%, RAM: 2GB, Latency: 200ms</div>
-                <h3 className="text-xl font-bold mb-2 text-gray-900">They see servers, not agents.</h3>
-                <p className="text-gray-600 text-sm">They track hardware metrics, not agent performance, cost, or business impact.</p>
+                <h3 className="text-xl font-bold mb-2 text-gray-900 dark:text-white">They see servers, not agents.</h3>
+                <p className="text-gray-600 dark:text-gray-300 text-sm">They track hardware metrics, not agent performance, cost, or business impact.</p>
               </motion.div>
               <motion.div
                 initial={{ opacity: 0, x: 40 }}
                 whileInView={{ opacity: 1, x: 0 }}
                 viewport={{ once: true, margin: "-60px" }}
                 transition={{ duration: 0.6, ease: EASE }}
-                className="bg-white border border-subtle p-8 rounded-2xl shadow-sm relative overflow-hidden hover:-translate-y-2 transition-transform duration-300"
+                className="bg-white dark:bg-gray-800 border border-subtle dark:border-gray-700 p-8 rounded-2xl shadow-sm relative overflow-hidden hover:-translate-y-2 transition-transform duration-300"
               >
                 <div className="absolute top-0 right-0 bg-accent text-white text-xs font-bold px-2 py-1">SYNTHFORCE</div>
                 <div className="text-xs font-mono text-gray-500 mb-2">HR for AI Agents</div>
                 <div className="font-mono text-sm text-gray-700 mb-4">Agent: sales_bot_01 | Status: Active | Cost: $0.18/task</div>
-                <h3 className="text-xl font-bold mb-2 text-gray-900">We see employees.</h3>
-                <p className="text-gray-600 text-sm">We manage agents like employees: onboarding, performance reviews, policy enforcement, and offboarding.</p>
+                <h3 className="text-xl font-bold mb-2 text-gray-900 dark:text-white">We see employees.</h3>
+                <p className="text-gray-600 dark:text-gray-300 text-sm">We manage agents like employees: onboarding, performance reviews, policy enforcement, and offboarding.</p>
               </motion.div>
             </div>
           </section>
@@ -526,11 +527,11 @@ export default function Home() {
               <motion.div
                 key={title}
                 variants={fadeSlideUp}
-                className="bg-white p-8 group hover:bg-accent hover:text-white transition duration-300 rounded-2xl border border-gray-200 shadow-sm hover:border-transparent hover:shadow-md"
+                className="bg-white dark:bg-gray-800 p-8 group hover:bg-accent hover:text-white transition duration-300 rounded-2xl border border-gray-200 dark:border-gray-700 shadow-sm hover:border-transparent hover:shadow-md"
               >
-                <div className="font-mono text-xs text-gray-500 group-hover:text-white mb-4">{risk}</div>
+                <div className="font-mono text-xs text-gray-500 dark:text-gray-400 group-hover:text-white mb-4">{risk}</div>
                 <h3 className="text-2xl font-bold mb-4">{title}</h3>
-                <p className="text-sm leading-relaxed text-gray-600 group-hover:text-white">{body}</p>
+                <p className="text-sm leading-relaxed text-gray-600 dark:text-gray-300 group-hover:text-white">{body}</p>
               </motion.div>
             ))}
           </motion.section>
@@ -538,9 +539,9 @@ export default function Home() {
           {/* ── How it works ──────────────────────────────────────── */}
           <section id="how-it-works" className="mb-32">
             <FadeUp>
-              <h2 className="text-center text-4xl font-bold mb-12">How it works</h2>
+              <h2 className="text-center text-4xl font-bold mb-12 dark:text-white">How it works</h2>
             </FadeUp>
-            <div className="max-w-6xl mx-auto bg-white border border-subtle rounded-3xl p-8 md:p-12">
+            <div className="max-w-6xl mx-auto bg-white dark:bg-gray-800 border border-subtle dark:border-gray-700 rounded-3xl p-8 md:p-12">
               <motion.div
                 className="grid grid-cols-1 md:grid-cols-3 gap-8"
                 initial="hidden"
@@ -589,7 +590,7 @@ export default function Home() {
                   <motion.div key={step} variants={fadeSlideUp} className="space-y-4">
                     <div className="text-7xl font-bold leading-none select-none" style={{ color: 'rgba(0,178,255,0.22)' }}>{step}</div>
                     <div className="text-accent font-mono text-sm">{label}</div>
-                    <p className="text-gray-600 text-sm">{desc}</p>
+                    <p className="text-gray-600 dark:text-gray-300 text-sm">{desc}</p>
                     {mock}
                   </motion.div>
                 ))}
@@ -606,8 +607,8 @@ export default function Home() {
           <section className="py-20">
             <FadeUp>
               <div className="max-w-5xl mx-auto text-center mb-12">
-                <h2 className="text-3xl font-bold text-gray-900 mb-4">Already have agents? No worries.</h2>
-                <p className="text-gray-600 max-w-2xl mx-auto">
+                <h2 className="text-3xl font-bold text-gray-900 dark:text-white mb-4">Already have agents? No worries.</h2>
+                <p className="text-gray-600 dark:text-gray-300 max-w-2xl mx-auto">
                   SynthForce works with the AI models and platforms you already use. Connect in minutes, no re-training needed.
                 </p>
               </div>
@@ -660,17 +661,17 @@ export default function Home() {
         <div className="container mx-auto px-6 relative z-10">
           <FadeUp>
             <div className="max-w-4xl mx-auto text-center">
-              <h2 className="hero-title text-5xl md:text-6xl font-bold text-gray-900 mb-4">
+              <h2 className="hero-title text-5xl md:text-6xl font-bold text-gray-900 dark:text-white mb-4">
                 Join the Waitlist
               </h2>
-              <p className="text-xl text-gray-600 mb-10">
+              <p className="text-xl text-gray-600 dark:text-gray-300 mb-10">
                 Be the first to get early access and a free agent-audit report.
               </p>
-              <div className="bg-white rounded-3xl border border-subtle p-10 max-w-2xl mx-auto">
+              <div className="bg-white dark:bg-gray-800 rounded-3xl border border-subtle dark:border-gray-700 p-10 max-w-2xl mx-auto">
                 <div className="space-y-6">
                   <div className="text-left">
-                    <h3 className="text-xl font-bold text-gray-900 mb-4">What you&apos;ll get:</h3>
-                    <ul className="space-y-3 text-gray-700">
+                    <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-4">What you&apos;ll get:</h3>
+                    <ul className="space-y-3 text-gray-700 dark:text-gray-300">
                       {([
                         <><strong>Early access</strong> to SynthForce before public launch</>,
                         <><strong>Free agent-audit report</strong> – see where your AI agents are leaking money</>,
@@ -688,7 +689,7 @@ export default function Home() {
                     <WaitlistTrigger className="btn-primary px-12 py-5 text-lg font-sans font-semibold uppercase rounded-lg inline-block cursor-pointer">
                       Join the Waitlist
                     </WaitlistTrigger>
-                    <p className="mt-4 text-sm text-gray-500">No spam. Unsubscribe anytime.</p>
+                    <p className="mt-4 text-sm text-gray-500 dark:text-gray-400">No spam. Unsubscribe anytime.</p>
                   </div>
                 </div>
               </div>

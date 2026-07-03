@@ -12,6 +12,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import type { UserRole } from "@prisma/client";
+import { ThemeToggle } from "@/components/ui/theme-toggle";
 
 type Props = {
   userName:        string;
@@ -35,7 +36,7 @@ export function DashboardShell({ userName, userEmail, userRole, isPlatformOwner,
     : "?";
 
   return (
-    <div className="flex h-screen overflow-hidden bg-gray-50">
+    <div className="flex h-screen overflow-hidden bg-gray-50 dark:bg-slate-950">
       {/* Skip-to-content link - visible on focus for keyboard/screen-reader users */}
       <a
         href="#main-content"
@@ -51,12 +52,12 @@ export function DashboardShell({ userName, userEmail, userRole, isPlatformOwner,
 
       <div className="flex flex-col flex-1 min-w-0 overflow-hidden">
 
-        <header role="banner" className="h-16 shrink-0 bg-white border-b border-subtle flex items-center justify-between px-4 sm:px-6">
+        <header role="banner" className="h-16 shrink-0 bg-white dark:bg-slate-900 border-b border-subtle dark:border-slate-700/60 flex items-center justify-between px-4 sm:px-6">
           <div className="flex items-center gap-3">
             <button
               type="button"
               onClick={() => setSidebarOpen((o) => !o)}
-              className="p-2 rounded-md text-gray-500 hover:text-gray-700 hover:bg-gray-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#00B2FF] transition-colors"
+              className="p-2 rounded-md text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 hover:bg-gray-100 dark:hover:bg-slate-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#00B2FF] transition-colors"
               aria-label={sidebarOpen ? "Collapse sidebar" : "Open sidebar"}
               aria-expanded={sidebarOpen}
               aria-controls="dashboard-sidebar"
@@ -69,7 +70,9 @@ export function DashboardShell({ userName, userEmail, userRole, isPlatformOwner,
             </button>
           </div>
 
-          <DropdownMenu>
+          <div className="flex items-center gap-2">
+            <ThemeToggle />
+            <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <button className="w-8 h-8 rounded-full bg-gray-900 text-white text-xs font-bold flex items-center justify-center hover:bg-gray-700 transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-[#00B2FF]">
                 {initials}
@@ -97,6 +100,7 @@ export function DashboardShell({ userName, userEmail, userRole, isPlatformOwner,
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
+          </div>
         </header>
 
         <main id="main-content" className="flex-1 overflow-y-auto p-4 sm:p-6" tabIndex={-1}>

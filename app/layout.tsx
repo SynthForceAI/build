@@ -15,6 +15,7 @@ import "./globals.css";
 import React from "react";
 import { cn } from "@/lib/utils";
 import { Analytics } from "@vercel/analytics/react";
+import { ThemeProvider } from "next-themes";
 
 export const metadata: Metadata = {
   title: "SynthForce | HR for AI Agents - Manage Your Synthetic Workforce",
@@ -29,10 +30,12 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="en" className={cn(geist.variable, geistMono.variable, geist.className)}>
-      <body suppressHydrationWarning>
-        {children}
-        <Analytics />
+    <html lang="en" className={cn(geist.variable, geistMono.variable, geist.className)} suppressHydrationWarning>
+      <body>
+        <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
+          {children}
+          <Analytics />
+        </ThemeProvider>
       </body>
     </html>
   );

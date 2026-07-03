@@ -16,7 +16,7 @@
 
 body {
   background-color: var(--color-paper);
-  color: #1a1a1a;
+  color: var(--color-void);
   overflow-x: hidden;
   scroll-behavior: smooth;
 }
@@ -99,11 +99,14 @@ body {
 }
 
 .dark {
-  --background: oklch(0.145 0 0);
+  --color-void: #f0f0f0;
+  --color-paper: rgb(15 23 42);
+  --color-subtle: #334155;
+  --background: rgb(15 23 42);
   --foreground: oklch(0.985 0 0);
-  --card: oklch(0.205 0 0);
+  --card: rgb(30 41 59);
   --card-foreground: oklch(0.985 0 0);
-  --popover: oklch(0.205 0 0);
+  --popover: rgb(30 41 59);
   --popover-foreground: oklch(0.985 0 0);
   --primary: oklch(0.922 0 0);
   --primary-foreground: oklch(0.205 0 0);
@@ -122,7 +125,7 @@ body {
   --chart-3: oklch(0.439 0 0);
   --chart-4: oklch(0.371 0 0);
   --chart-5: oklch(0.269 0 0);
-  --sidebar: oklch(0.205 0 0);
+  --sidebar: rgb(30 41 59);
   --sidebar-foreground: oklch(0.985 0 0);
   --sidebar-primary: oklch(0.488 0.243 264.376);
   --sidebar-primary-foreground: oklch(0.985 0 0);
@@ -143,3 +146,37 @@ body {
     @apply font-sans;
   }
 }
+
+/* Global dark mode adaptations for neutral gray text and section backgrounds.
+   Only targets neutral grays — colored text (red, blue, green) is unaffected.
+   Only targets bg-gray-50 (page sections), not bg-white (handled per-component). */
+.dark .text-gray-900 { color: rgb(249 250 251); }
+.dark .text-gray-800 { color: rgb(243 244 246); }
+.dark .text-gray-700 { color: rgb(209 213 219); }
+.dark .text-gray-600 { color: rgb(156 163 175); }
+.dark .text-gray-500 { color: rgb(107 114 128); }
+.dark .text-gray-400 { color: rgb(75 85 99); }
+
+.dark .bg-white    { background-color: rgb(30 41 59); box-shadow: inset 0 1px 0 rgba(255,255,255,0.06); }
+.dark .bg-gray-50  { background-color: rgb(15 23 42); }
+.dark .bg-gray-100 { background-color: rgb(30 41 59); }
+.dark .bg-gray-200 { background-color: rgb(51 65 85); }
+
+.dark .border-gray-100 { border-color: rgb(30 41 59); }
+.dark .border-gray-200 { border-color: rgb(51 65 85); }
+.dark .border-gray-300 { border-color: rgb(71 85 105); }
+
+.dark .hover\:bg-gray-50:hover  { background-color: rgb(30 41 59); }
+.dark .hover\:bg-gray-100:hover { background-color: rgb(51 65 85); }
+.dark .hover\:bg-gray-50:hover  { background-color: rgb(30 41 59); }
+
+/* Article and blog inline styles that can't use Tailwind dark: prefix */
+.dark .article-content h2,
+.dark .article-content h3 { color: #f9fafb; }
+.dark .article-content p,
+.dark .article-content ul,
+.dark .article-content ol,
+.dark .article-content li { color: #d1d5db; }
+.dark .article-content blockquote { color: #9ca3af; }
+.dark .article-content .stat-box { background: rgb(31 41 55); border-color: rgb(55 65 81); }
+.dark .article-content .stat-box .stat-label { color: #9ca3af; }

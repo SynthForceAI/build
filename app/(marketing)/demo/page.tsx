@@ -285,10 +285,10 @@ export default function DemoPage() {
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-10">
-                  <Stat value="6" label="Active Agents" tone="bg-blue-50" />
-                  <Stat value="1,248" label="Tasks Completed (30d)" tone="bg-green-50" />
-                  <Stat value="$2,840" label="Monthly API Spend" tone="bg-purple-50" />
-                  <Stat value="98.2%" label="Satisfaction Score" tone="bg-yellow-50" />
+                  <Stat value="6" label="Active Agents" tone="bg-blue-50 dark:bg-blue-950/60" />
+                  <Stat value="1,248" label="Tasks Completed (30d)" tone="bg-green-50 dark:bg-green-950/60" />
+                  <Stat value="$2,840" label="Monthly API Spend" tone="bg-purple-50 dark:bg-purple-950/60" />
+                  <Stat value="98.2%" label="Satisfaction Score" tone="bg-yellow-50 dark:bg-yellow-950/60" />
                 </div>
 
                 <h2 className="text-2xl font-bold text-gray-900 mb-6">Your Agent Directory</h2>
@@ -544,10 +544,10 @@ export default function DemoPage() {
                 </p>
 
                 <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-10">
-                  <Stat value="94.7%" label="Success Rate" tone="bg-blue-50" />
-                  <Stat value="142" label="Errors (30d)" tone="bg-green-50" />
-                  <Stat value="8.2s" label="Avg. Response Time" tone="bg-purple-50" />
-                  <Stat value="4.7" label="Avg. User Rating" tone="bg-yellow-50" />
+                  <Stat value="94.7%" label="Success Rate" tone="bg-blue-50 dark:bg-blue-950/60" />
+                  <Stat value="142" label="Errors (30d)" tone="bg-green-50 dark:bg-green-950/60" />
+                  <Stat value="8.2s" label="Avg. Response Time" tone="bg-purple-50 dark:bg-purple-950/60" />
+                  <Stat value="4.7" label="Avg. User Rating" tone="bg-yellow-50 dark:bg-yellow-950/60" />
                 </div>
 
                 <h2 className="text-2xl font-bold text-gray-900 mb-6">Agent Performance</h2>
@@ -573,7 +573,7 @@ export default function DemoPage() {
 
                 <h2 className="text-2xl font-bold text-gray-900 mb-6">Error Deep Dive</h2>
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-10">
-                  <div className="bg-red-50 p-6 rounded-xl">
+                  <div className="bg-red-50 dark:bg-red-950/60 p-6 rounded-xl">
                     <h3 className="text-lg font-bold text-gray-900 mb-4">Recent Errors</h3>
                     <ul className="space-y-4">
                       <ErrorItem agent="Invoice Processor" desc="Failed to parse invoice date; manual review required." time="2 hours ago" />
@@ -627,9 +627,9 @@ export default function DemoPage() {
                 </p>
 
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-10">
-                  <StatWithDelta value="$2,840" label="Monthly Spend" delta="+12% from last month" deltaTone="text-green-600" tone="bg-blue-50" />
-                  <StatWithDelta value="$18.5k" label="Estimated ROI (30d)" delta="+24% efficiency" deltaTone="text-green-600" tone="bg-green-50" />
-                  <StatWithDelta value="$0.58" label="Avg. Cost per Task" delta="+$0.02 vs target" deltaTone="text-red-600" tone="bg-purple-50" />
+                  <StatWithDelta value="$2,840" label="Monthly Spend" delta="+12% from last month" deltaTone="text-green-600" tone="bg-blue-50 dark:bg-blue-950/60" />
+                  <StatWithDelta value="$18.5k" label="Estimated ROI (30d)" delta="+24% efficiency" deltaTone="text-green-600" tone="bg-green-50 dark:bg-green-950/60" />
+                  <StatWithDelta value="$0.58" label="Avg. Cost per Task" delta="+$0.02 vs target" deltaTone="text-red-600" tone="bg-purple-50 dark:bg-purple-950/60" />
                 </div>
 
                 <h2 className="text-2xl font-bold text-gray-900 mb-6">Cost Breakdown by Agent</h2>
@@ -657,7 +657,7 @@ export default function DemoPage() {
 
                 <h2 className="text-2xl font-bold text-gray-900 mb-6">Optimization Recommendations</h2>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  <div className="bg-green-50 p-6 rounded-xl">
+                  <div className="bg-green-50 dark:bg-green-950/60 p-6 rounded-xl">
                     <h3 className="text-lg font-bold text-gray-900 mb-4">Switch Model for Expense Auditor</h3>
                     <p className="text-gray-700 mb-4">
                       Expense Auditor currently uses GPT‑4o. Switching to Claude 3 Haiku could reduce cost per task by ~40% with minimal accuracy loss.
@@ -671,7 +671,7 @@ export default function DemoPage() {
                       </button>
                     </div>
                   </div>
-                  <div className="bg-blue-50 p-6 rounded-xl">
+                  <div className="bg-blue-50 dark:bg-blue-950/60 p-6 rounded-xl">
                     <h3 className="text-lg font-bold text-gray-900 mb-4">Batch Processing for Invoice Processor</h3>
                     <p className="text-gray-700 mb-4">
                       Invoice Processor processes each invoice individually. Enabling batch processing could reduce API calls by 30%.

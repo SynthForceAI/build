@@ -3,13 +3,13 @@ import { WaitlistTrigger } from "@/components/ui/waitlist-trigger";
 
 export function OriginalNavbar() {
     return (
-        <div className="hidden md:flex gap-8 text-sm font-sans text-gray-600">
-            <Link href="/product" className="hover:text-gray-900">Product</Link>
-            <Link href="/demo" className="hover:text-gray-900">Demo</Link>
-            <Link href="/blog" className="hover:text-gray-900">Blog</Link>
-            <Link href="/faq" className="hover:text-gray-900">FAQ</Link>
+        <div className="hidden md:flex gap-8 text-sm font-sans text-gray-600 dark:text-gray-400">
+            <Link href="/product" className="hover:text-gray-900 dark:hover:text-white">Product</Link>
+            <Link href="/demo" className="hover:text-gray-900 dark:hover:text-white">Demo</Link>
+            <Link href="/blog" className="hover:text-gray-900 dark:hover:text-white">Blog</Link>
+            <Link href="/faq" className="hover:text-gray-900 dark:hover:text-white">FAQ</Link>
             <Link href="/hard-truth" className="font-semibold text-red-600 hover:text-red-700">The Hard Truth</Link>
-            <WaitlistTrigger className="text-gray-900 hover:underline decoration-1 underline-offset-4 cursor-pointer">
+            <WaitlistTrigger className="text-gray-900 dark:text-gray-200 hover:underline decoration-1 underline-offset-4 cursor-pointer">
                 Waitlist →
             </WaitlistTrigger>
         </div>

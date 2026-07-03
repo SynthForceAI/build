@@ -73,7 +73,6 @@ export default function BlogPage() {
       <main className="pb-20">
         <div className="bg-gray-50 border-b border-subtle py-20">
           <div className="max-w-3xl mx-auto px-6 text-center">
-            <p className="text-sm text-gray-500 mb-6">Blog</p>
             <h1 className="text-5xl md:text-6xl font-bold text-gray-900 mb-6">
               Insights on Managing Your Synthetic Workforce
             </h1>

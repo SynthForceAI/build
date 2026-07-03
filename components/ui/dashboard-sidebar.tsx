@@ -88,7 +88,7 @@ export function DashboardSidebar({ userRole, isOpen, onClose }: Props) {
         id="dashboard-sidebar"
         aria-label="Main navigation sidebar"
         className={cn(
-          "z-50 bg-white flex flex-col border-r border-gray-200",
+          "z-50 bg-white dark:bg-slate-900 flex flex-col border-r border-gray-200 dark:border-slate-700/60",
           "shadow-[2px_0_12px_rgba(0,0,0,0.04)]",
           // Mobile: fixed full-height overlay
           "fixed inset-y-0 left-0 w-64",
@@ -108,12 +108,17 @@ export function DashboardSidebar({ userRole, isOpen, onClose }: Props) {
         <div className="w-64 flex flex-col h-full overflow-hidden">
 
           {/* ── Logo ─────────────────────────────────────────── */}
-          <div className="h-16 shrink-0 flex items-center justify-center px-5 border-b border-gray-100">
+          <div className="h-16 shrink-0 flex items-center justify-center px-5 border-b border-gray-100 dark:border-slate-800">
             <Link href="/" aria-label="Go to home">
               <img
                 src="/assets/logo_hero.png"
                 alt="SynthForce"
-                className="h-10 w-auto object-contain"
+                className="h-10 w-auto object-contain dark:hidden"
+              />
+              <img
+                src="/assets/logo-white.png"
+                alt="SynthForce"
+                className="h-10 w-auto object-contain hidden dark:block"
               />
             </Link>
           </div>
@@ -154,18 +159,18 @@ export function DashboardSidebar({ userRole, isOpen, onClose }: Props) {
                       "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#00B2FF] focus-visible:ring-offset-1",
                       isActive
                         ? "border-l-[#00B2FF] bg-blue-50 shadow-sm"
-                        : "border-l-transparent hover:bg-gray-50 hover:border-l-gray-200"
+                        : "border-l-transparent hover:bg-gray-50 dark:hover:bg-slate-800 hover:border-l-gray-200 dark:hover:border-l-gray-600"
                     )}
                   >
                     <span className={cn(
                       "font-semibold text-[13px] transition-colors duration-200",
-                      isActive ? "text-[#00B2FF]" : "text-gray-700 group-hover:text-gray-900"
+                      isActive ? "text-[#00B2FF]" : "text-gray-700 dark:text-gray-300 group-hover:text-gray-900 dark:group-hover:text-white"
                     )}>
                       {label}
                     </span>
                     <span className={cn(
                       "text-xs mt-0.5 transition-colors duration-200",
-                      isActive ? "text-[#00B2FF]/60" : "text-gray-400 group-hover:text-gray-500"
+                      isActive ? "text-[#00B2FF]/60" : "text-gray-400 dark:text-gray-500 group-hover:text-gray-500 dark:group-hover:text-gray-400"
                     )}>
                       {sub}
                     </span>
@@ -173,7 +178,7 @@ export function DashboardSidebar({ userRole, isOpen, onClose }: Props) {
 
                   {/* Audit subsections — only visible when viewing an audit report */}
                   {isDashboard && isAuditPage && auditId && (
-                    <div className="ml-3 mt-1 mb-1 border-l-2 border-gray-100 pl-2 flex flex-col gap-0.5">
+                    <div className="ml-3 mt-1 mb-1 border-l-2 border-gray-100 dark:border-slate-700/60 pl-2 flex flex-col gap-0.5">
                       {AUDIT_SUBSECTIONS.filter((s) => !applicableSections || applicableSections.includes(s.id)).map((s) => (
                         <Link
                           key={s.id}
@@ -183,7 +188,7 @@ export function DashboardSidebar({ userRole, isOpen, onClose }: Props) {
                             "block text-[12px] px-2 py-1.5 rounded-lg transition-colors truncate",
                             activeSection === s.id
                               ? "text-[#00B2FF] bg-blue-50 font-semibold"
-                              : "text-gray-500 hover:text-gray-800 hover:bg-gray-50"
+                              : "text-gray-500 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-200 hover:bg-gray-50 dark:hover:bg-slate-800"
                           )}
                         >
                           {s.label}
