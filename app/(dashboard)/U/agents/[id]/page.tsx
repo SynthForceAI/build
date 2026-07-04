@@ -8,11 +8,17 @@ import { decimalToJson } from "@/lib/serialize";
 
 type Ctx = { params: Promise<{ id: string }> };
 
-const STATUS_PILL: Record<string, string> = {
-  active:      "bg-green-100 text-green-800",
-  paused:      "bg-yellow-100 text-yellow-800",
-  flagged:     "bg-red-100 text-red-800",
-  deactivated: "bg-gray-100 text-gray-600",
+const STATUS_DOT: Record<string, string> = {
+  active:      "bg-green-500",
+  paused:      "bg-yellow-400",
+  flagged:     "bg-red-500",
+  deactivated: "bg-gray-400",
+};
+const STATUS_TEXT: Record<string, string> = {
+  active:      "text-green-700",
+  paused:      "text-yellow-700",
+  flagged:     "text-red-700",
+  deactivated: "text-gray-500",
 };
 
 function fmtDollars(cents: number) {
@@ -90,7 +96,8 @@ export default async function AgentDetailPage({ params }: Ctx) {
             <p className="text-sm text-gray-500 mt-1">{agent.description}</p>
           )}
         </div>
-        <span className={`px-3 py-1 rounded-full text-xs font-mono capitalize shrink-0 ${STATUS_PILL[agent.status] ?? "bg-gray-100 text-gray-600"}`}>
+        <span className={`inline-flex items-center gap-1.5 text-xs font-mono capitalize shrink-0 ${STATUS_TEXT[agent.status] ?? "text-gray-500"}`}>
+          <span className={`w-2 h-2 rounded-full shrink-0 ${STATUS_DOT[agent.status] ?? "bg-gray-400"}`} />
           {agent.status}
         </span>
       </div>

@@ -211,7 +211,7 @@ export function ProviderForm({ providers, departments, onSuccess }: Props) {
   const labelClass = "block text-sm font-medium text-gray-700 mb-1";
 
   return (
-    <div className="bg-white rounded-2xl border border-gray-200 shadow-sm p-6">
+    <div className="bg-white rounded-md border border-gray-200 shadow-sm p-6">
       <h2 className="text-xl font-semibold text-gray-900 mb-1">Connect Your Provider</h2>
       <p className="text-sm text-gray-600 mb-6">
         Paste your org admin key to start monitoring your AI spending across your agent fleet.
@@ -405,9 +405,15 @@ export function ProviderForm({ providers, departments, onSuccess }: Props) {
             </svg>
           )}
           {loading
-            ? (isAdminAuditFlow ? "Running audit…" : "Connecting…")
+            ? (isAdminAuditFlow ? "Running audit…" : "Connecting & syncing history…")
             : (isAdminAuditFlow ? "Run Spending Audit" : "Connect Provider")}
         </button>
+
+        {loading && !isAdminAuditFlow && (
+          <p className="text-xs text-center text-gray-500 animate-pulse">
+            Pulling up to 30 days of usage history — this takes a few seconds…
+          </p>
+        )}
       </form>
     </div>
   );

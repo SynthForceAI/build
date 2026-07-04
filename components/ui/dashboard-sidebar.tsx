@@ -15,10 +15,8 @@
  */
 
 import Link from "next/link";
-import { usePathname, useRouter, useSearchParams } from "next/navigation";
-import { toast } from "sonner";
+import { usePathname, useSearchParams } from "next/navigation";
 import { cn } from "@/lib/utils";
-import { OWNER_EMAIL } from "@/lib/constants";
 import type { UserRole } from "@prisma/client";
 
 type NavItem = { href: string; label: string; sub: string; roles?: UserRole[]; disabled?: boolean };
@@ -40,8 +38,8 @@ const NAV_ITEMS: NavItem[] = [
   { href: "/U",              label: "Dashboard",    sub: "Spend overview & audits"     },
   { href: "/U/onboard",      label: "Onboard",      sub: "Run a spending audit"         },
   { href: "/U/audit-log",    label: "Audit Log",    sub: "Spending audit history",      roles: ["owner", "admin", "member"] },
-  { href: "/U/billing",      label: "Billing",      sub: "Plan & usage",                roles: ["owner", "admin"] },
-  { href: "/U/settings",     label: "Settings",     sub: "Account & preferences",       roles: ["owner", "admin"] },
+  { href: "/U/settings",     label: "Settings",     sub: "Account & preferences"       },
+  { href: "/U/billing",      label: "Billing",      sub: "Plan & usage"                },
   { href: "/U/performance",  label: "Performance",  sub: "Tasks, errors, satisfaction", disabled: true },
   { href: "/U/compensation", label: "Compensation", sub: "API spend & ROI",             disabled: true },
   { href: "/U/policies",     label: "Policies",     sub: "Guardrails & compliance",     roles: ["owner", "admin", "member"], disabled: true },
@@ -50,17 +48,13 @@ const NAV_ITEMS: NavItem[] = [
 ];
 
 type Props = {
-  userName:        string;
-  userEmail:       string;
-  userRole:        UserRole;
-  isPlatformOwner: boolean;
-  isOpen:          boolean;
-  onClose:         () => void;
+  userRole: UserRole;
+  isOpen:   boolean;
+  onClose:  () => void;
 };
 
-export function DashboardSidebar({ userName, userEmail, userRole, isPlatformOwner, isOpen, onClose }: Props) {
+export function DashboardSidebar({ userRole, isOpen, onClose }: Props) {
   const pathname = usePathname();
-  const router = useRouter();
   const searchParams = useSearchParams();
 
   const isAuditPage  = pathname === "/audit/free";
@@ -68,16 +62,6 @@ export function DashboardSidebar({ userName, userEmail, userRole, isPlatformOwne
   const activeSection = searchParams.get("section") ?? "overview";
   const sectionsParam = searchParams.get("sections");
   const applicableSections = sectionsParam ? sectionsParam.split(",") : null;
-
-  async function handleLogout() {
-    try {
-      await fetch("/api/auth/logout", { method: "POST" });
-      toast.success("Signed out successfully");
-      window.location.href = "/login";
-    } catch {
-      toast.error("Logout failed. Please try again.");
-    }
-  }
 
   return (
     <>
@@ -104,7 +88,7 @@ export function DashboardSidebar({ userName, userEmail, userRole, isPlatformOwne
         id="dashboard-sidebar"
         aria-label="Main navigation sidebar"
         className={cn(
-          "z-50 bg-white flex flex-col border-r border-gray-200",
+          "z-50 bg-white dark:bg-slate-900 flex flex-col border-r border-gray-200 dark:border-slate-700/60",
           "shadow-[2px_0_12px_rgba(0,0,0,0.04)]",
           // Mobile: fixed full-height overlay
           "fixed inset-y-0 left-0 w-64",
@@ -124,12 +108,17 @@ export function DashboardSidebar({ userName, userEmail, userRole, isPlatformOwne
         <div className="w-64 flex flex-col h-full overflow-hidden">
 
           {/* ── Logo ─────────────────────────────────────────── */}
-          <div className="h-16 shrink-0 flex items-center justify-center px-5 border-b border-gray-100">
+          <div className="h-16 shrink-0 flex items-center justify-center px-5 border-b border-gray-100 dark:border-slate-800">
             <Link href="/" aria-label="Go to home">
               <img
                 src="/assets/logo_hero.png"
                 alt="SynthForce"
-                className="h-10 w-auto object-contain"
+                className="h-10 w-auto object-contain dark:hidden"
+              />
+              <img
+                src="/assets/logo-white.png"
+                alt="SynthForce"
+                className="h-10 w-auto object-contain hidden dark:block"
               />
             </Link>
           </div>
@@ -170,18 +159,18 @@ export function DashboardSidebar({ userName, userEmail, userRole, isPlatformOwne
                       "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#00B2FF] focus-visible:ring-offset-1",
                       isActive
                         ? "border-l-[#00B2FF] bg-blue-50 shadow-sm"
-                        : "border-l-transparent hover:bg-gray-50 hover:border-l-gray-200"
+                        : "border-l-transparent hover:bg-gray-50 dark:hover:bg-slate-800 hover:border-l-gray-200 dark:hover:border-l-gray-600"
                     )}
                   >
                     <span className={cn(
                       "font-semibold text-[13px] transition-colors duration-200",
-                      isActive ? "text-[#00B2FF]" : "text-gray-700 group-hover:text-gray-900"
+                      isActive ? "text-[#00B2FF]" : "text-gray-700 dark:text-gray-300 group-hover:text-gray-900 dark:group-hover:text-white"
                     )}>
                       {label}
                     </span>
                     <span className={cn(
                       "text-xs mt-0.5 transition-colors duration-200",
-                      isActive ? "text-[#00B2FF]/60" : "text-gray-400 group-hover:text-gray-500"
+                      isActive ? "text-[#00B2FF]/60" : "text-gray-400 dark:text-gray-500 group-hover:text-gray-500 dark:group-hover:text-gray-400"
                     )}>
                       {sub}
                     </span>
@@ -189,7 +178,7 @@ export function DashboardSidebar({ userName, userEmail, userRole, isPlatformOwne
 
                   {/* Audit subsections — only visible when viewing an audit report */}
                   {isDashboard && isAuditPage && auditId && (
-                    <div className="ml-3 mt-1 mb-1 border-l-2 border-gray-100 pl-2 flex flex-col gap-0.5">
+                    <div className="ml-3 mt-1 mb-1 border-l-2 border-gray-100 dark:border-slate-700/60 pl-2 flex flex-col gap-0.5">
                       {AUDIT_SUBSECTIONS.filter((s) => !applicableSections || applicableSections.includes(s.id)).map((s) => (
                         <Link
                           key={s.id}
@@ -199,7 +188,7 @@ export function DashboardSidebar({ userName, userEmail, userRole, isPlatformOwne
                             "block text-[12px] px-2 py-1.5 rounded-lg transition-colors truncate",
                             activeSection === s.id
                               ? "text-[#00B2FF] bg-blue-50 font-semibold"
-                              : "text-gray-500 hover:text-gray-800 hover:bg-gray-50"
+                              : "text-gray-500 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-200 hover:bg-gray-50 dark:hover:bg-slate-800"
                           )}
                         >
                           {s.label}
@@ -211,55 +200,6 @@ export function DashboardSidebar({ userName, userEmail, userRole, isPlatformOwne
               );
             })}
           </nav>
-
-          {/* ── User info + logout ────────────────────────────── */}
-          <div className="p-2 border-t border-gray-100 shrink-0 space-y-1.5">
-            <Link
-              href="/U/profile"
-              onClick={() => {
-                if (typeof window !== "undefined" && window.innerWidth < 1024) {
-                  onClose();
-                }
-              }}
-              className="group block p-3 rounded-lg border border-gray-200 bg-white hover:border-[#00B2FF] hover:shadow-sm transition-all"
-              aria-label="View profile"
-            >
-              <p className="text-sm font-medium text-gray-900 truncate">{userName}</p>
-              <p className="text-xs text-gray-400 truncate mt-0.5">{userEmail}</p>
-              <div className="mt-2 flex items-center justify-between gap-2">
-                <span className="text-xs px-2 py-0.5 rounded-full bg-gray-100 text-gray-500 capitalize">
-                  {userRole}
-                </span>
-                <span className="text-xs font-medium text-[#00B2FF] flex items-center gap-0.5 group-hover:gap-1.5 transition-all">
-                  View Profile
-                  <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                  </svg>
-                </span>
-              </div>
-            </Link>
-            {isPlatformOwner && (
-              <Link
-                href="/owner/users"
-                className="w-full flex items-center gap-2 px-3 py-2 min-h-[44px] rounded-lg text-xs font-medium text-[#00B2FF] hover:bg-blue-50 transition-colors"
-              >
-                <svg className="w-3.5 h-3.5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
-                </svg>
-                Owner Panel
-              </Link>
-            )}
-            <button
-              onClick={handleLogout}
-              className="w-full flex items-center gap-2 px-3 py-2 min-h-[44px] rounded-lg text-xs font-medium text-gray-500 hover:bg-gray-50 hover:text-gray-700 transition-colors"
-              aria-label="Sign out"
-            >
-              <svg className="w-3.5 h-3.5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
-              </svg>
-              Sign out
-            </button>
-          </div>
 
         </div>
       </aside>

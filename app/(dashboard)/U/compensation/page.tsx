@@ -24,10 +24,15 @@ function roiScore(spendCents: number, budgetCents: number): CostRow["roiScore"] 
   return "Low";
 }
 
-const ROI_PILL: Record<CostRow["roiScore"], string> = {
-  High:   "bg-green-100 text-green-800",
-  Medium: "bg-yellow-100 text-yellow-800",
-  Low:    "bg-red-100 text-red-800",
+const ROI_DOT: Record<CostRow["roiScore"], string> = {
+  High:   "bg-green-500",
+  Medium: "bg-yellow-400",
+  Low:    "bg-red-500",
+};
+const ROI_TEXT: Record<CostRow["roiScore"], string> = {
+  High:   "text-green-700",
+  Medium: "text-yellow-700",
+  Low:    "text-red-700",
 };
 
 // ── Formatting helpers ──────────────────────────────────────────────────────
@@ -95,7 +100,7 @@ export default async function CompensationPage() {
       {/* ── Cost breakdown table ─────────────────────────── */}
       <div>
         <h2 className="text-base font-semibold text-gray-900 mb-3">Cost Breakdown by Agent</h2>
-        <div className="bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden">
+        <div className="bg-white rounded-md border border-gray-200 shadow-sm overflow-hidden">
           {rows.length === 0 ? (
             <div className="px-6 py-16 text-center">
               <p className="text-sm text-gray-500">No connected agents yet.</p>
@@ -152,7 +157,8 @@ export default async function CompensationPage() {
                           )}
                         </td>
                         <td className="px-4 py-3">
-                          <span className={`px-2.5 py-1 rounded-full text-xs font-medium ${ROI_PILL[row.roiScore]}`}>
+                          <span className={`inline-flex items-center gap-1.5 text-xs font-medium ${ROI_TEXT[row.roiScore]}`}>
+                            <span className={`w-2 h-2 rounded-full shrink-0 ${ROI_DOT[row.roiScore]}`} />
                             {row.roiScore}
                           </span>
                         </td>

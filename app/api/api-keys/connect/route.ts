@@ -9,6 +9,7 @@ import { handleApiError, ApiError } from "@/lib/api-errors";
 import { runAudit } from "@/lib/audit/run";
 import { assertCanRunAudit } from "@/lib/audit/quota";
 import { resolveAnthropicKeyId } from "@/lib/providers/anthropic-connector";
+import { syncProviderUsage } from "@/lib/providers/sync-dispatch";
 
 export const dynamic = "force-dynamic";
 
@@ -195,20 +196,32 @@ export async function POST(req: NextRequest) {
       },
     });
 
-    if(connectedAgent.providerName === 'anthropic'){
-      const storedAdminKey = await prisma.providerAdminKey.findUnique({
-        where: { companyId_providerId: { companyId: user.companyId, providerId: provider.id } },
-      });
-      if(storedAdminKey){
-        const adminKeyPlain = decryptApiKey(storedAdminKey.encryptedKey);      
-        const apiKeyId = await resolveAnthropicKeyId(adminKeyPlain, fingerprint).catch(() => null)
-        if (apiKeyId){
-          await prisma.connectedAgent.update({
-            where: {id: connectedAgent.id},
-            data: {metadata: {apiKeyId}},
-          });
-        }
+    // Fetch admin key once — reused for Anthropic key resolution and immediate sync below.
+    const adminKeyRecord = parsed.keyType === "admin"
+      ? await prisma.providerAdminKey.findUnique({
+          where: { companyId_providerId: { companyId: user.companyId, providerId: provider.id } },
+        })
+      : null;
+
+    // Anthropic: resolve the individual api_key_id so usage can be attributed per-agent.
+    if (connectedAgent.providerName === "anthropic" && adminKeyRecord) {
+      const adminKeyPlain = decryptApiKey(adminKeyRecord.encryptedKey);
+      const apiKeyId = await resolveAnthropicKeyId(adminKeyPlain, fingerprint).catch(() => null);
+      if (apiKeyId) {
+        await prisma.connectedAgent.update({
+          where: { id: connectedAgent.id },
+          data: { metadata: { apiKeyId } },
+        });
       }
+    }
+
+    // Trigger an immediate 30-day backfill sync for admin keys so the user sees
+    // real historical data on the dashboard as soon as they connect, without
+    // waiting for the next scheduled cron run.
+    if (adminKeyRecord) {
+      await syncProviderUsage(provider.name, user.companyId, adminKeyRecord).catch((err) => {
+        console.error("[connect] immediate sync failed, will retry on next cron:", err);
+      });
     }
 
     return NextResponse.json(

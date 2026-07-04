@@ -77,14 +77,14 @@ async function fetchOpenAIAuditData(apiKey: string, periodDays: number): Promise
     usageU.searchParams.set("start_time", String(s));
     usageU.searchParams.set("end_time",   String(e));
     usageU.searchParams.set("bucket_width", "1d");
-    usageU.searchParams.set("limit", "32");
+    usageU.searchParams.set("limit", "31");
     usageU.searchParams.append("group_by", "model");
 
     const costsU = new URL(OPENAI_COSTS_URL);
     costsU.searchParams.set("start_time", String(s));
     costsU.searchParams.set("end_time",   String(e));
     costsU.searchParams.set("bucket_width", "1d");
-    costsU.searchParams.set("limit", "32");
+    costsU.searchParams.set("limit", "31");
     costsU.searchParams.append("group_by", "project_id");
 
     const [uRes, cRes] = await Promise.all([

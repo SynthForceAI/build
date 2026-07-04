@@ -1,5 +1,6 @@
 import { notFound, redirect } from "next/navigation";
 import Link from "next/link";
+import { Flame, CircleSlash, AlertTriangle } from "lucide-react";
 import { requireUser } from "@/lib/auth";
 import { ApiError } from "@/lib/api-errors";
 import { prisma } from "@/lib/db";
@@ -7,7 +8,6 @@ import { ShareButton } from "../free/ShareButton";
 import { RerunButton } from "../free/RerunButton";
 import { BurnRateCard } from "../free/BurnRateCard";
 import { InfoTip } from "../free/InfoTip";
-import { Flame, CircleSlash, AlertTriangle } from "lucide-react";
 
 // ---------------------------------------------------------------------------
 // Types
@@ -37,11 +37,12 @@ function fmtDollars(cents: bigint | number | null): string {
   return `$${(n / 100).toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
 }
 
-function efficiencyColor(score: number): string {
-  if (score >= 80) return "text-green-600 bg-green-50 border-green-200";
-  if (score >= 60) return "text-yellow-600 bg-yellow-50 border-yellow-200";
-  return "text-red-600 bg-red-50 border-red-200";
+function efficiencyTextColor(score: number): string {
+  if (score >= 80) return "text-green-600";
+  if (score >= 60) return "text-yellow-600";
+  return "text-red-600";
 }
+
 
 function efficiencyLabel(score: number): string {
   if (score >= 80) return "Good";
@@ -59,13 +60,13 @@ function severityDot(severity: string): string {
   }
 }
 
-function severityBadge(severity: string): string {
+function severityText(severity: string): string {
   switch (severity) {
-    case "critical": return "bg-red-50 text-red-700 border-red-200";
-    case "high":     return "bg-orange-50 text-orange-700 border-orange-200";
-    case "medium":   return "bg-yellow-50 text-yellow-700 border-yellow-200";
-    case "low":      return "bg-blue-50 text-blue-700 border-blue-200";
-    default:         return "bg-gray-50 text-gray-600 border-gray-200";
+    case "critical": return "text-red-700";
+    case "high":     return "text-orange-700";
+    case "medium":   return "text-yellow-700";
+    case "low":      return "text-blue-600";
+    default:         return "text-gray-500";
   }
 }
 
@@ -85,13 +86,13 @@ function formatModelName(raw: string): string {
   return raw;
 }
 
-function inferRole(m: ModelRow): { label: string; description: string; colorClass: string } {
+function inferRole(m: ModelRow): { label: string; description: string; dotColor: string; textColor: string } {
   const total = m.tokensIn + m.tokensOut;
-  if (total === 0) return { label: "Unknown", description: "No token data available.", colorClass: "text-gray-500 bg-gray-50 border-gray-200" };
+  if (total === 0) return { label: "Unknown", description: "No token data available.", dotColor: "bg-gray-400", textColor: "text-gray-500" };
   const inputRatio = m.tokensIn / total;
-  if (inputRatio > 0.72) return { label: "Researcher", description: "Input-heavy. Likely retrieval, Q&A, or context processing.", colorClass: "text-blue-700 bg-blue-50 border-blue-200" };
-  if (inputRatio < 0.42) return { label: "Writer / Coder", description: "Output-heavy. Likely code generation or content creation.", colorClass: "text-purple-700 bg-purple-50 border-purple-200" };
-  return { label: "Analyst", description: "Balanced token mix. Likely reasoning or multi-step analysis.", colorClass: "text-amber-700 bg-amber-50 border-amber-200" };
+  if (inputRatio > 0.72) return { label: "Researcher", description: "Input-heavy. Likely retrieval, Q&A, or context processing.", dotColor: "bg-blue-500", textColor: "text-blue-700" };
+  if (inputRatio < 0.42) return { label: "Writer / Coder", description: "Output-heavy. Likely code generation or content creation.", dotColor: "bg-purple-500", textColor: "text-purple-700" };
+  return { label: "Analyst", description: "Balanced token mix. Likely reasoning or multi-step analysis.", dotColor: "bg-amber-500", textColor: "text-amber-700" };
 }
 
 function utilizationBand(rate: number): { label: string; colorClass: string; barColor: string } {
@@ -312,7 +313,7 @@ export default async function AuditPage({
     .filter(Boolean)
     .join("\n");
 
-  const colorClass = efficiencyColor(score);
+  const effTextColor = efficiencyTextColor(score);
 
   return (
     <div className="max-w-3xl mx-auto space-y-6">
@@ -335,9 +336,9 @@ export default async function AuditPage({
           <div className="text-2xl font-bold text-gray-900">{fmtDollars(audit.totalMonthlySpendCents)}</div>
           <div className="text-sm text-gray-600 mt-0.5">Total Spend</div>
         </div>
-        <div className={`rounded-xl p-5 border ${colorClass}`}>
-          <div className="text-2xl font-bold">{score}<span className="text-sm font-normal ml-1">/100</span></div>
-          <div className="text-sm mt-0.5 flex items-center gap-1">
+        <div className="rounded-xl p-5 border border-gray-200 bg-white">
+          <div className={`text-2xl font-bold ${effTextColor}`}>{score}<span className="text-sm font-normal ml-1">/100</span></div>
+          <div className={`text-sm mt-0.5 flex items-center gap-1 ${effTextColor}`}>
             Efficiency: {efficiencyLabel(score)}
             <InfoTip text="A 0 to 100 score based on how much of your spend SynthForce estimates could be reduced through model swaps, caching, or workload changes. 80 and above is good. 60 to 79 is fair. Below 60 needs attention." />
           </div>
@@ -350,7 +351,7 @@ export default async function AuditPage({
 
       {/* ── Synthetic Workforce ──────────────────────────────────────────── */}
       {byModel.length > 0 && (
-        <div className="bg-white rounded-2xl border border-gray-200 shadow-sm p-6">
+        <div className="bg-white rounded-md border border-gray-200 shadow-sm p-6">
           <div className="flex items-start justify-between mb-1">
             <h2 className="text-sm font-semibold text-gray-900">Your Synthetic Workforce</h2>
             <span className="text-xs text-gray-500 bg-gray-100 px-2.5 py-1 rounded-full shrink-0 ml-3">
@@ -373,17 +374,20 @@ export default async function AuditPage({
                       <div className="flex flex-wrap items-center gap-2">
                         <span className="text-sm font-medium text-gray-900 truncate">{formatModelName(m.model)}</span>
                         {isOutlier && (
-                          <span className="text-xs px-2 py-0.5 rounded-full bg-red-50 text-red-700 border border-red-200 font-medium shrink-0">
+                          <span className="inline-flex items-center gap-1 text-xs font-medium text-red-700 shrink-0">
+                            <span className="w-1.5 h-1.5 rounded-full shrink-0 bg-red-500" />
                             Compensation outlier
                           </span>
                         )}
                         {flagship && !isOutlier && (
-                          <span className="text-xs px-2 py-0.5 rounded-full bg-amber-50 text-amber-700 border border-amber-200 font-medium shrink-0">
+                          <span className="inline-flex items-center gap-1 text-xs font-medium text-amber-700 shrink-0">
+                            <span className="w-1.5 h-1.5 rounded-full shrink-0 bg-amber-500" />
                             Flagship tier
                           </span>
                         )}
                       </div>
-                      <span className={`mt-1.5 inline-block text-xs px-2 py-0.5 rounded-full border font-medium ${role.colorClass}`}>
+                      <span className={`mt-1.5 inline-flex items-center gap-1 text-xs font-medium ${role.textColor}`}>
+                        <span className={`w-1.5 h-1.5 rounded-full shrink-0 ${role.dotColor}`} />
                         {role.label}
                       </span>
                       <p className="text-xs text-gray-500 mt-1">{role.description}</p>
@@ -450,7 +454,7 @@ export default async function AuditPage({
 
       {/* ── Fleet Utilization ────────────────────────────────────────────── */}
       {totalDays > 0 && (
-        <div className="bg-white rounded-2xl border border-gray-200 shadow-sm p-6">
+        <div className="bg-white rounded-md border border-gray-200 shadow-sm p-6">
           <h2 className="text-sm font-semibold text-gray-900 mb-4 flex items-center gap-1">
             Fleet Utilization
             <InfoTip text="The percentage of days in the audit period where your fleet logged at least one API call. A healthy fleet runs between 70% and 85% of days. Below 30% suggests idle models sitting on your payroll. Above 85% is worth watching for unintended always-on spend." />
@@ -476,7 +480,7 @@ export default async function AuditPage({
 
       {/* ── Fleet Performance Review ──────────────────────────────────────── */}
       {spendTrend && (
-        <div className="bg-white rounded-2xl border border-gray-200 shadow-sm p-6">
+        <div className="bg-white rounded-md border border-gray-200 shadow-sm p-6">
           <h2 className="text-sm font-semibold text-gray-900 mb-4">Fleet Performance Review</h2>
           <div className={`rounded-xl p-4 mb-4 border ${
             spendTrend.pct < -10 ? "bg-green-50 border-green-200" :
@@ -512,10 +516,8 @@ export default async function AuditPage({
                     <span className="text-gray-700 truncate max-w-[55%]">{formatModelName(mc.model)}</span>
                     <div className="flex items-center gap-2 shrink-0">
                       <span className="text-gray-500">{mc.tpc.toLocaleString()} tokens/call</span>
-                      <span className={`px-2 py-0.5 rounded-full font-medium ${
-                        mc.heavy ? "bg-orange-50 text-orange-700 border border-orange-200" :
-                        "bg-gray-100 text-gray-600"
-                      }`}>
+                      <span className={`inline-flex items-center gap-1 text-xs font-medium ${mc.heavy ? "text-orange-700" : "text-gray-500"}`}>
+                        <span className={`w-1.5 h-1.5 rounded-full shrink-0 ${mc.heavy ? "bg-orange-500" : "bg-gray-400"}`} />
                         {mc.label}
                       </span>
                     </div>
@@ -529,7 +531,7 @@ export default async function AuditPage({
 
       {/* ── Sustained High Spend ──────────────────────────────────────────── */}
       {overtime && (
-        <div className="bg-white rounded-2xl border border-orange-200 shadow-sm p-6">
+        <div className="bg-white rounded-md border border-orange-200 shadow-sm p-6">
           <div className="flex items-start gap-3">
             <Flame className="w-5 h-5 mt-0.5 text-orange-500 shrink-0" aria-hidden="true" />
             <div>
@@ -547,7 +549,7 @@ export default async function AuditPage({
 
       {/* ── Batch Eligibility ─────────────────────────────────────────────── */}
       {batchCandidates.length > 0 && (
-        <div className="bg-white rounded-2xl border border-gray-200 shadow-sm p-6">
+        <div className="bg-white rounded-md border border-gray-200 shadow-sm p-6">
           <div className="flex items-start justify-between mb-1">
             <h2 className="text-sm font-semibold text-gray-900">Batch Eligibility</h2>
             {batchSavingsEstimateCents > 0 && (
@@ -580,7 +582,7 @@ export default async function AuditPage({
 
       {/* ── Key Findings ──────────────────────────────────────────────────── */}
       {topFindings.length > 0 && (
-        <div className="bg-white rounded-2xl border border-gray-200 shadow-sm p-6">
+        <div className="bg-white rounded-md border border-gray-200 shadow-sm p-6">
           <h2 className="text-sm font-semibold text-gray-900 mb-4">Key Findings</h2>
           <div className="space-y-4">
             {topFindings.map((f) => (
@@ -589,11 +591,13 @@ export default async function AuditPage({
                 <div className="flex-1 min-w-0">
                   <div className="flex flex-wrap items-center gap-2 mb-1">
                     <span className="text-sm font-medium text-gray-900">{f.title}</span>
-                    <span className={`text-xs px-2 py-0.5 rounded-full border font-medium ${severityBadge(f.severity)}`}>
+                    <span className={`inline-flex items-center gap-1 text-xs font-medium capitalize ${severityText(f.severity)}`}>
+                      <span className={`w-1.5 h-1.5 rounded-full shrink-0 ${severityDot(f.severity)}`} />
                       {f.severity}
                     </span>
                     {f.potentialSavingsCents && Number(f.potentialSavingsCents) > 0 && (
-                      <span className="text-xs text-green-700 bg-green-50 border border-green-200 px-2 py-0.5 rounded-full font-medium">
+                      <span className="inline-flex items-center gap-1 text-xs font-medium text-green-700">
+                        <span className="w-1.5 h-1.5 rounded-full shrink-0 bg-green-500" />
                         Save {fmtDollars(Number(f.potentialSavingsCents))}/mo
                       </span>
                     )}
@@ -608,19 +612,14 @@ export default async function AuditPage({
 
       {/* ── AI-generated report summary ───────────────────────────────────── */}
       {audit.reportSummary && (
-        <div className="bg-blue-50 border border-blue-100 rounded-2xl p-6">
-          <div className="flex items-center gap-2 mb-3">
-            <svg className="w-4 h-4 text-[#00B2FF]" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.347.347A3.001 3.001 0 0112 21a3 3 0 01-2.121-.879l-.347-.347z" />
-            </svg>
-            <h2 className="text-sm font-semibold text-gray-900">Analysis</h2>
-          </div>
+        <div className="bg-blue-50 border border-blue-100 rounded-md p-6">
+          <h2 className="text-sm font-semibold text-gray-900 mb-3">Analysis</h2>
           <p className="text-sm text-gray-700 leading-relaxed whitespace-pre-line">{audit.reportSummary}</p>
         </div>
       )}
 
       {/* ── Peer Benchmarking ─────────────────────────────────────────────── */}
-      <div className="bg-white rounded-2xl border border-gray-200 shadow-sm p-6">
+      <div className="bg-white rounded-md border border-gray-200 shadow-sm p-6">
         <div className="flex items-center justify-between mb-3">
           <h2 className="text-sm font-semibold text-gray-900">Peer Benchmarking</h2>
           <span className="text-xs text-gray-400 bg-gray-100 px-2.5 py-1 rounded-full">Coming soon</span>
@@ -631,19 +630,14 @@ export default async function AuditPage({
       </div>
 
       {/* ── What This Audit Cannot Tell You Yet ──────────────────────────── */}
-      <div className="bg-white rounded-2xl border border-gray-200 shadow-sm p-6 space-y-4">
+      <div className="bg-white rounded-md border border-gray-200 shadow-sm p-6 space-y-4">
         <h2 className="text-sm font-semibold text-gray-900">What This Audit Cannot Tell You Yet</h2>
         <div className="bg-gray-50 rounded-xl p-4 border border-gray-200">
-          <div className="flex items-start gap-3">
-            <CircleSlash className="w-4 h-4 mt-0.5 text-gray-400 shrink-0" aria-hidden="true" />
-            <div>
-              <p className="text-sm font-medium text-gray-900 mb-1">Attribution gap</p>
-              <p className="text-sm text-gray-600">
-                100% of your spend is visible by API key and model. 0% is traceable to a task, customer, or outcome. Billing data shows you the invoice. It cannot show you what produced it.
-              </p>
-              <p className="text-xs text-gray-400 mt-2">Install the SynthForce proxy layer to close the gap.</p>
-            </div>
-          </div>
+          <p className="text-sm font-medium text-gray-900 mb-1">Attribution gap</p>
+          <p className="text-sm text-gray-600">
+            100% of your spend is visible by API key and model. 0% is traceable to a task, customer, or outcome. Billing data shows you the invoice. It cannot show you what produced it.
+          </p>
+          <p className="text-xs text-gray-400 mt-2">Install the SynthForce proxy layer to close the gap.</p>
         </div>
         {spike && (
           <div className="bg-orange-50 rounded-xl p-4 border border-orange-200">
@@ -669,7 +663,7 @@ export default async function AuditPage({
       />
 
       {/* ── Upgrade CTA ───────────────────────────────────────────────────── */}
-      <div className="bg-blue-50/60 border border-blue-100 rounded-2xl p-6">
+      <div className="bg-blue-50/60 border border-blue-100 rounded-md p-6">
         <h2 className="text-base font-semibold text-gray-900 mb-1">Ready to go deeper?</h2>
         <p className="text-sm text-gray-600 mb-4">
           Track individual agents, set budgets, and get real-time alerts when spend spikes.

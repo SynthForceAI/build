@@ -74,7 +74,7 @@ export function DepartmentsClient({ departments }: { departments: DepartmentRow[
       </div>
 
       {/* ── Table ───────────────────────────────────────── */}
-      <div className="bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden">
+      <div className="bg-white rounded-md border border-gray-200 shadow-sm overflow-hidden">
         {departments.length === 0 ? (
           <div className="px-6 py-16 text-center">
             <p className="text-sm text-gray-500">No departments yet.</p>
@@ -137,7 +137,7 @@ export function DepartmentsClient({ departments }: { departments: DepartmentRow[
                       </td>
 
                       <td className="px-6 py-4">
-                        <span className="px-2.5 py-1 rounded-full text-xs bg-blue-50 text-blue-700">
+                        <span className="text-xs text-gray-600">
                           {dept.agentCount} {dept.agentCount === 1 ? "agent" : "agents"}
                         </span>
                       </td>
@@ -205,7 +205,7 @@ export function DepartmentsClient({ departments }: { departments: DepartmentRow[
             className="absolute inset-0 bg-black/40 backdrop-blur-sm"
             onClick={() => setShowModal(false)}
           />
-          <div className="relative bg-white rounded-2xl shadow-xl w-full max-w-md mx-4 p-6 z-10">
+          <div className="relative bg-white rounded-xl shadow-xl w-full max-w-md mx-4 p-6 z-10">
             <div className="flex items-center justify-between mb-5">
               <h2 className="text-lg font-semibold text-gray-900">New Department</h2>
               <button
