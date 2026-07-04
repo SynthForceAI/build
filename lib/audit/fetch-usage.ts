@@ -11,7 +11,7 @@
 import { decryptApiKey } from "../crypto";
 import { calculateCostCents } from "../providers/pricing";
 import type { ProviderUsageReport } from "../providers/openai-billing";
-import { isDemoKey, buildDemoReport } from "./demo-data";
+import { isDemoKey, isAnthropicDemoKey, buildDemoReport, buildAnthropicDemoReport } from "./demo-data";
 
 // ---------------------------------------------------------------------------
 // OpenAI - Organization Usage API (requires sk-admin- key)
@@ -347,6 +347,8 @@ type AntUsageBucket = { starting_at?: string; ending_at?: string; results?: AntU
 type AntUsageResponse = { data?: AntUsageBucket[] };
 
 async function fetchAnthropicAuditData(apiKey: string, periodDays: number): Promise<ProviderUsageReport> {
+  if (isAnthropicDemoKey(apiKey)) return buildAnthropicDemoReport(periodDays);
+
   const now   = new Date();
   const start = new Date(now.getTime() - periodDays * 24 * 60 * 60 * 1000);
 
