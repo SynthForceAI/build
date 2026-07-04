@@ -2,29 +2,17 @@
 
 import { useState } from "react";
 import { ProviderForm } from "./ProviderForm";
-import { RecentlyConnected } from "./RecentlyConnected";
+import { OnboardFAQ } from "./OnboardFAQ";
 
 type Provider   = { id: string; name: string; displayName: string };
 type Department = { id: string; name: string };
-type Agent = {
-  id:                  string;
-  name:                string;
-  providerName:        string;
-  modelUsed:           string;
-  status:              "pending" | "active" | "inactive";
-  tasksMonitored:      number;
-  totalCostCents:      number | string;
-  connectedAt:         string;
-  lastUsageReportedAt: string | null;
-  department:          string | null;
-};
 
 type View = "choice" | "deploy" | "connect";
 
 type Props = {
   providers:     Provider[];
   departments:   Department[];
-  initialAgents: Agent[];
+  initialAgents: unknown[];
 };
 
 // ── Shared style tokens ────────────────────────────────────────────────────
@@ -150,21 +138,17 @@ function DeployView({ onBack }: { onBack: () => void }) {
   );
 }
 
-// ── Connect view - real ProviderForm + RecentlyConnected ──────────────────
+// ── Connect view ───────────────────────────────────────────────────────────
 
 function ConnectView({
   providers,
   departments,
-  initialAgents,
   onBack,
 }: {
-  providers:     Provider[];
-  departments:   Department[];
-  initialAgents: Agent[];
-  onBack:        () => void;
+  providers:   Provider[];
+  departments: Department[];
+  onBack:      () => void;
 }) {
-  const [refreshKey, setRefreshKey] = useState(0);
-
   return (
     <div className="max-w-5xl">
       <BackButton onClick={onBack} />
@@ -178,14 +162,11 @@ function ConnectView({
           <ProviderForm
             providers={providers}
             departments={departments}
-            onSuccess={() => setRefreshKey((k) => k + 1)}
+            onSuccess={() => {}}
           />
         </div>
         <div className="lg:col-span-2">
-          <RecentlyConnected
-            initialAgents={initialAgents}
-            refreshKey={refreshKey}
-          />
+          <OnboardFAQ />
         </div>
       </div>
     </div>
@@ -202,7 +183,6 @@ const STEPS: { id: View; label: string }[] = [
 
 function StepBreadcrumb({ current }: { current: View }) {
   const activeIndex = STEPS.findIndex((s) => s.id === current);
-  // Reduce to just [choice, current] for a two-step breadcrumb
   const visible = current === "choice"
     ? [STEPS[0]]
     : [STEPS[0], STEPS.find((s) => s.id === current)!];
@@ -237,7 +217,7 @@ function StepBreadcrumb({ current }: { current: View }) {
 
 // ── Page root ──────────────────────────────────────────────────────────────
 
-export function OnboardClient({ providers, departments, initialAgents }: Props) {
+export function OnboardClient({ providers, departments }: Props) {
   const [view, setView] = useState<View>("choice");
 
   return (
@@ -253,7 +233,6 @@ export function OnboardClient({ providers, departments, initialAgents }: Props) 
         <ConnectView
           providers={providers}
           departments={departments}
-          initialAgents={initialAgents}
           onBack={() => setView("choice")}
         />
       )}
