@@ -11,6 +11,7 @@
 import { decryptApiKey } from "../crypto";
 import { calculateCostCents } from "../providers/pricing";
 import type { ProviderUsageReport } from "../providers/openai-billing";
+import { isDemoKey, buildDemoReport } from "./demo-data";
 
 // ---------------------------------------------------------------------------
 // OpenAI - Organization Usage API (requires sk-admin- key)
@@ -46,6 +47,8 @@ function buildUsageUrl(startSec: number, nowSec: number, groupBy: string): strin
 }
 
 async function fetchOpenAIAuditData(apiKey: string, periodDays: number): Promise<ProviderUsageReport> {
+  if (isDemoKey(apiKey)) return buildDemoReport(periodDays);
+
   const now   = new Date();
   const start = new Date(now.getTime() - periodDays * 86_400_000);
   const nowSec    = Math.floor(now.getTime() / 1000);
