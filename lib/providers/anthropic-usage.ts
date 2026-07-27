@@ -14,6 +14,10 @@ import { persistBuckets, type NormalizedBucket, type SyncResult } from "./usage-
 const ANTHROPIC_USAGE_URL = "https://api.anthropic.com/v1/organizations/usage_report/messages";
 const ANTHROPIC_VERSION = "2023-06-01";
 
+const FIFTEEN_MIN_MS  = 15 * 60 * 1_000;
+const ONE_DAY_MS      = 24 * 60 * 60 * 1_000;
+const SEVEN_DAYS_MS   = 7 * ONE_DAY_MS;
+
 type AnthropicUsageResult = {
   uncached_input_tokens?: number;
   cache_creation_input_tokens?: number;
@@ -48,19 +52,50 @@ export async function syncAnthropicUsage(companyId: string, adminKey: ProviderAd
   const key = decryptApiKey(adminKey.encryptedKey);
 
   const now = new Date();
-  // First sync: backfill 30 days using daily buckets (30 rows, fits in one page).
-  // Subsequent syncs: last hour at 1-minute granularity (60 rows, fits in one page).
   const isFirstSync = adminKey.lastSyncedAt === null;
-  const lookbackMs = isFirstSync ? 30 * 24 * 60 * 60 * 1000 : 60 * 60 * 1000;
-  const lookbackStart = new Date(now.getTime() - lookbackMs);
+
+  // Compute the sync window and bucket granularity.
+  //
+  // First sync backfills 30 days with daily buckets. Incremental syncs must
+  // anchor to lastSyncedAt (minus a 15-minute safety buffer), NOT to a fixed
+  // trailing window: GitHub Actions fires this job ~every 60-90 min in practice
+  // despite the every-5-minutes cron, so a fixed 60-minute lookback would never
+  // fetch the usage accrued between (lastSyncedAt, now-60min) on any run,
+  // silently under-counting spend. Re-fetched buckets dedup safely on
+  // (connectedAgentId, providerApiId). This mirrors the OpenAI sync fix.
+  let lookbackStart: Date;
+  let bucketWidth: string;
+  let limit: number;
+
+  if (isFirstSync) {
+    lookbackStart = new Date(now.getTime() - 30 * ONE_DAY_MS);
+    bucketWidth = "1d";
+    limit = 31;
+  } else {
+    lookbackStart = new Date(adminKey.lastSyncedAt!.getTime() - FIFTEEN_MIN_MS);
+    const spanMs = now.getTime() - lookbackStart.getTime();
+    if (spanMs <= ONE_DAY_MS) {
+      // 1m buckets cover up to 1440 minutes (24h) per Anthropic's limits.
+      bucketWidth = "1m";
+      limit = Math.min(1_440, Math.ceil(spanMs / 60_000) + 10);
+    } else if (spanMs <= SEVEN_DAYS_MS) {
+      // 1h buckets cover up to 168 hours (7d).
+      bucketWidth = "1h";
+      limit = Math.min(168, Math.ceil(spanMs / 3_600_000) + 2);
+    } else {
+      // Very long gap (job down for days): fall back to daily buckets.
+      bucketWidth = "1d";
+      limit = 31;
+    }
+  }
 
   const url = new URL(ANTHROPIC_USAGE_URL);
   url.searchParams.set("starting_at", lookbackStart.toISOString());
   url.searchParams.set("ending_at", now.toISOString());
-  url.searchParams.set("bucket_width", isFirstSync ? "1d" : "1m");
+  url.searchParams.set("bucket_width", bucketWidth);
   url.searchParams.append("group_by[]", "api_key_id");
   url.searchParams.append("group_by[]", "model");
-  url.searchParams.set("limit", isFirstSync ? "30" : "60");
+  url.searchParams.set("limit", String(limit));
 
   const res = await fetch(url.toString(), {
     headers: {
