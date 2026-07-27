@@ -84,7 +84,8 @@ On any throw, the audit is set to `status = "failed"` with a user-visible
 
 ## Entry points (public interfaces)
 
-There are two ways an audit is *created* and two ways it is *read*.
+There are three ways an audit is *created* (connect, public, re-run) and two
+surfaces it is *read* from (the GET API and the report page).
 
 ### 1. Admin-key connect (primary, authenticated)
 
@@ -263,11 +264,11 @@ report-page re-run control call into it so they can't disagree.
 
 ---
 
-## Demo mode (`demo-data.ts`)
+## Demo mode
 
-Fixed keys return pre-built reports designed to light up every product signal,
-without calling any provider (and, per the onboarding flow, bypassing key
-verification):
+Fixed keys (`lib/audit/demo-data.ts`) return pre-built reports designed to light up
+every product signal, without calling any provider — and, because
+`verifyProviderKey` also short-circuits on them, bypassing key verification too:
 
 - OpenAI: `sk-admin-demo`, `sk-admin-1234` → `$10,239.34`, 61% legacy GPT-4, spikes,
   a project outlier, batch opportunity, 2 unused keys.
