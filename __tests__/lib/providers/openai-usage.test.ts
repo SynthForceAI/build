@@ -117,6 +117,33 @@ describe("syncOpenAIUsage cost attribution", () => {
     expect(vi.mocked(fetch)).toHaveBeenCalledTimes(2);
   });
 
+  it("first sync respects OpenAI's 31-bucket cap for daily buckets", async () => {
+    // Regression: the first sync used limit=90 with bucket_width=1d, which
+    // OpenAI rejects with a 400. Because lastSyncedAt is only persisted after a
+    // successful sync, that 400 left the key stuck in first-sync state forever
+    // and no OpenAI usage was ever ingested.
+    vi.mocked(fetch)
+      .mockResolvedValueOnce(usageResponse(DAY_START, 1000, 500)) // usage
+      .mockResolvedValueOnce(costsResponse(DAY_START, 12.34)); // costs
+
+    const adminKey = {
+      id: "key-1",
+      encryptedKey: "enc",
+      providerId: "prov-1",
+      lastSyncedAt: null, // first sync
+      metadata: {},
+    };
+
+    await syncOpenAIUsage("company-1", adminKey as never);
+
+    const usageUrl = String(vi.mocked(fetch).mock.calls[0][0]);
+    const params = new URLSearchParams(usageUrl.split("?")[1] ?? "");
+    expect(params.get("bucket_width")).toBe("1d");
+    const limit = Number(params.get("limit"));
+    expect(limit).toBeGreaterThan(0);
+    expect(limit).toBeLessThanOrEqual(31);
+  });
+
   it("incremental sync does NOT re-attribute the whole-day cost to its window", async () => {
     // Incremental window has only 150 tokens, but the Costs API would report the
     // full accrued day cost ($99.99). The old code divided that full cost by the
