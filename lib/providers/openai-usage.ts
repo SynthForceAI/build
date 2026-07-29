@@ -25,6 +25,11 @@ const OPENAI_COSTS_URL = "https://api.openai.com/v1/organization/costs";
 const FIFTEEN_MIN_MS = 15 * 60 * 1_000;
 const ONE_DAY_MS     = 24 * 60 * 60 * 1_000;
 
+// OpenAI rejects the usage/completions request with a 400 when `limit` exceeds
+// the maximum number of buckets allowed for the chosen bucket_width.
+// (Per the OpenAI usage API spec: 1d→31, 1h→168, 1m→1440.)
+const OPENAI_MAX_BUCKETS = { "1d": 31, "1h": 168, "1m": 1_440 } as const;
+
 // ---------------------------------------------------------------------------
 // Types
 // ---------------------------------------------------------------------------
@@ -143,7 +148,9 @@ export async function syncOpenAIUsage(companyId: string, adminKey: ProviderAdmin
   if (isFirstSync) {
     lookbackStart = new Date(now.getTime() - 30 * ONE_DAY_MS);
     bucketWidth = "1d";
-    limit = 90;
+    // OpenAI hard-caps daily-bucket requests at 31 buckets; a >31 limit is
+    // rejected with a 400. A 30-day backfill needs at most 31 daily buckets.
+    limit = OPENAI_MAX_BUCKETS["1d"];
   } else {
     // Anchor to last successful sync minus a safety buffer so that any gap
     // caused by GitHub Actions' variable cron cadence is always covered.
@@ -152,11 +159,11 @@ export async function syncOpenAIUsage(companyId: string, adminKey: ProviderAdmin
     const spanMs = now.getTime() - lookbackStart.getTime();
     if (spanMs <= ONE_DAY_MS) {
       bucketWidth = "1m";
-      limit = Math.min(1_440, Math.ceil(spanMs / 60_000) + 10);
+      limit = Math.min(OPENAI_MAX_BUCKETS["1m"], Math.ceil(spanMs / 60_000) + 10);
     } else {
       // OpenAI caps 1m granularity to short ranges; fall back to 1h for longer windows.
       bucketWidth = "1h";
-      limit = Math.min(744, Math.ceil(spanMs / 3_600_000) + 2);
+      limit = Math.min(OPENAI_MAX_BUCKETS["1h"], Math.ceil(spanMs / 3_600_000) + 2);
     }
   }
 
