@@ -13,6 +13,7 @@ import { prisma } from "@/lib/db";
 import { requireUser, requireRole } from "@/lib/auth";
 import { handleApiError } from "@/lib/api-errors";
 import { AgentCreateSchema, AgentStatusEnum, Uuid } from "@/lib/validators";
+import { assertAgentReferencesInCompany } from "@/lib/tenant";
 import { bigintToJson } from "@/lib/serialize";
 export const dynamic = "force-dynamic";
 
@@ -81,27 +82,11 @@ export async function POST(request: Request) {
     const data = AgentCreateSchema.parse(await request.json());
 
     // Cross-tenant safety: every referenced FK must belong to the same company.
-    if (data.departmentId) {
-      const ok = await prisma.department.findFirst({
-        where: { id: data.departmentId, companyId: user.companyId },
-        select: { id: true },
-      });
-      if (!ok) return NextResponse.json({ error: { code: "department_not_found" } }, { status: 400 });
-    }
-    if (data.apiKeyId) {
-      const ok = await prisma.apiKey.findFirst({
-        where: { id: data.apiKeyId, companyId: user.companyId },
-        select: { id: true },
-      });
-      if (!ok) return NextResponse.json({ error: { code: "api_key_not_found" } }, { status: 400 });
-    }
-    if (data.managedBy) {
-      const ok = await prisma.user.findFirst({
-        where: { id: data.managedBy, companyId: user.companyId },
-        select: { id: true },
-      });
-      if (!ok) return NextResponse.json({ error: { code: "managed_by_not_in_company" } }, { status: 400 });
-    }
+    await assertAgentReferencesInCompany(user.companyId, {
+      departmentId: data.departmentId,
+      apiKeyId: data.apiKeyId,
+      managedBy: data.managedBy,
+    });
 
     const agent = await prisma.agent.create({
       data: {

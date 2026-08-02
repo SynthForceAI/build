@@ -6,6 +6,7 @@ import { verifyProviderKey } from "@/lib/providers";
 import { generateReportToken, hashReportToken } from "@/lib/report-token";
 import { requireUser } from "@/lib/auth";
 import { handleApiError, ApiError } from "@/lib/api-errors";
+import { assertDepartmentInCompany } from "@/lib/tenant";
 import { runAudit } from "@/lib/audit/run";
 import { assertCanRunAudit } from "@/lib/audit/quota";
 import { resolveAnthropicKeyId } from "@/lib/providers/anthropic-connector";
@@ -33,6 +34,13 @@ export async function POST(req: NextRequest) {
     if (!provider) {
       throw new ApiError(400, "provider_not_found", { detail: "Invalid provider ID." });
     }
+
+    // Cross-tenant safety: an optional departmentId is written straight onto the
+    // ConnectedAgent + Agent rows below. Validate it belongs to the caller's own
+    // company before we verify the key or create anything, so a user can't file
+    // their agent under another tenant's department (which would leak that
+    // department's name back via the agents list `include`).
+    await assertDepartmentInCompany(user.companyId, parsed.departmentId);
 
     // Verify the key works - make a real test call to the provider
     let availableModels: string[];

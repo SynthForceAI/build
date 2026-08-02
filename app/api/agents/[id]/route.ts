@@ -8,6 +8,7 @@ import { prisma } from "@/lib/db";
 import { requireUser, requireRole } from "@/lib/auth";
 import { handleApiError, ApiError } from "@/lib/api-errors";
 import { AgentUpdateSchema, Uuid } from "@/lib/validators";
+import { assertAgentReferencesInCompany } from "@/lib/tenant";
 import { bigintToJson } from "@/lib/serialize";
 
 export const dynamic = "force-dynamic";
@@ -59,6 +60,16 @@ export async function PATCH(request: Request, { params }: Ctx) {
     Uuid.parse(id);
     await loadAgent(id, user.companyId);
     const data = AgentUpdateSchema.parse(await request.json());
+
+    // Cross-tenant safety: any company-scoped FK in the update must belong to
+    // the caller's own company. Without this, a user can re-point their agent
+    // at another tenant's department / api key / manager and read that row back
+    // via the response `include` (e.g. manager.email — cross-tenant PII).
+    await assertAgentReferencesInCompany(user.companyId, {
+      departmentId: data.departmentId,
+      apiKeyId: data.apiKeyId,
+      managedBy: data.managedBy,
+    });
 
     const updated = await prisma.agent.update({
       where: { id },
