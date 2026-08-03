@@ -37,6 +37,7 @@ legacy-html/     Frozen pre-migration static site, for reference
 | [architecture.md](./architecture.md) | Platform-wide data model and original design. |
 | [proxy-layer.md](./proxy-layer.md) | Real-time agent gateway: virtual keys, policy enforcement, usage logging. |
 | [usage-ingestion.md](./usage-ingestion.md) | How spend/token data enters the system: connect flow, admin-key polling, agent self-report. |
+| [billing.md](./billing.md) | Subscription tiers, the request-upgrade flow, the (inert) Stripe seam, and who can change a company's tier. |
 | [profile-audit.md](./profile-audit.md) | Profile/account-settings feature audit. |
 | [BUILD_SUMMARY.md](./BUILD_SUMMARY.md) | Signup/login build log (historical). |
 
