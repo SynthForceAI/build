@@ -55,7 +55,6 @@ For the recently-built backend subsystems, read the dedicated docs before changi
 
 - [proxy-layer.md](./proxy-layer.md) — the real-time agent gateway (`lib/proxy/**`, `app/api/proxy/**`): virtual keys, the policy engine, and per-request usage logging.
 - [usage-ingestion.md](./usage-ingestion.md) — the three ways usage data enters SynthForce (proxy, admin-key polling in `lib/providers/**` + `lib/jobs/**`, and agent self-report), plus the connect flow and the sync cron runbook.
-- [audit-engine.md](./audit-engine.md) — the free "agent audit" wedge (`lib/audit/**`, `app/api/audits/**`): one-shot provider usage pull, deterministic analysis + advanced telemetry, the LLM report writer, demo keys, and the one-free-audit quota.
 - [architecture.md](./architecture.md) — platform-wide data model (note: parts predate the implementation; `prisma/schema.prisma` is the source of truth).
 
 ## Branching model
