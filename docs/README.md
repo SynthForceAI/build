@@ -37,6 +37,7 @@ legacy-html/     Frozen pre-migration static site, for reference
 | [architecture.md](./architecture.md) | Platform-wide data model and original design. |
 | [proxy-layer.md](./proxy-layer.md) | Real-time agent gateway: virtual keys, policy enforcement, usage logging. |
 | [usage-ingestion.md](./usage-ingestion.md) | How spend/token data enters the system: connect flow, admin-key polling, agent self-report. |
+| [audit-engine.md](./audit-engine.md) | Free-audit wedge: provider usage pull, deterministic analysis + telemetry, LLM report, demo mode, quota. |
 | [profile-audit.md](./profile-audit.md) | Profile/account-settings feature audit. |
 | [BUILD_SUMMARY.md](./BUILD_SUMMARY.md) | Signup/login build log (historical). |
 
